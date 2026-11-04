@@ -4,7 +4,7 @@
 
 ---
 
-## Principais Recursos (v1.0)
+## Principais Recursos (v1.1)
 
 - **Cliente OPC UA Completo (`DMapFactory.Drivers.OpcUa`)**:
   - Descoberta de endpoints (`GetEndpoints`), modos `None`, `Sign` e `SignAndEncrypt` (`Basic256Sha256`, `Aes128_Sha256_RsaOaep`, `Aes256_Sha256_RsaPss`).
