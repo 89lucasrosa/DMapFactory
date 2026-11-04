@@ -1,0 +1,939 @@
+<Window x:Class="DMapFactory.App.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:loc="clr-namespace:DMapFactory.Localization;assembly=DMapFactory.Localization"
+        xmlns:vm="clr-namespace:DMapFactory.App.ViewModels"
+        xmlns:controls="clr-namespace:DMapFactory.App.Controls"
+        xmlns:services="clr-namespace:DMapFactory.App.Services"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
+        Title="{Binding [App_Title], Source={x:Static loc:Loc.Instance}}"
+        Width="1180" Height="720" MinWidth="800" MinHeight="540"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BackgroundBrush}"
+        FontFamily="{StaticResource UiFont}" FontSize="13"
+        Foreground="{StaticResource TextPrimaryBrush}"
+        UseLayoutRounding="True" TextOptions.TextFormattingMode="Display"
+        services:HelpProvider.TopicId="IDH_OVERVIEW">
+
+    <Window.InputBindings>
+        <KeyBinding Key="F1" Command="{Binding OpenHelpCommand}" />
+        <KeyBinding Key="F5" Command="{Binding ToggleOnlineCommand}" />
+        <KeyBinding Key="Delete" Command="{Binding RemoveSelectedTagCommand}" />
+        <KeyBinding Modifiers="Control" Key="N" Command="{Binding NewProjectCommand}" />
+        <KeyBinding Modifiers="Control" Key="O" Command="{Binding OpenProjectCommand}" />
+        <KeyBinding Modifiers="Control" Key="S" Command="{Binding SaveProjectCommand}" />
+        <KeyBinding Modifiers="Control+Shift" Key="S" Command="{Binding SaveProjectAsCommand}" />
+        <KeyBinding Modifiers="Control+Shift" Key="O" Command="{Binding OpenRecordedSessionCommand}" />
+        <KeyBinding Modifiers="Control" Key="E" Command="{Binding ExportSpreadsheetCommand}" />
+        <KeyBinding Modifiers="Control" Key="M" Command="{Binding AddMarkerCommand}" />
+    </Window.InputBindings>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- ===== Menu ===== -->
+        <Menu Grid.Row="0">
+            <MenuItem Header="{Binding [Menu_File], Source={x:Static loc:Loc.Instance}}">
+                <MenuItem Header="{Binding [Menu_NewProject], Source={x:Static loc:Loc.Instance}}"
+                          Command="{Binding NewProjectCommand}" InputGestureText="Ctrl+N" />
+                <MenuItem Header="{Binding [Menu_OpenProject], Source={x:Static loc:Loc.Instance}}"
+                          Command="{Binding OpenProjectCommand}" InputGestureText="Ctrl+O" />
+                <MenuItem Header="{Binding [Menu_SaveProject], Source={x:Static loc:Loc.Instance}}"
+                          Command="{Binding SaveProjectCommand}" InputGestureText="Ctrl+S" />
+                <MenuItem Header="{Binding [Menu_SaveProjectAs], Source={x:Static loc:Loc.Instance}}"
+                          Command="{Binding SaveProjectAsCommand}" InputGestureText="Ctrl+Shift+S" />
+                <Separator />
+                <MenuItem Header="{Binding [Toolbar_AddConnection], Source={x:Static loc:Loc.Instance}}"
+                          Command="{Binding AddConnectionCommand}" />
+                <MenuItem Header="{Binding ConnectButtonText}"
+                          Command="{Binding ConnectOrDisconnectSelectedCommand}" />
+                <MenuItem Header="Editar conexão selecionada…"
+                          Command="{Binding EditConnectionCommand}" />
+                <Separator />
+                <MenuItem Header="{Binding OnlineButtonText}"
+                          Command="{Binding ToggleOnlineCommand}"
+                          InputGestureText="F5" />
+                <Separator />
+                <MenuItem Header="{Binding [Menu_OpenSession], Source={x:Static loc:Loc.Instance}}"
+                          Command="{Binding OpenRecordedSessionCommand}" InputGestureText="Ctrl+Shift+O" />
+                <MenuItem Header="{Binding [Toolbar_Export], Source={x:Static loc:Loc.Instance}}"
+                          Command="{Binding ExportSpreadsheetCommand}" InputGestureText="Ctrl+E" />
+                <MenuItem Header="Gerenciador de certificados OPC UA…"
+                          Command="{Binding OpenCertificateManagerCommand}" />
+                <MenuItem Header="{Binding [Toolbar_ExportCert], Source={x:Static loc:Loc.Instance}}"
+                          Command="{Binding ExportApplicationCertificateCommand}" />
+                <Separator />
+                <MenuItem Header="{Binding [Menu_Exit], Source={x:Static loc:Loc.Instance}}"
+                          Command="{Binding ExitCommand}"
+                          InputGestureText="Alt+F4" />
+            </MenuItem>
+            <MenuItem Header="_Editar">
+                <MenuItem Header="Inserir marcador"
+                          Command="{Binding AddMarkerCommand}"
+                          InputGestureText="Ctrl+M" />
+                <MenuItem Header="Editar marcador…"
+                          Click="EditSelectedMarkerMenuItem_Click" />
+                <MenuItem Header="Excluir marcador"
+                          Click="DeleteSelectedMarkerMenuItem_Click" />
+                <Separator />
+                <MenuItem Header="Limpar linhas"
+                          Command="{Binding ClearSpreadsheetRowsCommand}" />
+                <MenuItem Header="Excluir tag selecionada"
+                          Command="{Binding RemoveSelectedTagCommand}"
+                          InputGestureText="Delete" />
+                <MenuItem Header="Excluir todas as tags"
+                          Command="{Binding ClearAllTagsCommand}" />
+            </MenuItem>
+            <MenuItem Header="E_xibir">
+                <MenuItem Header="Planilha"
+                          Click="ShowSpreadsheetTabMenuItem_Click"
+                          InputGestureText="Ctrl+1" />
+                <MenuItem Header="Gráfico de Tendências"
+                          Click="ShowChartTabMenuItem_Click"
+                          InputGestureText="Ctrl+2" />
+                <Separator />
+                <MenuItem Header="Marcador"
+                          IsCheckable="True"
+                          IsChecked="{Binding ShowMarkerColumn, Mode=TwoWay}" />
+                <Separator />
+                <MenuItem Header="Títulos na vertical"
+                          IsCheckable="True"
+                          IsChecked="{Binding VerticalColumnHeaders, Mode=TwoWay}" />
+                <MenuItem Header="Auto-scroll na planilha"
+                          IsCheckable="True"
+                          IsChecked="{Binding AutoScrollSpreadsheet, Mode=TwoWay}"
+                          InputGestureText="Espaço" />
+                <Separator />
+                <MenuItem Header="Auto-follow no gráfico"
+                          IsCheckable="True"
+                          IsChecked="{Binding AutoFollowChart, Mode=TwoWay}"
+                          InputGestureText="Espaço" />
+                <MenuItem Header="Painel de penas no gráfico"
+                          IsCheckable="True"
+                          IsChecked="{Binding ShowChartPensPanel, Mode=TwoWay}" />
+                <MenuItem Header="Cursores A/B no gráfico"
+                          IsCheckable="True"
+                          IsChecked="{Binding ShowChartCursors, Mode=TwoWay}" />
+                <MenuItem Header="Mira (Crosshair) no gráfico"
+                          IsCheckable="True"
+                          IsChecked="{Binding ShowChartCrosshair, Mode=TwoWay}" />
+                <MenuItem Header="Grade no gráfico"
+                          IsCheckable="True"
+                          IsChecked="{Binding ShowChartGrid, Mode=TwoWay}" />
+            </MenuItem>
+            <MenuItem Header="{Binding [Menu_Help], Source={x:Static loc:Loc.Instance}}">
+                <MenuItem Header="{Binding [Menu_HelpTopics], Source={x:Static loc:Loc.Instance}}"
+                          Command="{Binding OpenHelpCommand}"
+                          InputGestureText="F1" />
+                <Separator />
+                <MenuItem Header="{Binding [Menu_About], Source={x:Static loc:Loc.Instance}}" Command="{Binding ShowAboutCommand}" />
+            </MenuItem>
+        </Menu>
+
+        <!-- ===== Barra de ferramentas ===== -->
+        <Border Grid.Row="1" Background="{StaticResource BackgroundBrush}" Padding="8,3,8,6">
+            <DockPanel LastChildFill="False">
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                    <!-- Grupo 1: Projeto e Sessões -->
+                    <Button Command="{Binding NewProjectCommand}"
+                            ToolTip="{Binding [Menu_NewProject], Source={x:Static loc:Loc.Instance}, StringFormat='{}{0} (Ctrl+N)'}"
+                            Padding="8,5">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xE8A5;" FontSize="15" />
+                    </Button>
+                    <Button Command="{Binding OpenProjectCommand}"
+                            ToolTip="{Binding [Menu_OpenProject], Source={x:Static loc:Loc.Instance}, StringFormat='{}{0} (Ctrl+O)'}"
+                            Margin="3,0,0,0" Padding="8,5">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xE8E5;" FontSize="15" />
+                    </Button>
+                    <Button Command="{Binding SaveProjectCommand}"
+                            ToolTip="{Binding [Menu_SaveProject], Source={x:Static loc:Loc.Instance}, StringFormat='{}{0} (Ctrl+S)'}"
+                            Margin="3,0,0,0" Padding="8,5">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xE74E;" FontSize="15" />
+                    </Button>
+                    <Button Command="{Binding OpenRecordedSessionCommand}"
+                            ToolTip="{Binding [Menu_OpenSession], Source={x:Static loc:Loc.Instance}, StringFormat='{}{0} (Ctrl+Shift+O)'}"
+                            Margin="3,0,0,0" Padding="8,5">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xED25;" FontSize="15" />
+                    </Button>
+
+                    <Rectangle Width="1" Margin="8,3" Fill="{StaticResource BorderBrush}" />
+
+                    <!-- Grupo 2: Conexão OPC UA e Operação em Tempo Real (F5) -->
+                    <Button Command="{Binding AddConnectionCommand}"
+                            Padding="8,5"
+                            ToolTip="{Binding [Toolbar_AddConnection], Source={x:Static loc:Loc.Instance}}">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xE710;" FontSize="15" />
+                    </Button>
+
+                    <Button Command="{Binding ConnectOrDisconnectSelectedCommand}"
+                            Margin="4,0,0,0" Padding="8,5"
+                            ToolTip="{Binding ConnectButtonToolTip}">
+                        <TextBlock>
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource Icon}">
+                                    <Setter Property="FontSize" Value="15" />
+                                    <Setter Property="Text" Value="&#xE703;" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsSelectedConnectionConnected}" Value="True">
+                                            <Setter Property="Foreground" Value="{StaticResource GoodBrush}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Button>
+
+                    <ToggleButton IsChecked="{Binding IsOnline}"
+                                  Margin="4,0,0,0" Padding="10,5"
+                                  ToolTip="{Binding OnlineButtonToolTip}">
+                        <TextBlock>
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource Icon}">
+                                    <Setter Property="FontSize" Value="15" />
+                                    <Setter Property="Text" Value="&#xE768;" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsOnline}" Value="True">
+                                            <Setter Property="Text" Value="&#xE71A;" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </ToggleButton>
+
+                    <ToggleButton IsChecked="{Binding IsPlacingMarker, Mode=TwoWay}"
+                                  Margin="4,0,0,0" Padding="8,5"
+                                  ToolTip="{Binding MarkerButtonToolTip}">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xE7C1;" FontSize="15" />
+                    </ToggleButton>
+
+                    <Button Command="{Binding ExportSpreadsheetCommand}"
+                            Margin="4,0,0,0" Padding="8,5"
+                            ToolTip="{Binding [Toolbar_Export], Source={x:Static loc:Loc.Instance}, StringFormat='{}{0} (Ctrl+E)'}">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xEDE1;" FontSize="15" />
+                    </Button>
+
+                    <Button Command="{Binding OpenCertificateManagerCommand}"
+                            Margin="4,0,0,0" Padding="8,5"
+                            ToolTip="Gerenciador de Certificados OPC UA (Cliente e Servidores)">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xEB95;" FontSize="15" />
+                    </Button>
+
+                    <Rectangle Width="1" Margin="8,3" Fill="{StaticResource BorderBrush}" />
+
+                    <!-- Grupo 3: Parâmetros de Aquisição (FN-01, FN-02) -->
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Taxa:" Style="{StaticResource SecondaryText}" VerticalAlignment="Center" Margin="0,0,4,0" FontSize="11" />
+                        <ComboBox ItemsSource="{Binding SamplingIntervalOptions}" SelectedItem="{Binding SelectedSamplingIntervalMs}"
+                                  Width="70" VerticalAlignment="Center" ToolTip="Taxa de amostragem/publicação OPC UA (ms)" />
+                        <TextBlock Text="ms" Style="{StaticResource SecondaryText}" VerticalAlignment="Center" Margin="3,0,8,0" FontSize="11" />
+
+                        <TextBlock Text="Modo:" Style="{StaticResource SecondaryText}" VerticalAlignment="Center" Margin="0,0,4,0" FontSize="11" />
+                        <ComboBox ItemsSource="{Binding AcquisitionModeOptions}" SelectedIndex="{Binding SelectedAcquisitionModeIndex}"
+                                  Width="155" VerticalAlignment="Center" ToolTip="Modo de coleta: Assinatura orientada a eventos ou Polling periódico" />
+
+                        <!-- Indicador de Gatilho de Ciclo Ativo -->
+                        <Border Margin="8,0,0,0" Padding="6,2" CornerRadius="3" Background="{StaticResource SurfaceBrush}"
+                                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                                ToolTip="Gatilho de ciclo de máquina configurado (clique direito em qualquer tag booleana para alterar)">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="Ciclo: " Style="{StaticResource SecondaryText}" FontSize="11" />
+                                <TextBlock Text="{Binding CycleTriggerTagAlias, TargetNullValue='(Padrão: Cycle_Active)'}"
+                                           FontWeight="SemiBold" FontSize="11" Foreground="{StaticResource GoodBrush}" />
+                                <Button Command="{Binding ClearCycleTriggerCommand}" Content="×" Margin="5,0,0,0" Padding="4,0"
+                                        FontWeight="Bold" FontSize="10" ToolTip="Desativar gatilho customizado de ciclo" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Idioma -->
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource Icon}" Text="&#xE774;" Margin="0,0,6,0"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               ToolTip="{Binding [Menu_Language], Source={x:Static loc:Loc.Instance}}" />
+                    <ComboBox ItemsSource="{Binding Languages}" SelectedItem="{Binding SelectedLanguage}"
+                              DisplayMemberPath="NativeName" MinWidth="135" VerticalAlignment="Center" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- ===== Conteúdo ===== -->
+        <Grid Grid.Row="2" Margin="8,0,8,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="320" MinWidth="240" />
+                <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Painel esquerdo: Conexões + Navegador OPC UA + Atributos -->
+            <Border Grid.Column="0" Style="{StaticResource Panel}"
+                    services:HelpProvider.TopicId="IDH_OPC_CONNECTION">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="130" />
+                        <RowDefinition Height="1" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="1" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="115" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Lista de conexões -->
+                    <DockPanel Grid.Row="0">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="0,2,4,0">
+                            <Button Padding="7,3" Margin="0,0,3,0"
+                                    Command="{Binding ConnectOrDisconnectSelectedCommand}"
+                                    ToolTip="{Binding ConnectButtonToolTip}"
+                                    Content="{Binding ConnectButtonText}" FontSize="11" FontWeight="SemiBold" />
+                            <Button Padding="6,3" Margin="0,0,2,0"
+                                     Command="{Binding AddConnectionCommand}"
+                                     ToolTip="{Binding [Toolbar_AddConnection], Source={x:Static loc:Loc.Instance}}">
+                                <TextBlock Style="{StaticResource Icon}" Text="&#xE710;" FontSize="12" />
+                            </Button>
+                            <Button Padding="6,3" Margin="0,0,2,0"
+                                    Command="{Binding EditConnectionCommand}"
+                                    ToolTip="Editar conexão selecionada">
+                                <TextBlock Style="{StaticResource Icon}" Text="&#xE70F;" FontSize="12" />
+                            </Button>
+                            <Button Padding="6,3"
+                                    Command="{Binding RemoveConnectionCommand}"
+                                    ToolTip="Excluir conexão selecionada">
+                                <TextBlock Style="{StaticResource Icon}" Text="&#xE74D;" FontSize="12" />
+                            </Button>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource PanelHeaderText}"
+                                   Text="{Binding [Panel_Connections], Source={x:Static loc:Loc.Instance}}" />
+                    </DockPanel>
+
+                    <ListBox Grid.Row="1" ItemsSource="{Binding Connections}"
+                             SelectedItem="{Binding SelectedConnection}"
+                             Background="Transparent" BorderThickness="0" Padding="6,0"
+                             HorizontalContentAlignment="Stretch">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                                <EventSetter Event="MouseDoubleClick" Handler="OnConnectionItemDoubleClick" />
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:ConnectionItemViewModel}">
+                                <DockPanel Margin="2,3">
+                                    <DockPanel.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="{Binding ConnectActionText}" FontWeight="SemiBold"
+                                                      Click="ConnectOrDisconnectMenuItem_Click" />
+                                            <MenuItem Header="Editar conexão..."
+                                                      Click="EditConnectionMenuItem_Click" />
+                                            <Separator />
+                                            <MenuItem Header="Excluir conexão"
+                                                      Click="RemoveConnectionMenuItem_Click" />
+                                        </ContextMenu>
+                                    </DockPanel.ContextMenu>
+                                    <Button DockPanel.Dock="Right" Padding="5,1" Margin="3,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Command="{Binding DataContext.RemoveConnectionCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"
+                                            ToolTip="Excluir esta conexão"
+                                            Content="×" FontWeight="Bold" />
+                                    <Button DockPanel.Dock="Right" Padding="5,1" Margin="3,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Command="{Binding DataContext.EditConnectionCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"
+                                            ToolTip="Editar esta conexão">
+                                        <TextBlock Style="{StaticResource Icon}" Text="&#xE70F;" FontSize="11" />
+                                    </Button>
+                                    <Button DockPanel.Dock="Right" Padding="6,1" Margin="4,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Command="{Binding DataContext.ConnectOrDisconnectSelectedCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"
+                                            ToolTip="{Binding ConnectActionToolTip}"
+                                            Content="{Binding ConnectActionText}" FontSize="11" />
+                                    <Ellipse DockPanel.Dock="Left">
+                                        <Ellipse.Style>
+                                            <Style TargetType="Ellipse" BasedOn="{StaticResource StatusDot}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding State}" Value="Connected">
+                                                        <Setter Property="Fill" Value="{StaticResource GoodBrush}" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding State}" Value="Connecting">
+                                                        <Setter Property="Fill" Value="{StaticResource UncertainBrush}" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding State}" Value="Reconnecting">
+                                                        <Setter Property="Fill" Value="{StaticResource UncertainBrush}" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding State}" Value="Faulted">
+                                                        <Setter Property="Fill" Value="{StaticResource BadBrush}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Ellipse.Style>
+                                    </Ellipse>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Text="{Binding EndpointUrl}" Style="{StaticResource SecondaryText}" FontSize="11" TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <Rectangle Grid.Row="2" Fill="{StaticResource BorderBrush}" />
+
+                    <!-- Árvore de navegação OPC UA -->
+                    <DockPanel Grid.Row="3">
+                        <Button DockPanel.Dock="Right" Margin="0,2,4,0" Padding="6,3"
+                                Command="{Binding ReloadBrowserCommand}"
+                                ToolTip="Recarregar árvore OPC UA">
+                            <TextBlock Style="{StaticResource Icon}" Text="&#xE72C;" FontSize="12" />
+                        </Button>
+                        <TextBlock Style="{StaticResource PanelHeaderText}"
+                                   Text="{Binding [Panel_Browser], Source={x:Static loc:Loc.Instance}}" />
+                    </DockPanel>
+
+                    <DockPanel Grid.Row="4">
+                        <!-- Busca rápida de nós OPC UA (FN-03) -->
+                        <DockPanel DockPanel.Dock="Top" Margin="6,2,6,4">
+                            <TextBlock Style="{StaticResource Icon}" Text="&#xE721;" DockPanel.Dock="Left"
+                                       VerticalAlignment="Center" Margin="2,0,4,0" FontSize="11"
+                                       Foreground="{StaticResource TextSecondaryBrush}" />
+                            <TextBox Text="{Binding BrowserSearchText, UpdateSourceTrigger=PropertyChanged}"
+                                     FontSize="11" Padding="4,2"
+                                     ToolTip="Buscar nós na árvore pelo nome ou NodeId (expande automaticamente correspondências)" />
+                        </DockPanel>
+
+                        <DockPanel DockPanel.Dock="Bottom" Margin="6,2,6,4"
+                                   ToolTip="Adicionar tag por endereço (ex.: ns=2;s=Canal.Device.Tag ou Canal.Device.DB1.DBD0)">
+                            <Button DockPanel.Dock="Right" Margin="4,0,0,0" Padding="8,2"
+                                    Command="{Binding AddManualTagCommand}"
+                                    Content="+" FontWeight="Bold" />
+                            <TextBox Text="{Binding ManualTagAddress, UpdateSourceTrigger=PropertyChanged}"
+                                     FontFamily="{StaticResource MonoFont}" FontSize="11"
+                                     Padding="4,3" />
+                        </DockPanel>
+
+                        <TreeView x:Name="BrowserTreeView"
+                                  ItemsSource="{Binding BrowserRoots}" Padding="4"
+                                  PreviewMouseLeftButtonDown="BrowserTreeView_PreviewMouseLeftButtonDown"
+                                  MouseDoubleClick="BrowserTreeView_MouseDoubleClick"
+                                  ToolTip="Segure a tecla Ctrl para selecionar múltiplas tags e clique em '+ Planilha' para adicioná-las juntas">
+                            <TreeView.ItemContainerStyle>
+                                <Style TargetType="TreeViewItem">
+                                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                                    <Setter Property="Padding" Value="1,1" />
+                                    <Style.Resources>
+                                        <!-- Remove fundo padrão cinza/azul do WPF para usar o contorno celeste de multi-seleção -->
+                                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent" />
+                                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="{Binding Foreground.Color, RelativeSource={RelativeSource AncestorType=Control}}" />
+                                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="Transparent" />
+                                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="{Binding Foreground.Color, RelativeSource={RelativeSource AncestorType=Control}}" />
+                                    </Style.Resources>
+                                </Style>
+                            </TreeView.ItemContainerStyle>
+                            <TreeView.ItemTemplate>
+                                <HierarchicalDataTemplate DataType="{x:Type vm:BrowseNodeViewModel}"
+                                                          ItemsSource="{Binding Children}">
+                                    <Border x:Name="NodeBorder" CornerRadius="3" Padding="4,2" Margin="0,1"
+                                            Background="Transparent" BorderThickness="1" BorderBrush="Transparent">
+                                        <Border.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="+ Adicionar à Planilha e Gráfico" FontWeight="SemiBold"
+                                                          Click="AddSelectedNodeAsTagMenuItem_Click" />
+                                                <MenuItem Header="📁 Adicionar todas as variáveis desta pasta"
+                                                          Click="AddFolderVariablesAsTagsMenuItem_Click" />
+                                                <Separator />
+                                                <MenuItem Header="📋 Copiar NodeId"
+                                                          Click="CopyNodeId_Click" />
+                                            </ContextMenu>
+                                        </Border.ContextMenu>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding DisplayText}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <HierarchicalDataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding IsMultiSelected}" Value="True">
+                                            <Setter TargetName="NodeBorder" Property="Background" Value="{StaticResource AccentSoftBrush}" />
+                                            <Setter TargetName="NodeBorder" Property="BorderBrush" Value="#00B4F0" />
+                                        </DataTrigger>
+                                    </HierarchicalDataTemplate.Triggers>
+                                </HierarchicalDataTemplate>
+                            </TreeView.ItemTemplate>
+                        </TreeView>
+                    </DockPanel>
+
+                    <Rectangle Grid.Row="5" Fill="{StaticResource BorderBrush}" />
+
+                    <!-- Detalhes do nó selecionado -->
+                    <DockPanel Grid.Row="6">
+                        <Button DockPanel.Dock="Right" Margin="0,2,6,0" Padding="6,2"
+                                Command="{Binding AddSelectedNodeAsTagCommand}"
+                                ToolTip="Adicionar nó(s) selecionado(s) à planilha e ao gráfico"
+                                Content="{Binding AddSelectedBrowserButtonText}" FontSize="11" />
+                        <TextBlock Style="{StaticResource PanelHeaderText}"
+                                   Text="{Binding [Panel_NodeDetails], Source={x:Static loc:Loc.Instance}}" />
+                    </DockPanel>
+                    <StackPanel Grid.Row="7" Margin="10,0,10,6" DataContext="{Binding SelectedNodeAttributes}">
+                        <TextBlock Text="{Binding NodeId, StringFormat=NodeId: {0}}" Style="{StaticResource SecondaryText}" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="{Binding DataTypeName, StringFormat=DataType: {0}}" Style="{StaticResource SecondaryText}" />
+                        <TextBlock Text="{Binding CurrentValue, StringFormat=Value: {0}}" Style="{StaticResource SecondaryText}" />
+                        <TextBlock Text="{Binding Quality, StringFormat=Quality: {0}}" Style="{StaticResource SecondaryText}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <GridSplitter Grid.Column="1" Width="8" HorizontalAlignment="Stretch" ResizeBehavior="PreviousAndNext" />
+
+            <!-- Área central: abas + log -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" MinHeight="200" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="170" MinHeight="60" />
+                </Grid.RowDefinitions>
+
+                <TabControl x:Name="MainTabControl" Grid.Row="0" SelectedIndex="0">
+                    <!-- ===== Aba 0: Planilha (Wide Format RF-GRD-01..10) ===== -->
+                    <TabItem Header="{Binding [Tab_Grid], Source={x:Static loc:Loc.Instance}}"
+                             ToolTip="Visualização em Planilha (Ctrl+1)"
+                             services:HelpProvider.TopicId="IDH_SPREADSHEET">
+                        <DockPanel>
+                            <Border DockPanel.Dock="Top" Background="{StaticResource SurfaceAltBrush}"
+                                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="8,4">
+                                <DockPanel>
+                                    <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <CheckBox Content="Auto-scroll" IsChecked="{Binding AutoScrollSpreadsheet}"
+                                                  VerticalAlignment="Center" Margin="0,2,12,2"
+                                                  ToolTip="Rolagem automática para acompanhar as linhas mais recentes da planilha (Espaço)" />
+                                        <CheckBox Content="Coleta contínua (1 s)" IsChecked="{Binding PeriodicSpreadsheetSampling}"
+                                                  VerticalAlignment="Center" Margin="0,2,12,2"
+                                                  ToolTip="Registra os valores atuais a cada 1 segundo na planilha (além de transições rápidas por exceção)" />
+                                        <CheckBox Content="Agrupar mesmo timestamp (P3)" IsChecked="{Binding GroupSameTimestamp}"
+                                                  VerticalAlignment="Center" Margin="0,2,12,2" />
+                                        <CheckBox Content="{Binding [Grid_VerticalHeaders], Source={x:Static loc:Loc.Instance}}"
+                                                  IsChecked="{Binding VerticalColumnHeaders}"
+                                                  VerticalAlignment="Center" Margin="0,2,12,2"
+                                                  ToolTip="Orienta os títulos das colunas na vertical para visualizar mais variáveis simultaneamente" />
+
+                                        <Rectangle Width="1" Height="16" Margin="0,2,10,2" Fill="{StaticResource BorderBrush}" />
+
+                                        <TextBlock Text="Altura título:" Style="{StaticResource SecondaryText}"
+                                                   VerticalAlignment="Center" Margin="0,2,4,2"
+                                                   ToolTip="Ajuste a altura da linha de título (ou arraste a borda inferior do cabeçalho com o mouse)" />
+                                        <Button Click="DecreaseHeaderHeight_Click" Padding="6,1" Margin="0,2,2,2"
+                                                Content="−" FontWeight="Bold"
+                                                ToolTip="Reduzir altura da linha do título das colunas (-20 px)" />
+                                        <TextBlock Text="{Binding SpreadsheetHeaderHeightText}"
+                                                   Style="{StaticResource SecondaryText}"
+                                                   MinWidth="46" TextAlignment="Center"
+                                                   VerticalAlignment="Center" Margin="2,2,2,2"
+                                                   ToolTip="Altura atual do cabeçalho (arraste a borda inferior do título da coluna para redimensionar livremente)" />
+                                        <Button Click="IncreaseHeaderHeight_Click" Padding="6,1" Margin="0,2,2,2"
+                                                Content="+" FontWeight="Bold"
+                                                ToolTip="Aumentar altura da linha do título das colunas (+20 px)" />
+                                        <Button Click="AutoFitHeaderHeight_Click" Padding="6,1" Margin="0,2,10,2"
+                                                Content="↕ Auto"
+                                                ToolTip="Auto-ajustar altura da linha do título para exibir o texto completo na vertical" />
+
+                                        <Button Click="AutoFitColumnWidths_Click" Padding="8,2" Margin="0,2,12,2"
+                                                Content="↔ Auto-ajustar larguras"
+                                                ToolTip="Ajusta automaticamente a largura de todas as colunas com base no título (vertical ou horizontal) e nas informações contidas em cada coluna" />
+
+                                        <TextBlock Text="{Binding SpreadsheetRows.Count, StringFormat=Linhas: {0:N0}}"
+                                                   Style="{StaticResource SecondaryText}" VerticalAlignment="Center" Margin="0,2,6,2" />
+                                    </WrapPanel>
+                                </DockPanel>
+                            </Border>
+
+                            <DataGrid x:Name="SpreadsheetGrid"
+                                      ItemsSource="{Binding SpreadsheetRows}"
+                                      GridLinesVisibility="All"
+                                      VerticalGridLinesBrush="{StaticResource BorderBrush}"
+                                      HorizontalGridLinesBrush="{StaticResource BorderBrush}"
+                                      EnableRowVirtualization="True"
+                                      EnableColumnVirtualization="False"
+                                      VirtualizingPanel.IsVirtualizing="True"
+                                      VirtualizingPanel.VirtualizationMode="Recycling"
+                                      FontFamily="{StaticResource MonoFont}"
+                                      FontSize="12"
+                                      RowHeight="24"
+                                      PreviewMouseMove="SpreadsheetGrid_PreviewMouseMove"
+                                      PreviewMouseLeftButtonDown="SpreadsheetGrid_PreviewMouseLeftButtonDown"
+                                      PreviewMouseLeftButtonUp="SpreadsheetGrid_PreviewMouseLeftButtonUp"
+                                      PreviewMouseRightButtonUp="SpreadsheetGrid_PreviewMouseRightButtonUp"
+                                      KeyDown="SpreadsheetGrid_KeyDown"
+                                      MouseLeave="SpreadsheetGrid_MouseLeave">
+                                <DataGrid.RowStyle>
+                                    <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsCycleStart}" Value="True">
+                                                <Setter Property="Background" Value="{StaticResource AccentSoftBrush}" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsMarker}" Value="True">
+                                                <Setter Property="Background" Value="{StaticResource MarkerBrush}" />
+                                                <Setter Property="FontWeight" Value="SemiBold" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGrid.RowStyle>
+                            </DataGrid>
+                        </DockPanel>
+                    </TabItem>
+
+                    <!-- ===== Aba 1: Gráfico (Trend + Digital Strips + Kit de Ferramentas RF-CHT-01..04) ===== -->
+                    <TabItem Header="{Binding [Tab_Chart], Source={x:Static loc:Loc.Instance}}"
+                             ToolTip="Visualização em Gráfico de Tendências (Ctrl+2)"
+                             services:HelpProvider.TopicId="IDH_CHART">
+                        <DockPanel>
+                            <!-- Barra de Ferramentas do Gráfico (Linha 1: Navegação temporal, Zoom X/Y e Exportação) -->
+                            <Border DockPanel.Dock="Top" Background="{StaticResource SurfaceAltBrush}"
+                                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="8,4">
+                                <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <CheckBox Content="Auto-follow (Ao vivo)" IsChecked="{Binding AutoFollowChart}"
+                                              VerticalAlignment="Center" Margin="0,2,10,2"
+                                              ToolTip="Acompanha os dados mais recentes em tempo real no gráfico (Espaço)" />
+
+                                    <Button Command="{Binding ChartJumpToStartCommand}" Padding="6,2" Margin="0,2,2,2"
+                                            Content="|◀" ToolTip="Ir para o início do histórico" />
+                                    <Button Command="{Binding ChartPanLeftCommand}" Padding="6,2" Margin="0,2,2,2"
+                                            Content="◀" ToolTip="Voltar no tempo (25% da janela)" />
+                                    <Button Command="{Binding ChartPanRightCommand}" Padding="6,2" Margin="0,2,2,2"
+                                            Content="▶" ToolTip="Avançar no tempo (25% da janela)" />
+                                    <Button Command="{Binding ChartJumpToLiveCommand}" Padding="6,2" Margin="0,2,10,2"
+                                            Content="▶|" ToolTip="Voltar para o tempo real (Ao vivo)" />
+
+                                    <TextBlock Text="Janela (s):" Style="{StaticResource SecondaryText}"
+                                               VerticalAlignment="Center" Margin="0,2,4,2" />
+                                    <ComboBox ItemsSource="{Binding ChartWindowOptions}"
+                                              SelectedItem="{Binding ChartWindowSeconds}"
+                                              Width="64" VerticalAlignment="Center" Margin="0,2,4,2"
+                                              ToolTip="Duração da janela horizontal em segundos" />
+                                    <Button Command="{Binding ChartZoomInCommand}" Padding="6,2" Margin="0,2,2,2"
+                                            Content="🔍+" ToolTip="Zoom In horizontal (reduzir janela de tempo / Scroll do mouse)" />
+                                    <Button Command="{Binding ChartZoomOutCommand}" Padding="6,2" Margin="0,2,2,2"
+                                            Content="🔍-" ToolTip="Zoom Out horizontal (ampliar janela de tempo / Scroll do mouse)" />
+                                    <Button Command="{Binding ChartFitAllCommand}" Padding="7,2" Margin="0,2,10,2"
+                                            Content="↔ Tudo" ToolTip="Ajustar janela para exibir todo o histórico coletado" />
+
+                                    <TextBlock Text="Escala Y:" Style="{StaticResource SecondaryText}"
+                                               VerticalAlignment="Center" Margin="0,2,4,2" />
+                                    <Button Click="ChartZoomYIn_Click" Padding="6,2" Margin="0,2,2,2"
+                                            Content="Y+" ToolTip="Ampliar escala vertical (Zoom Y+)" />
+                                    <Button Click="ChartZoomYOut_Click" Padding="6,2" Margin="0,2,2,2"
+                                            Content="Y-" ToolTip="Reduzir escala vertical (Zoom Y-)" />
+                                    <Button Click="ChartResetY_Click" Padding="6,2" Margin="0,2,10,2"
+                                            Content="Auto Y" ToolTip="Restaurar escala Y automática" />
+
+                                    <Button Click="ExportChartPng_Click" Padding="7,2" Margin="0,2,4,2"
+                                            Content="📷 PNG" ToolTip="Salvar imagem atual do gráfico em PNG" />
+                                </WrapPanel>
+                            </Border>
+
+                            <!-- Barra de Ferramentas do Gráfico (Linha 2: Estilo de curva, Grade, Mira, Cursores e Painel de Penas) -->
+                            <Border DockPanel.Dock="Top" Background="{StaticResource SurfaceBrush}"
+                                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="8,4">
+                                <DockPanel>
+                                    <CheckBox DockPanel.Dock="Right" Content="Painel de Penas"
+                                              IsChecked="{Binding ShowChartPensPanel}"
+                                              VerticalAlignment="Center" Margin="8,0,0,0"
+                                              ToolTip="Mostrar/ocultar o painel lateral de seleção de penas e estatísticas" />
+                                    <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <CheckBox Content="Degrau (Step)" IsChecked="{Binding ChartStepInterpolation}"
+                                                  VerticalAlignment="Center" Margin="0,0,12,0"
+                                                  ToolTip="Desmarque para interpolação linear entre pontos" />
+                                        <CheckBox Content="Pontos (●)" IsChecked="{Binding ShowChartSamplePoints}"
+                                                  VerticalAlignment="Center" Margin="0,0,12,0"
+                                                  ToolTip="Destaca os pontos individuais de amostragem sobre as curvas" />
+                                        <CheckBox Content="Grade" IsChecked="{Binding ShowChartGrid}"
+                                                  VerticalAlignment="Center" Margin="0,0,12,0"
+                                                  ToolTip="Mostrar/ocultar linhas de grade" />
+                                        <CheckBox Content="Mira (Crosshair)" IsChecked="{Binding ShowChartCrosshair}"
+                                                  VerticalAlignment="Center" Margin="0,0,12,0"
+                                                  ToolTip="Exibe valores exatos de todas as penas ao passar o mouse" />
+                                        <CheckBox Content="Cursores A/B" IsChecked="{Binding ShowChartCursors}"
+                                                  VerticalAlignment="Center" Margin="0,0,6,0"
+                                                  ToolTip="Ativa os cursores verticais de medição A e B (clique ou arraste no gráfico)" />
+                                        <Button Click="ChartCenterCursors_Click" Padding="6,1" Margin="0,0,10,0"
+                                                Content="Centralizar A/B" ToolTip="Reposiciona os cursores A e B no centro da janela atual" />
+                                        <TextBlock Text="{Binding CursorDeltaText}"
+                                                   FontFamily="{StaticResource MonoFont}"
+                                                   FontWeight="SemiBold"
+                                                   VerticalAlignment="Center" />
+                                    </WrapPanel>
+                                </DockPanel>
+                            </Border>
+
+                            <!-- Área Principal do Gráfico + Tabela Inspetora (Cursores A, B e Mira) + Painel Lateral de Penas -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <Grid Grid.Column="0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" MinHeight="140" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <controls:TrendChartControl x:Name="TrendPlot" Grid.Row="0" />
+
+                                    <Border Grid.Row="1"
+                                            BorderBrush="{StaticResource BorderBrush}"
+                                            BorderThickness="0,1,0,0"
+                                            Background="{StaticResource SurfaceAltBrush}">
+                                        <DataGrid x:Name="ChartInspectorGrid"
+                                                  AutoGenerateColumns="False"
+                                                  IsReadOnly="True"
+                                                  CanUserAddRows="False"
+                                                  CanUserDeleteRows="False"
+                                                  CanUserReorderColumns="False"
+                                                  CanUserSortColumns="False"
+                                                  HeadersVisibility="Column"
+                                                  GridLinesVisibility="All"
+                                                  VerticalGridLinesBrush="{StaticResource BorderBrush}"
+                                                  HorizontalGridLinesBrush="{StaticResource BorderBrush}"
+                                                  FontFamily="{StaticResource MonoFont}"
+                                                  FontSize="11.5"
+                                                  RowHeight="23"
+                                                  BorderThickness="0"
+                                                  ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                                  ScrollViewer.HorizontalScrollBarVisibility="Auto" />
+                                    </Border>
+                                </Grid>
+
+                                <Border Grid.Column="1" Width="250"
+                                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="1,0,0,0"
+                                        Background="{StaticResource SurfaceAltBrush}">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ShowChartPensPanel}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <DockPanel>
+                                        <DockPanel DockPanel.Dock="Top" Margin="6,6,6,4">
+                                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                                <Button Command="{Binding SelectAllChartPensCommand}" Padding="5,1" Margin="0,0,3,0"
+                                                        Content="Todas" FontSize="11" ToolTip="Exibir todas as penas no gráfico" />
+                                                <Button Command="{Binding ClearAllChartPensCommand}" Padding="5,1"
+                                                        Content="Nenhuma" FontSize="11" ToolTip="Ocultar todas as penas do gráfico" />
+                                                <Button Command="{Binding RemoveTagCommand}" CommandParameter="{Binding SelectedMonitoredTag}"
+                                                        Padding="5,1" Margin="3,0,0,0"
+                                                        Content="× Excluir" FontSize="11" FontWeight="SemiBold"
+                                                        ToolTip="Excluir a tag selecionada da planilha e do gráfico" />
+                                            </StackPanel>
+                                            <TextBlock Text="PENAS / SINAIS" FontWeight="SemiBold" FontSize="11"
+                                                       Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                        </DockPanel>
+
+                                        <ListBox x:Name="ChartPensListBox"
+                                                 ItemsSource="{Binding MonitoredTags}"
+                                                 SelectedItem="{Binding SelectedMonitoredTag, Mode=TwoWay}"
+                                                 KeyDown="ChartPensListBox_KeyDown"
+                                                 Background="Transparent" BorderThickness="0" Padding="4,2"
+                                                 HorizontalContentAlignment="Stretch">
+                                            <ListBox.ItemContainerStyle>
+                                                <Style TargetType="ListBoxItem">
+                                                    <Setter Property="Padding" Value="0" />
+                                                    <Setter Property="Margin" Value="0,1" />
+                                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                                    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                                                    <Style.Resources>
+                                                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent" />
+                                                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="Transparent" />
+                                                    </Style.Resources>
+                                                </Style>
+                                            </ListBox.ItemContainerStyle>
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate DataType="{x:Type vm:MonitoredTagViewModel}">
+                                                    <Border x:Name="PenBorder" Padding="4,3" Margin="0,1" CornerRadius="3"
+                                                            Background="{StaticResource SurfaceBrush}"
+                                                            BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                                                        <Border.ContextMenu>
+                                                            <ContextMenu>
+                                                                <MenuItem Header="🗑 Deletar esta tag da planilha e do gráfico"
+                                                                          InputGestureText="Delete"
+                                                                          FontWeight="SemiBold"
+                                                                          Click="RemovePenMenuItem_Click" />
+                                                                <Separator />
+                                                                <MenuItem Header="Alternar visibilidade no gráfico (Plot)"
+                                                                          IsCheckable="True" IsChecked="{Binding IsPlotted}" />
+                                                                <MenuItem Header="🏷 Definir como Gatilho de Ciclo"
+                                                                          Click="SetPenAsCycleTriggerMenuItem_Click" />
+                                                                <MenuItem Header="📋 Copiar Endereço / NodeId"
+                                                                          Click="CopyPenAddress_Click" />
+                                                            </ContextMenu>
+                                                        </Border.ContextMenu>
+                                                        <StackPanel>
+                                                            <DockPanel>
+                                                                <CheckBox IsChecked="{Binding IsPlotted, UpdateSourceTrigger=PropertyChanged}"
+                                                                          VerticalAlignment="Center" Margin="0,0,5,0" />
+                                                                <Rectangle Width="10" Height="10" RadiusX="2" RadiusY="2"
+                                                                           Fill="{Binding PenBrush}" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                                                <Button DockPanel.Dock="Right" Content="×" FontWeight="Bold" FontSize="10"
+                                                                        Padding="4,0" Margin="4,0,0,0" VerticalAlignment="Center"
+                                                                        ToolTip="Excluir esta tag da planilha e do gráfico (Delete)"
+                                                                        Command="{Binding DataContext.RemoveTagCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                        CommandParameter="{Binding}" />
+                                                                <TextBlock Text="{Binding ValueText}" DockPanel.Dock="Right"
+                                                                           FontFamily="{StaticResource MonoFont}" FontWeight="SemiBold"
+                                                                           FontSize="11" VerticalAlignment="Center" Margin="6,0,0,0" />
+                                                                <TextBlock Text="{Binding Alias}" FontWeight="SemiBold" FontSize="11.5"
+                                                                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center"
+                                                                           ToolTip="{Binding Address}" />
+                                                            </DockPanel>
+                                                            <DockPanel Margin="18,2,0,0">
+                                                                <TextBlock Text="{Binding DataType}" FontSize="10"
+                                                                           Foreground="{StaticResource TextSecondaryBrush}" />
+                                                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                                                    <TextBlock Text="{Binding MinValueText, StringFormat=Min:{0}}" FontSize="10"
+                                                                               FontFamily="{StaticResource MonoFont}"
+                                                                               Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,6,0" />
+                                                                    <TextBlock Text="{Binding MaxValueText, StringFormat=Máx:{0}}" FontSize="10"
+                                                                               FontFamily="{StaticResource MonoFont}"
+                                                                               Foreground="{StaticResource TextSecondaryBrush}" />
+                                                                </StackPanel>
+                                                            </DockPanel>
+                                                        </StackPanel>
+                                                    </Border>
+                                                    <DataTemplate.Triggers>
+                                                        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                                                            <Setter TargetName="PenBorder" Property="BorderBrush" Value="#00B4F0" />
+                                                            <Setter TargetName="PenBorder" Property="BorderThickness" Value="2" />
+                                                            <Setter TargetName="PenBorder" Property="Background" Value="{StaticResource AccentSoftBrush}" />
+                                                        </DataTrigger>
+                                                    </DataTemplate.Triggers>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
+                                    </DockPanel>
+                                </Border>
+                            </Grid>
+                        </DockPanel>
+                    </TabItem>
+
+                    <!-- ===== Aba 2: Tags e Valores Atuais ===== -->
+                    <TabItem Header="{Binding [Tab_CurrentValues], Source={x:Static loc:Loc.Instance}}"
+                             services:HelpProvider.TopicId="IDH_TAG_BROWSER">
+                        <DataGrid ItemsSource="{Binding MonitoredTags}"
+                                  SelectedItem="{Binding SelectedMonitoredTag}"
+                                  IsReadOnly="False">
+                            <DataGrid.Columns>
+                                <DataGridCheckBoxColumn Width="60" Binding="{Binding IsPlotted, UpdateSourceTrigger=PropertyChanged}"
+                                                        Header="Plot" />
+                                <DataGridTextColumn Width="1.4*" Binding="{Binding Alias}"
+                                                    Header="{Binding [Col_Tag], Source={x:Static loc:Loc.Instance}}" />
+                                <DataGridTextColumn Width="1.6*" Binding="{Binding Address}" IsReadOnly="True"
+                                                    Header="{Binding [Col_Address], Source={x:Static loc:Loc.Instance}}" />
+                                <DataGridTextColumn Width="0.8*" Binding="{Binding DataType}" IsReadOnly="True"
+                                                    Header="{Binding [Col_DataType], Source={x:Static loc:Loc.Instance}}" />
+                                <DataGridTextColumn Width="1*" Binding="{Binding ValueText}" IsReadOnly="True"
+                                                    Header="{Binding [Col_Value], Source={x:Static loc:Loc.Instance}}" />
+                                <DataGridTextColumn Width="0.8*" Binding="{Binding Quality}" IsReadOnly="True"
+                                                    Header="{Binding [Col_Quality], Source={x:Static loc:Loc.Instance}}" />
+                                <DataGridTextColumn Width="1.4*" Binding="{Binding TimestampUtc, StringFormat=yyyy-MM-dd HH:mm:ss.fff}" IsReadOnly="True"
+                                                    Header="{Binding [Col_Timestamp], Source={x:Static loc:Loc.Instance}}" />
+                                <DataGridTemplateColumn Width="50" Header="Ação">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="×" FontWeight="Bold" Padding="6,0"
+                                                    ToolTip="Excluir esta tag"
+                                                    Command="{Binding DataContext.RemoveTagCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+                </TabControl>
+
+                <GridSplitter Grid.Row="1" Height="8" HorizontalAlignment="Stretch" ResizeBehavior="PreviousAndNext" />
+
+                <!-- Log -->
+                <Border Grid.Row="2" Style="{StaticResource Panel}"
+                        services:HelpProvider.TopicId="IDH_LOG_PANEL">
+                    <DockPanel>
+                        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4">
+                            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
+                                <Button Command="{Binding ClearLogsCommand}" Content="Limpar" Margin="0,0,4,0" Padding="6,1" FontSize="11" ToolTip="Limpar logs exibidos na tela" />
+                                <Button Command="{Binding OpenLogsFolderCommand}" Content="Pasta de Logs…" Margin="0,0,10,0" Padding="6,1" FontSize="11" ToolTip="Abrir a pasta que contém os arquivos de log gravados em disco" />
+
+                                <TextBlock Text="Filtros:" Margin="0,0,8,0" VerticalAlignment="Center" Style="{StaticResource SecondaryText}" FontSize="11" />
+                                <CheckBox Content="Informação" IsChecked="{Binding LogShowInformation}" Margin="0,0,10,0" VerticalAlignment="Center" FontSize="11" />
+                                <CheckBox Content="Avisos" IsChecked="{Binding LogShowWarning}" Margin="0,0,10,0" VerticalAlignment="Center" FontSize="11" />
+                                <CheckBox Content="Erros" IsChecked="{Binding LogShowError}" Margin="0,0,10,0" VerticalAlignment="Center" FontSize="11" />
+                                <CheckBox Content="Debug" IsChecked="{Binding LogShowDebug}" Margin="0,0,4,0" VerticalAlignment="Center" FontSize="11" />
+                            </StackPanel>
+                            <TextBlock Style="{StaticResource PanelHeaderText}"
+                                       Text="{Binding [Panel_Log], Source={x:Static loc:Loc.Instance}}" />
+                        </DockPanel>
+                        <DataGrid x:Name="LogDataGrid" ItemsSource="{Binding FilteredLogEntries}" RowHeight="22" FontSize="12"
+                                  AlternatingRowBackground="{StaticResource SurfaceBrush}">
+                            <DataGrid.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="📋 Copiar Mensagem de Log" Click="CopySelectedLog_Click" />
+                                    <MenuItem Header="📋 Copiar Todos os Logs Exibidos" Click="CopyAllLogs_Click" />
+                                    <Separator />
+                                    <MenuItem Header="Limpar logs da tela" Command="{Binding ClearLogsCommand}" />
+                                    <MenuItem Header="Abrir pasta de logs…" Command="{Binding OpenLogsFolderCommand}" />
+                                </ContextMenu>
+                            </DataGrid.ContextMenu>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Width="150" Binding="{Binding Timestamp, StringFormat=yyyy-MM-dd HH:mm:ss.fff}"
+                                                    Header="{Binding [Col_Timestamp], Source={x:Static loc:Loc.Instance}}" />
+                                <DataGridTextColumn Width="90" Binding="{Binding Level}"
+                                                    Header="{Binding [Col_Level], Source={x:Static loc:Loc.Instance}}" />
+                                <DataGridTextColumn Width="*" Binding="{Binding Message}"
+                                                    Header="{Binding [Col_Message], Source={x:Static loc:Loc.Instance}}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </DockPanel>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- ===== Barra de status ===== -->
+        <StatusBar Grid.Row="3">
+            <StatusBarItem>
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse>
+                        <Ellipse.Style>
+                            <Style TargetType="Ellipse" BasedOn="{StaticResource StatusDot}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsOnline}" Value="True">
+                                        <Setter Property="Fill" Value="{StaticResource GoodBrush}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                    </Ellipse>
+                    <TextBlock Text="{Binding OnlineStateText}" Style="{StaticResource SecondaryText}" />
+                </StackPanel>
+            </StatusBarItem>
+            <Separator />
+            <StatusBarItem><TextBlock Text="{Binding ConnectionsText}" Style="{StaticResource SecondaryText}" /></StatusBarItem>
+            <Separator />
+            <StatusBarItem><TextBlock Text="{Binding EventsPerSecondText}" Style="{StaticResource SecondaryText}" /></StatusBarItem>
+            <Separator />
+            <StatusBarItem><TextBlock Text="{Binding BufferText}" Style="{StaticResource SecondaryText}" /></StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right">
+                <TextBlock Text="{Binding SessionTimeText}" Style="{StaticResource SecondaryText}" FontFamily="{StaticResource MonoFont}" />
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>

@@ -1,0 +1,39 @@
+<Window x:Class="DMapFactory.App.Views.MarkerInputDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Inserir Marcador"
+        Width="440" SizeToContent="Height" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource BackgroundBrush}"
+        FontFamily="{StaticResource UiFont}" FontSize="13"
+        Foreground="{StaticResource TextPrimaryBrush}">
+
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
+            <TextBlock Style="{StaticResource Icon}" Text="&#xE7C1;" FontSize="20" Foreground="{StaticResource MarkerBorderBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
+            <TextBlock x:Name="DialogHeaderText" Text="Novo Marcador de Sessão" FontWeight="SemiBold" FontSize="15" VerticalAlignment="Center" />
+        </StackPanel>
+
+        <TextBlock Grid.Row="1" Style="{StaticResource SecondaryText}" Margin="0,0,0,8"
+                   Text="Digite uma etiqueta ou observação para este instante do histórico (será exibida na planilha e no gráfico):"
+                   TextWrapping="Wrap" />
+
+        <TextBox Grid.Row="2" x:Name="MarkerTextBox"
+                 Padding="8,6" Margin="0,0,0,16"
+                 FontFamily="{StaticResource UiFont}" FontSize="13"
+                 KeyDown="MarkerTextBox_KeyDown" />
+
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Cancelar" IsCancel="True" Padding="14,5" Margin="0,0,8,0" />
+            <Button x:Name="ConfirmButton" Content="Inserir Marcador" IsDefault="True" Padding="14,5" Click="OnConfirmClick"
+                    Background="{StaticResource MarkerBrush}" BorderBrush="{StaticResource MarkerBorderBrush}" FontWeight="SemiBold" />
+        </StackPanel>
+    </Grid>
+</Window>

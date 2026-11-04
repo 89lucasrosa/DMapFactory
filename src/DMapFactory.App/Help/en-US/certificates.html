@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Certificate Manager - DMapFactory Help</title>
+  <link rel="stylesheet" href="../assets/css/help.css">
+  <script defer src="../assets/js/help.js"></script>
+</head>
+<body>
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <a href="index.html" class="brand">
+      <span class="brand-badge">DMAP</span>
+      <div>
+        <div class="brand-title">DMapFactory</div>
+        <div class="brand-subtitle">User Manual &amp; Context-Sensitive Help</div>
+      </div>
+    </a>
+    <div class="topbar-actions">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" placeholder="Search topics..." />
+      </div>
+      <div class="lang-switch">
+        <a href="#" class="lang-btn" data-lang="pt-BR">PT</a>
+        <a href="#" class="lang-btn active" data-lang="en-US">EN</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Layout Container -->
+  <div class="layout-container">
+    
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+      <div class="sidebar-heading">Documentation</div>
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link">
+            <span class="nav-icon">📖</span> Overview
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="opc-connection.html" class="nav-link">
+            <span class="nav-icon">🔌</span> OPC Connections &amp; Tags
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="certificates.html" class="nav-link active">
+            <span class="nav-icon">🔐</span> Security Certificates
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="spreadsheet.html" class="nav-link">
+            <span class="nav-icon">📊</span> Spreadsheet Mode
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="chart.html" class="nav-link">
+            <span class="nav-icon">📈</span> Trend Chart &amp; Pens
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="marker.html" class="nav-link">
+            <span class="nav-icon">🚩</span> Marker &amp; Sessions
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="shortcuts.html" class="nav-link">
+            <span class="nav-icon">⌨️</span> Shortcuts &amp; Diagnostics
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Content Area -->
+    <main class="content-wrapper">
+      <div class="breadcrumb">
+        <a href="index.html">DMapFactory Help</a> &gt; <span>Security Certificates</span>
+      </div>
+
+      <header class="topic-header">
+        <h1>OPC UA Certificate Manager</h1>
+        <div class="topic-subtitle">Public Key Infrastructure (PKI), mutual trust validation, and secure channel encryption</div>
+      </header>
+
+      <section>
+        <h2>OPC UA Security Principles</h2>
+        <p>The OPC UA specification enforces point-to-point authentication and transport encryption via X.509 digital certificates. When connecting using secure profiles (<code>Sign</code> or <code>SignAndEncrypt</code>), <strong>mutual trust</strong> is mandatory:</p>
+        <ol>
+          <li>The <strong>Server</strong> must trust the <strong>DMapFactory (Client)</strong> certificate.</li>
+          <li>The <strong>DMapFactory Client</strong> must trust the <strong>Server</strong> certificate.</li>
+        </ol>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">⚠️ Common Failure: BadCertificateUntrusted</div>
+          If connection negotiation fails with <code>BadCertificateUntrusted</code> or <code>BadSecurityChecksFailed</code>, either the DMapFactory public key has not been authorized in the server's trusted list, or the server's certificate has not yet been accepted into DMapFactory's trusted certificate store.
+        </div>
+
+        <h2>Accessing the Certificate Manager</h2>
+        <p>Open the certificate management interface by clicking the <strong>Certificates</strong> button on the toolbar or via the menu: <em>File &gt; OPC UA Certificate Manager…</em>.</p>
+
+        <h2>Available Management Operations</h2>
+
+        <h3>1. Application Client Certificate</h3>
+        <ul>
+          <li><strong>Generate New Certificate</strong>: creates a fresh self-signed RSA 2048/4096-bit certificate with SHA-256 signature, embedding the local machine's ApplicationURI and DNS hostnames.</li>
+          <li><strong>Export Public Certificate (.der / .cer)</strong>: exports the public key file to copy and import into the server/PLC trusted client store.</li>
+          <li><strong>Import Custom Certificate (.pfx / .p12)</strong>: installs an enterprise PKI certificate issued by an internal corporate Certificate Authority (CA), complete with its private key and password.</li>
+        </ul>
+
+        <h3>2. Trusted Server Certificates</h3>
+        <ul>
+          <li><strong>Import Server Certificate</strong>: imports public certificate files (<code>.der</code> or <code>.cer</code>) provided by the server or PLC vendor directly into DMapFactory's trusted store (<em>trusted/certs</em>).</li>
+          <li><strong>Remove Certificate</strong>: revokes server trust when equipment is decommissioned or keys are rotated.</li>
+        </ul>
+      </section>
+
+      <footer class="topic-footer">
+        <a href="opc-connection.html" class="btn-nav">&larr; Previous: OPC Connections &amp; Tags</a>
+        <a href="spreadsheet.html" class="btn-nav">Next: Spreadsheet Mode &rarr;</a>
+      </footer>
+    </main>
+  </div>
+
+</body>
+</html>

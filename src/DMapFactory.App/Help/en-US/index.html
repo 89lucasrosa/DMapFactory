@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overview &amp; Introduction - DMapFactory Help</title>
+  <link rel="stylesheet" href="../assets/css/help.css">
+  <script defer src="../assets/js/help.js"></script>
+</head>
+<body>
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <a href="index.html" class="brand">
+      <span class="brand-badge">DMAP</span>
+      <div>
+        <div class="brand-title">DMapFactory</div>
+        <div class="brand-subtitle">User Manual &amp; Context-Sensitive Help</div>
+      </div>
+    </a>
+    <div class="topbar-actions">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" placeholder="Search topics..." />
+      </div>
+      <div class="lang-switch">
+        <a href="#" class="lang-btn" data-lang="pt-BR">PT</a>
+        <a href="#" class="lang-btn active" data-lang="en-US">EN</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Layout Container -->
+  <div class="layout-container">
+    
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+      <div class="sidebar-heading">Documentation</div>
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link active">
+            <span class="nav-icon">📖</span> Overview
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="opc-connection.html" class="nav-link">
+            <span class="nav-icon">🔌</span> OPC Connections &amp; Tags
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="certificates.html" class="nav-link">
+            <span class="nav-icon">🔐</span> Security Certificates
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="spreadsheet.html" class="nav-link">
+            <span class="nav-icon">📊</span> Spreadsheet Mode
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="chart.html" class="nav-link">
+            <span class="nav-icon">📈</span> Trend Chart &amp; Pens
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="marker.html" class="nav-link">
+            <span class="nav-icon">🚩</span> Marker &amp; Sessions
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="shortcuts.html" class="nav-link">
+            <span class="nav-icon">⌨️</span> Shortcuts &amp; Diagnostics
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Content Area -->
+    <main class="content-wrapper">
+      <div class="breadcrumb">
+        <a href="index.html">DMapFactory Help</a> &gt; <span>Overview</span>
+      </div>
+
+      <header class="topic-header">
+        <h1>DMapFactory Overview</h1>
+        <div class="topic-subtitle">Industrial OPC UA Real-Time Data Acquisition, Analysis, and Visualization System</div>
+      </header>
+
+      <section>
+        <h2>Software Introduction</h2>
+        <p><strong>DMapFactory</strong> is a high-performance desktop engineering tool designed for real-time monitoring, diagnostic analysis, and telemetry recording of industrial data via the <strong>OPC UA (Open Platform Communications Unified Architecture)</strong> protocol.</p>
+        <p>Built with .NET 10 and modern WPF, it pairs temporal precision sampling with dual synchronized visualization: <strong>Wide-Format Temporal Spreadsheet</strong> and <strong>Continuous Trend Charting</strong>.</p>
+
+        <div class="callout callout-info">
+          <div class="callout-title">💡 Context-Sensitive Help (F1)</div>
+          At any moment while using the application, press <kbd>F1</kbd> to immediately launch the exact help topic associated with the active screen, tab, or control you are working with.
+        </div>
+
+        <h2>Core Modules</h2>
+        <div class="card-grid">
+          <a href="opc-connection.html" class="card">
+            <div class="card-icon">🔌</div>
+            <div class="card-title">OPC UA Communication</div>
+            <div class="card-desc">Multi-server connectivity, hierarchical node browsing, and fast batch tag selection.</div>
+          </a>
+          <a href="certificates.html" class="card">
+            <div class="card-icon">🔐</div>
+            <div class="card-title">Certificate Management</div>
+            <div class="card-desc">Application certificate generator, PFX private key import, and trusted server certificate store.</div>
+          </a>
+          <a href="spreadsheet.html" class="card">
+            <div class="card-icon">📊</div>
+            <div class="card-title">Spreadsheet Mode</div>
+            <div class="card-desc">Wide-format tabular layout, space-saving vertical column headers, and color-coded boolean state rendering.</div>
+          </a>
+          <a href="chart.html" class="card">
+            <div class="card-icon">📈</div>
+            <div class="card-title">Trend Charting</div>
+            <div class="card-desc">High-performance ScottPlot engine, interactive crosshair, A/B measurement cursors, and pen sidebar.</div>
+          </a>
+          <a href="marker.html" class="card">
+            <div class="card-icon">🚩</div>
+            <div class="card-title">Sample Marker</div>
+            <div class="card-desc">Timeline operational event annotation synchronized across both grid and chart displays.</div>
+          </a>
+          <a href="shortcuts.html" class="card">
+            <div class="card-icon">⌨️</div>
+            <div class="card-title">Shortcuts &amp; Diagnostics</div>
+            <div class="card-desc">Quick productivity key reference, memory buffer health indicators, event throughput, and operational log.</div>
+          </a>
+        </div>
+
+        <h2 id="highlights">Release Highlights &amp; Productivity Enhancements</h2>
+        <div class="callout callout-tip">
+          <div class="callout-title">⚡ User Experience &amp; High Performance</div>
+          This release delivers a major architectural upgrade engineered for operational agility and responsiveness:
+          <ul style="margin-top: 8px;">
+            <li><strong>Global Keyboard Shortcuts</strong>: comprehensive keyboard control (<kbd>Ctrl+N</kbd>, <kbd>Ctrl+O</kbd>, <kbd>Ctrl+S</kbd>, <kbd>Ctrl+E</kbd>, <kbd>Ctrl+M</kbd>, <kbd>Ctrl+1/2/3</kbd>, <kbd>F5</kbd>, <kbd>Space</kbd>, <kbd>Esc</kbd>).</li>
+            <li><strong>Context Menus Across All Modules</strong>: right-click access across spreadsheet rows, headers, trend chart, OPC UA tree, pen list, and event log.</li>
+            <li><strong>Bidirectional Cross-Synchronization</strong>: effortlessly locate timestamps from spreadsheet to chart, and vice-versa, with a single click.</li>
+            <li><strong>Smart Auto-Scroll Pause</strong>: seamless manual scrolling for row inspection without disruptive auto-scroll jumps.</li>
+            <li><strong>OPC UA Quick Node Search</strong>: high-speed text filtering with automatic folder hierarchy expansion.</li>
+            <li><strong>Custom Machine Cycle Triggers</strong>: designate any boolean variable as a machine cycle trigger with automated $\Delta t$ and cycle index calculation.</li>
+            <li><strong>Zero-GC Circular Buffer &amp; Peak-Preserving Downsampling</strong>: rock-solid 60 FPS plotting and sub-millisecond query performance.</li>
+          </ul>
+        </div>
+
+        <h2 id="log-panel">Operational Dashboard &amp; Event Logging</h2>
+        <p>The lower area of the application provides an integrated <strong>Status Bar</strong> and <strong>Event Log</strong> panel:</p>
+        <ul>
+          <li><strong>Online / Offline Status</strong>: displays live sampling state (Green = Online, Gray = Offline).</li>
+          <li><strong>Connection Counter</strong>: number of active and healthy server connections.</li>
+          <li><strong>Events/sec</strong>: instantaneous throughput of samples and value changes processed per second.</li>
+          <li><strong>Buffer Size</strong>: current volume of samples stored in the internal circular memory ring.</li>
+          <li><strong>Session Duration</strong>: running timer in <code>HH:mm:ss</code> format measuring acquisition elapsed time.</li>
+          <li><strong>Active Cycle Indicator</strong>: tracks live machine operational cycles detected by the cycle trigger.</li>
+        </ul>
+      </section>
+
+      <footer class="topic-footer">
+        <div>DMapFactory &copy; 2026 - Official Documentation</div>
+        <a href="opc-connection.html" class="btn-nav">Next: OPC Connections &amp; Tags &rarr;</a>
+      </footer>
+    </main>
+  </div>
+
+</body>
+</html>

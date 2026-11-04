@@ -1,0 +1,40 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="DMapFactory DocGen">
+<!-- Sitemap 1.0 -->
+</HEAD><BODY>
+<OBJECT type="text/site properties">
+	<param name="ImageType" value="Folder">
+</OBJECT>
+<UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Overview &amp; Introduction">
+		<param name="Local" value="..\en-US\index.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="OPC UA Connections &amp; Tag Browser">
+		<param name="Local" value="..\en-US\opc-connection.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Security Certificate Manager">
+		<param name="Local" value="..\en-US\certificates.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Spreadsheet Mode (Wide Format)">
+		<param name="Local" value="..\en-US\spreadsheet.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Trend Chart &amp; Pen Panel">
+		<param name="Local" value="..\en-US\chart.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Sample Marker &amp; Session Recording">
+		<param name="Local" value="..\en-US\marker.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Keyboard Shortcuts &amp; Diagnostics">
+		<param name="Local" value="..\en-US\shortcuts.html">
+		</OBJECT>
+</UL>
+</BODY></HTML>

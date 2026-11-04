@@ -1,0 +1,14 @@
+// ============================================================================
+// DMapFactory Help System - Context-Sensitive ALIAS Section (.ali)
+// ============================================================================
+
+IDH_OVERVIEW=index.html
+IDH_OPC_CONNECTION=conexao-opc.html
+IDH_TAG_BROWSER=conexao-opc.html#navegador-tags
+IDH_CERTIFICATES=certificados.html
+IDH_SPREADSHEET=planilha.html
+IDH_CHART=grafico.html
+IDH_PEN_PANEL=grafico.html#painel-penas
+IDH_MARKER=marcador.html
+IDH_SHORTCUTS=atalhos.html
+IDH_LOG_PANEL=atalhos.html#diagnosticos

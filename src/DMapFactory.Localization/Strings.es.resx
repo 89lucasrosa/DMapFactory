@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="App_Title" xml:space="preserve"><value>DMapFactory — Diagnóstico e Histórico OPC UA</value></data>
+  <data name="Menu_File" xml:space="preserve"><value>_Archivo</value></data>
+  <data name="Menu_NewProject" xml:space="preserve"><value>Nuevo proyecto</value></data>
+  <data name="Menu_OpenProject" xml:space="preserve"><value>Abrir proyecto…</value></data>
+  <data name="Menu_SaveProject" xml:space="preserve"><value>Guardar proyecto</value></data>
+  <data name="Menu_OpenSession" xml:space="preserve"><value>Abrir sesión grabada…</value></data>
+  <data name="Menu_Exit" xml:space="preserve"><value>Salir</value></data>
+  <data name="Menu_View" xml:space="preserve"><value>_Ver</value></data>
+  <data name="Menu_Language" xml:space="preserve"><value>Idioma</value></data>
+  <data name="Menu_Help" xml:space="preserve"><value>A_yuda</value></data>
+  <data name="Menu_HelpTopics" xml:space="preserve"><value>Manual de Ayuda (F1)</value></data>
+  <data name="Menu_About" xml:space="preserve"><value>Acerca de</value></data>
+  <data name="Toolbar_GoOnline" xml:space="preserve"><value>Conectar en línea</value></data>
+  <data name="Toolbar_GoOffline" xml:space="preserve"><value>Desconectar</value></data>
+  <data name="Toolbar_Marker" xml:space="preserve"><value>Marcador</value></data>
+  <data name="Toolbar_Export" xml:space="preserve"><value>Exportar</value></data>
+  <data name="Toolbar_AddConnection" xml:space="preserve"><value>Nueva conexión</value></data>
+  <data name="Toolbar_EditConnection" xml:space="preserve"><value>Editar conexión</value></data>
+  <data name="Toolbar_Connect" xml:space="preserve"><value>Conectar</value></data>
+  <data name="Toolbar_Disconnect" xml:space="preserve"><value>Desconectar</value></data>
+  <data name="Toolbar_AddSelectedTag" xml:space="preserve"><value>Monitorear nodo seleccionado</value></data>
+  <data name="Toolbar_AddFolderTags" xml:space="preserve"><value>Monitorear todas las variables de la carpeta</value></data>
+  <data name="Toolbar_RemoveTag" xml:space="preserve"><value>Eliminar tag</value></data>
+  <data name="Toolbar_ExportCert" xml:space="preserve"><value>Exportar certificado (.der)</value></data>
+  <data name="Panel_Connections" xml:space="preserve"><value>Conexiones</value></data>
+  <data name="Panel_Browser" xml:space="preserve"><value>Navegador OPC UA</value></data>
+  <data name="Panel_NodeDetails" xml:space="preserve"><value>Atributos del Nodo</value></data>
+  <data name="Panel_Log" xml:space="preserve"><value>Registro</value></data>
+  <data name="Tab_Grid" xml:space="preserve"><value>Planilla</value></data>
+  <data name="Tab_Chart" xml:space="preserve"><value>Gráfico</value></data>
+  <data name="Tab_CurrentValues" xml:space="preserve"><value>Tags y Valores Actuales</value></data>
+  <data name="Status_Offline" xml:space="preserve"><value>Fuera de línea</value></data>
+  <data name="Status_Online" xml:space="preserve"><value>En línea</value></data>
+  <data name="Status_EventsPerSecond" xml:space="preserve"><value>{0:N0} eventos/s</value></data>
+  <data name="Status_Buffer" xml:space="preserve"><value>Búfer {0:N0}%</value></data>
+  <data name="Status_SessionTime" xml:space="preserve"><value>Sesión {0}</value></data>
+  <data name="Status_Connections" xml:space="preserve"><value>{0} de {1} conexiones activas</value></data>
+  <data name="Placeholder_Browser" xml:space="preserve"><value>Conéctese a un servidor para navegar por su espacio de direcciones.</value></data>
+  <data name="Placeholder_Grid" xml:space="preserve"><value>La planilla agregará una nueva fila en cada cambio de señal.</value></data>
+  <data name="Placeholder_Chart" xml:space="preserve"><value>El gráfico de tendencia se mostrará aquí.</value></data>
+  <data name="Placeholder_Values" xml:space="preserve"><value>No hay conexiones configuradas.</value></data>
+  <data name="Col_Tag" xml:space="preserve"><value>Tag (Alias)</value></data>
+  <data name="Col_Address" xml:space="preserve"><value>NodeId</value></data>
+  <data name="Col_DataType" xml:space="preserve"><value>Tipo</value></data>
+  <data name="Col_Value" xml:space="preserve"><value>Valor</value></data>
+  <data name="Col_Quality" xml:space="preserve"><value>Calidad</value></data>
+  <data name="Col_Timestamp" xml:space="preserve"><value>Fecha/hora</value></data>
+  <data name="Col_Origin" xml:space="preserve"><value>Origen TS</value></data>
+  <data name="Col_Level" xml:space="preserve"><value>Nivel</value></data>
+  <data name="Col_Message" xml:space="preserve"><value>Mensaje</value></data>
+  <data name="ConnDialog_Title" xml:space="preserve"><value>Configuración de Conexión OPC UA</value></data>
+  <data name="ConnDialog_Name" xml:space="preserve"><value>Nombre de la conexión</value></data>
+  <data name="ConnDialog_Endpoint" xml:space="preserve"><value>URL del Endpoint</value></data>
+  <data name="ConnDialog_Discover" xml:space="preserve"><value>Descubrir endpoints</value></data>
+  <data name="ConnDialog_DiscoveredList" xml:space="preserve"><value>Endpoints anunciados por el servidor</value></data>
+  <data name="ConnDialog_SecurityPolicy" xml:space="preserve"><value>Política de seguridad</value></data>
+  <data name="ConnDialog_SecurityMode" xml:space="preserve"><value>Modo de seguridad</value></data>
+  <data name="ConnDialog_Auth" xml:space="preserve"><value>Autenticación</value></data>
+  <data name="ConnDialog_UserName" xml:space="preserve"><value>Usuario</value></data>
+  <data name="ConnDialog_Password" xml:space="preserve"><value>Contraseña</value></data>
+  <data name="ConnDialog_Test" xml:space="preserve"><value>Probar conexión</value></data>
+  <data name="ConnDialog_Save" xml:space="preserve"><value>Guardar</value></data>
+  <data name="ConnDialog_Cancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="Log_AppStarted" xml:space="preserve"><value>Aplicación iniciada (versión {0}).</value></data>
+  <data name="Log_LanguageChanged" xml:space="preserve"><value>Idioma cambiado a {0}.</value></data>
+  <data name="About_Text" xml:space="preserve"><value>DMapFactory {0}
+Herramienta de código abierto (MIT) para diagnóstico de señales de PLC, seguimiento del ciclo de máquina e historial de datos vía OPC UA.</value></data>
+  <data name="Grid_VerticalHeaders" xml:space="preserve"><value>Títulos verticales</value></data>
+  <data name="Menu_SaveProjectAs" xml:space="preserve"><value>Guardar proyecto como…</value></data>
+  <data name="ConnDialog_UserCert" xml:space="preserve"><value>Certificado de usuario (.pfx/.der)</value></data>
+</root>

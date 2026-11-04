@@ -1,0 +1,294 @@
+FUNCTION_BLOCK "FB_MachineSimulation"
+{ S7_Optimized_Access := 'FALSE' }
+VERSION : 0.1
+// ==============================================================================
+// Bloco de Simulação de Máquina para Teste de Coleta de Dados (DMapFactory)
+// Compatível com Siemens S7-1500 / S7-1200 (TIA Portal V14..V19+)
+// Acesso Não-Otimizado (Standard DB) para leitura por offset ou simbólico.
+// ==============================================================================
+
+VAR_INPUT
+    bEnableSim : BOOL := TRUE;       // Habilita a simulação
+    bResetCounters : BOOL := FALSE;   // Reseta contadores de produção e falhas
+    bForceFault : BOOL := FALSE;      // Força condição de falha manual para teste
+    bForceBlocked : BOOL := FALSE;    // Força condição de Blocked para teste
+    bForceStarved : BOOL := FALSE;    // Força condição de Starved para teste
+    bModeSelectAuto : BOOL := TRUE;   // Seleção de modo: TRUE = Auto, FALSE = Manual
+END_VAR
+
+VAR_OUTPUT
+    // --- Tipos de Dados Solicitados ---
+    
+    // 1. BOOL: Sinais de status e execução
+    bAutoMode : BOOL := FALSE;        // Status: Modo Automático ativo
+    bManualMode : BOOL := FALSE;      // Status: Modo Manual ativo
+    bRunning : BOOL := FALSE;         // Status: Máquina em ciclo de produção
+    bBlocked : BOOL := FALSE;         // Status: Máquina bloqueada (saída congestionada)
+    bStarved : BOOL := FALSE;         // Status: Máquina desabastecida (sem insumo)
+    bFault : BOOL := FALSE;           // Status: Máquina em falha
+    bHeartbeat : BOOL := FALSE;       // Status: Pulso de vida (alterna a cada 1s)
+    bCycleCompleted : BOOL := FALSE;  // Pulso de ciclo concluído (1 scan)
+
+    // 2. INT: Códigos numéricos de estado e diagnósticos
+    iMachineState : INT := 0;         // 0: Parada, 1: Produzindo, 2: Bloqueada, 3: Desabastecida, 99: Falha
+    iErrorCode : INT := 0;            // Código numérico da falha ativa (0 = sem falha)
+    iRecipeID : INT := 1;             // ID da receita atual (1..5)
+    iCycleTime_ms : INT := 3200;       // Tempo do último ciclo em milissegundos
+
+    // 3. DWORD: Totalizadores e máscaras de bits
+    dwTotalProductionCount : DWORD := 16#00000000; // Contagem total de peças produzidas
+    dwAlarmsWord : DWORD := 16#00000000;           // Máscara com 32 bits de alarmes/avisos
+    dwStatusWord : DWORD := 16#00000000;           // Máscara consolidada de estados
+
+    // 4. REAL: Valores analógicos de processo e métricas
+    rCycleTime_s : REAL := 3.20;      // Tempo de ciclo em segundos
+    rTemperature : REAL := 62.50;     // Temperatura simulada do processo (°C)
+    rSpeed_CPM : REAL := 18.75;       // Velocidade instantânea (peças por minuto)
+    rOEE_Percentage : REAL := 85.5;   // OEE simulado (0.0 a 100.0 %)
+
+    // 5. STRING [20]: Textos de identificação e mensagens
+    sProductCode : STRING[20] := 'PRD-MODEL-A01'; // Código alfanumérico do produto atual
+    sErrorMessage : STRING[20] := 'SYSTEM HEALTHY';// Mensagem descritiva de falha ou status
+
+    // 6. BYTE: Identificadores discretos
+    byShiftID : BYTE := 16#01;        // ID do Turno atual (1, 2 ou 3)
+    byStepNumber : BYTE := 16#00;     // Passo atual da sequência (0..10)
+
+    // 7. BYTE exibido como CHAR: Grau de qualidade / Classificação
+    byQualityGradeChar : BYTE := 16#41; // 'A'=16#41, 'B'=16#42, 'C'=16#43
+    cMachineStatusChar : CHAR := 'R';   // 'R'=Running, 'B'=Blocked, 'S'=Starved, 'F'=Fault, 'I'=Idle
+END_VAR
+
+VAR
+    // Variáveis internas de controle da simulação
+    tonClock1s : TON;                 // Temporizador do heartbeat (1s)
+    tonStepTimer : TON;               // Temporizador das etapas de produção
+    tonAutoFaultTimer : TON;          // Temporizador para gerar pequenas falhas periódicas de teste
+    
+    statCycleTimerStart : TIME;
+    statCurrentStep : INT := 0;
+    statCycleCounter : DINT := 0;
+    statFaultCodeIndex : INT := 0;
+    statTempDirection : BOOL := TRUE; // TRUE = aquece, FALSE = resfria
+    statProductSelector : INT := 1;
+END_VAR
+
+CONST
+    STEP_IDLE : INT := 0;
+    STEP_FEEDING : INT := 1;
+    STEP_PROCESSING : INT := 2;
+    STEP_UNLOADING : INT := 3;
+    STEP_CHECKING : INT := 4;
+END_CONST
+
+BEGIN
+    // Se a simulação estiver desabilitada, zera sinais ativos e sai
+    IF NOT #bEnableSim THEN
+        #bRunning := FALSE;
+        #bHeartbeat := FALSE;
+        #iMachineState := 0;
+        #cMachineStatusChar := 'I';
+        #sErrorMessage := 'SIMULATION DISABLED';
+        RETURN;
+    END_IF;
+
+    // --------------------------------------------------------------------------
+    // 0. RESET DE CONTADORES
+    // --------------------------------------------------------------------------
+    IF #bResetCounters THEN
+        #dwTotalProductionCount := 16#00000000;
+        #statCycleCounter := 0;
+        #dwAlarmsWord := 16#00000000;
+        #iErrorCode := 0;
+    END_IF;
+
+    // --------------------------------------------------------------------------
+    // 1. GERADOR DE PULSO / HEARTBEAT (1.0 Segundo)
+    // --------------------------------------------------------------------------
+    #tonClock1s(IN := NOT #tonClock1s.Q, PT := T#1000MS);
+    IF #tonClock1s.Q THEN
+        #bHeartbeat := NOT #bHeartbeat;
+        
+        // Simula pequena variação analógica de temperatura a cada segundo
+        IF #statTempDirection THEN
+            #rTemperature := #rTemperature + 0.35;
+            IF #rTemperature >= 76.5 THEN
+                #statTempDirection := FALSE;
+            END_IF;
+        ELSE
+            #rTemperature := #rTemperature - 0.25;
+            IF #rTemperature <= 58.0 THEN
+                #statTempDirection := TRUE;
+            END_IF;
+        END_IF;
+        
+        // Simula rotação de turno periódica (a cada ~8000 ciclos ou por lógica)
+        #byShiftID := INT_TO_BYTE(1 + (DINT_TO_INT(#statCycleCounter / 100) MOD 3));
+    END_IF;
+
+    // --------------------------------------------------------------------------
+    // 2. MODO DE OPERAÇÃO (AUTO / MANUAL)
+    // --------------------------------------------------------------------------
+    #bAutoMode := #bModeSelectAuto;
+    #bManualMode := NOT #bModeSelectAuto;
+
+    // --------------------------------------------------------------------------
+    // 3. DETECÇÃO DE FALHAS E CONDIÇÕES ANIMAIS (STARVED / BLOCKED / FAULT)
+    // --------------------------------------------------------------------------
+    #bFault := #bForceFault;
+    #bBlocked := #bForceBlocked AND NOT #bFault;
+    #bStarved := #bForceStarved AND NOT #bFault AND NOT #bBlocked;
+
+    IF #bFault THEN
+        #iMachineState := 99;
+        #iErrorCode := 501;
+        #sErrorMessage := 'E-STOP / CRITICAL FAULT';
+        #cMachineStatusChar := 'F';
+        #bRunning := FALSE;
+        #dwAlarmsWord := 16#80000001; // Bit 31 e Bit 0 ligados
+        #byStepNumber := 16#FF;
+        #bCycleCompleted := FALSE;
+        RETURN;
+    ELSIF #bBlocked THEN
+        #iMachineState := 2;
+        #iErrorCode := 201;
+        #sErrorMessage := 'DOWNSTREAM FULL (BLOCKED)';
+        #cMachineStatusChar := 'B';
+        #bRunning := FALSE;
+        #dwAlarmsWord := 16#00000004; // Bit 2 ligado
+        #bCycleCompleted := FALSE;
+        RETURN;
+    ELSIF #bStarved THEN
+        #iMachineState := 3;
+        #iErrorCode := 301;
+        #sErrorMessage := 'UPSTREAM EMPTY (STARVED)';
+        #cMachineStatusChar := 'S';
+        #bRunning := FALSE;
+        #dwAlarmsWord := 16#00000008; // Bit 3 ligado
+        #bCycleCompleted := FALSE;
+        RETURN;
+    ELSE
+        #iErrorCode := 0;
+        #sErrorMessage := 'SYSTEM NORMAL - AUTO';
+        #dwAlarmsWord := 16#00000000;
+    END_IF;
+
+    // --------------------------------------------------------------------------
+    // 4. MÁQUINA DE ESTADOS DO SEQUENCIAMENTO (CICLO AUTOMÁTICO)
+    // --------------------------------------------------------------------------
+    #bRunning := #bAutoMode;
+    #bCycleCompleted := FALSE;
+
+    IF #bAutoMode THEN
+        #iMachineState := 1; // Produzindo
+        #cMachineStatusChar := 'R';
+
+        CASE #statCurrentStep OF
+            #STEP_IDLE:
+                #byStepNumber := 16#01;
+                #tonStepTimer(IN := TRUE, PT := T#500MS);
+                IF #tonStepTimer.Q THEN
+                    #tonStepTimer(IN := FALSE, PT := T#0S);
+                    #statCurrentStep := #STEP_FEEDING;
+                END_IF;
+
+            #STEP_FEEDING:
+                #byStepNumber := 16#02;
+                #tonStepTimer(IN := TRUE, PT := T#800MS);
+                IF #tonStepTimer.Q THEN
+                    #tonStepTimer(IN := FALSE, PT := T#0S);
+                    #statCurrentStep := #STEP_PROCESSING;
+                END_IF;
+
+            #STEP_PROCESSING:
+                #byStepNumber := 16#03;
+                #tonStepTimer(IN := TRUE, PT := T#1200MS);
+                IF #tonStepTimer.Q THEN
+                    #tonStepTimer(IN := FALSE, PT := T#0S);
+                    #statCurrentStep := #STEP_UNLOADING;
+                END_IF;
+
+            #STEP_UNLOADING:
+                #byStepNumber := 16#04;
+                #tonStepTimer(IN := TRUE, PT := T#700MS);
+                IF #tonStepTimer.Q THEN
+                    #tonStepTimer(IN := FALSE, PT := T#0S);
+                    #statCurrentStep := #STEP_CHECKING;
+                END_IF;
+
+            #STEP_CHECKING:
+                #byStepNumber := 16#05;
+                // Ciclo concluído com sucesso
+                #bCycleCompleted := TRUE;
+                #statCycleCounter := #statCycleCounter + 1;
+                #dwTotalProductionCount := DINT_TO_DWORD(#statCycleCounter);
+                
+                // Variação leve no tempo de ciclo para teste dinâmico (3.10s a 3.40s)
+                #iCycleTime_ms := 3150 + (DINT_TO_INT(#statCycleCounter) MOD 5) * 60;
+                #rCycleTime_s := INT_TO_REAL(#iCycleTime_ms) / 1000.0;
+                
+                // Cálculo de velocidade (Peças por Minuto = 60 / CycleTime)
+                IF #rCycleTime_s > 0.1 THEN
+                    #rSpeed_CPM := 60.0 / #rCycleTime_s;
+                END_IF;
+
+                // OEE dinâmico oscilando suavemente entre 82.0% e 94.0%
+                #rOEE_Percentage := 85.0 + (DINT_TO_REAL(#statCycleCounter MOD 10) * 0.9);
+
+                // Alternância de Produto / Receita a cada 20 peças
+                #statProductSelector := 1 + (DINT_TO_INT(#statCycleCounter / 20) MOD 3);
+                CASE #statProductSelector OF
+                    1:
+                        #sProductCode := 'PRD-MODEL-A01';
+                        #iRecipeID := 101;
+                        #byQualityGradeChar := 16#41; // 'A' em ASCII
+                    2:
+                        #sProductCode := 'PRD-MODEL-B02';
+                        #iRecipeID := 202;
+                        #byQualityGradeChar := 16#42; // 'B' em ASCII
+                    3:
+                        #sProductCode := 'PRD-MODEL-C03';
+                        #iRecipeID := 303;
+                        #byQualityGradeChar := 16#43; // 'C' em ASCII
+                END_CASE;
+
+                #statCurrentStep := #STEP_IDLE;
+        ELSE
+            #statCurrentStep := #STEP_IDLE;
+        END_CASE;
+
+    ELSE
+        // Modo Manual: Máquina parada em espera
+        #iMachineState := 0;
+        #cMachineStatusChar := 'M';
+        #byStepNumber := 16#00;
+        #sErrorMessage := 'MANUAL MODE - WAITING OPERATOR';
+        #tonStepTimer(IN := FALSE, PT := T#0S);
+    END_IF;
+
+    // --------------------------------------------------------------------------
+    // 5. MÁSCARA CONSOLIDADA DE STATUS (DWORD)
+    // Bit 0: Running | Bit 1: Auto | Bit 2: Manual | Bit 3: Blocked
+    // Bit 4: Starved | Bit 5: Fault | Bit 6: Heartbeat | Bit 7: CycleComplete
+    // --------------------------------------------------------------------------
+    #dwStatusWord.%X0 := #bRunning;
+    #dwStatusWord.%X1 := #bAutoMode;
+    #dwStatusWord.%X2 := #bManualMode;
+    #dwStatusWord.%X3 := #bBlocked;
+    #dwStatusWord.%X4 := #bStarved;
+    #dwStatusWord.%X5 := #bFault;
+    #dwStatusWord.%X6 := #bHeartbeat;
+    #dwStatusWord.%X7 := #bCycleCompleted;
+
+END_FUNCTION_BLOCK
+
+
+// ==============================================================================
+// Bloco de Dados de Instância (DB Instance)
+// Não-Otimizado (Standard DB) para leitura de offsets pelo DMapFactory
+// ==============================================================================
+DATA_BLOCK "Inst_MachineSimulation"
+{ S7_Optimized_Access := 'FALSE' }
+"FB_MachineSimulation"
+BEGIN
+END_DATA_BLOCK

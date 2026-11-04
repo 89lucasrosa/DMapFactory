@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="DMapFactory DocGen">
+<!-- Sitemap 1.0 -->
+</HEAD><BODY>
+<UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Overview">
+		<param name="Local" value="..\en-US\index.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="OPC UA">
+		<param name="Local" value="..\en-US\opc-connection.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Connections">
+		<param name="Local" value="..\en-US\opc-connection.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Tag Browser">
+		<param name="Local" value="..\en-US\opc-connection.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Certificates">
+		<param name="Local" value="..\en-US\certificates.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Security">
+		<param name="Local" value="..\en-US\certificates.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Spreadsheet">
+		<param name="Local" value="..\en-US\spreadsheet.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Vertical Headers">
+		<param name="Local" value="..\en-US\spreadsheet.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Color Booleans">
+		<param name="Local" value="..\en-US\spreadsheet.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Trend Chart">
+		<param name="Local" value="..\en-US\chart.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Pens">
+		<param name="Local" value="..\en-US\chart.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Cursors">
+		<param name="Local" value="..\en-US\chart.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Marker">
+		<param name="Local" value="..\en-US\marker.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Shortcuts">
+		<param name="Local" value="..\en-US\shortcuts.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="F1">
+		<param name="Local" value="..\en-US\shortcuts.html">
+		</OBJECT>
+</UL>
+</BODY></HTML>

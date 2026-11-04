@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trend Chart &amp; Pen Panel - DMapFactory Help</title>
+  <link rel="stylesheet" href="../assets/css/help.css">
+  <script defer src="../assets/js/help.js"></script>
+</head>
+<body>
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <a href="index.html" class="brand">
+      <span class="brand-badge">DMAP</span>
+      <div>
+        <div class="brand-title">DMapFactory</div>
+        <div class="brand-subtitle">User Manual &amp; Context-Sensitive Help</div>
+      </div>
+    </a>
+    <div class="topbar-actions">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" placeholder="Search topics..." />
+      </div>
+      <div class="lang-switch">
+        <a href="#" class="lang-btn" data-lang="pt-BR">PT</a>
+        <a href="#" class="lang-btn active" data-lang="en-US">EN</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Layout Container -->
+  <div class="layout-container">
+    
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+      <div class="sidebar-heading">Documentation</div>
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link">
+            <span class="nav-icon">📖</span> Overview
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="opc-connection.html" class="nav-link">
+            <span class="nav-icon">🔌</span> OPC Connections &amp; Tags
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="certificates.html" class="nav-link">
+            <span class="nav-icon">🔐</span> Security Certificates
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="spreadsheet.html" class="nav-link">
+            <span class="nav-icon">📊</span> Spreadsheet Mode
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="chart.html" class="nav-link active">
+            <span class="nav-icon">📈</span> Trend Chart &amp; Pens
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="marker.html" class="nav-link">
+            <span class="nav-icon">🚩</span> Marker &amp; Sessions
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="shortcuts.html" class="nav-link">
+            <span class="nav-icon">⌨️</span> Shortcuts &amp; Diagnostics
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Content Area -->
+    <main class="content-wrapper">
+      <div class="breadcrumb">
+        <a href="index.html">DMapFactory Help</a> &gt; <span>Trend Chart &amp; Pens</span>
+      </div>
+
+      <header class="topic-header">
+        <h1>Trend Chart &amp; Pen Panel</h1>
+        <div class="topic-subtitle">High-resolution time-series plotting engine with differential cursors and pen management</div>
+      </header>
+
+      <section>
+        <h2>Real-Time Trend Charting Engine</h2>
+        <p>The <strong>Chart</strong> tab renders real-time temporal curves for all monitored variables via the hardware-accelerated <strong>ScottPlot 5</strong> engine, delivering 60 FPS plotting performance with minimal CPU footprint.</p>
+
+        <h2>Navigation &amp; Scaling Controls</h2>
+        <table class="help-table">
+          <thead>
+            <tr>
+              <th>Control</th>
+              <th>Action</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>🔍+ / 🔍−</strong></td>
+              <td>Horizontal Zoom</td>
+              <td>Shrinks or expands the displayed time span. You can also scroll the mouse wheel over the plot area.</td>
+            </tr>
+            <tr>
+              <td><strong>↔ Fit All</strong></td>
+              <td>Autoscale Time</td>
+              <td>Frames all data collected from the beginning of the acquisition session.</td>
+            </tr>
+            <tr>
+              <td><strong>Y+ / Y−</strong></td>
+              <td>Vertical Scale</td>
+              <td>Scales the vertical magnitude axis up or down.</td>
+            </tr>
+            <tr>
+              <td><strong>Auto Y</strong></td>
+              <td>Reset Y-Scale</td>
+              <td>Restores automatic vertical scaling adapted to the current min/max values of visible signals.</td>
+            </tr>
+            <tr>
+              <td><strong>📷 PNG</strong></td>
+              <td>Snapshot Export</td>
+              <td>Captures the current chart view directly to a high-resolution PNG image file.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2>Signal Curve Styling &amp; Analysis Tools</h2>
+        <ul>
+          <li><strong>Step Interpolation (Degrau)</strong>: maintains value constant until next state transition, ideal for digital logic (0/1) and discrete states. Uncheck for linear analog curves (temperature, pressure, flow).</li>
+          <li><strong>Sample Points (●)</strong>: renders marker dots highlighting exact arrival timestamps for individual OPC UA events.</li>
+          <li><strong>Crosshair</strong>: projects orthogonal guide lines and displays a floating HUD with the exact value of every pen under the mouse pointer.</li>
+          <li><strong>A/B Cursors</strong>: activates two vertical measuring rulers. Drag them along the timeline to calculate differential time ($\Delta t$) and value delta ($\Delta Y$). Use <em>Center A/B</em> to reposition rulers into view.</li>
+        </ul>
+
+        <h2>High-Performance Charting Pipeline (PF-01, PF-07)</h2>
+        <p>DMapFactory utilizes an optimized charting pipeline built on ScottPlot 5 with GPU/CPU accelerated rendering:</p>
+        <ul>
+          <li><strong>Peak-Preserving Adaptive Downsampling (PF-01)</strong>: when plotting hundreds of thousands of data points, the adaptive downsampling engine clusters samples while strictly preserving local peaks and valleys (transient spikes, noise, and sharp edges), sustaining 60 FPS redraws with minimal memory overhead.</li>
+          <li><strong>Binary Search Interpolation $O(\log N)$ (PF-07)</strong>: signal readings for Cursors A/B and Crosshair HUD evaluate timestamps using binary search indexing, guaranteeing instantaneous lookups without stuttering even across millions of recorded points.</li>
+        </ul>
+
+        <h2>Chart Context Menu &amp; Bidirectional Cross-Synchronization</h2>
+        <p>Right-clicking anywhere on the <strong>plot surface</strong> opens a contextual menu with high-precision analytical actions:</p>
+        <div class="table-container">
+          <table class="topic-table">
+            <thead>
+              <tr>
+                <th>Action</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>📊 Locate in Spreadsheet</strong></td>
+                <td><strong>Bidirectional Chart &rarr; Spreadsheet Sync</strong>: instantly navigates the spreadsheet tab to the timestamp closest to the clicked chart point, highlighting the matching row and scrolling it into view.</td>
+              </tr>
+              <tr>
+                <td><strong>📍 Position Cursor A here</strong></td>
+                <td>Immediately snaps measurement Cursor A (dashed yellow ruler) to the exact timestamp under the cursor.</td>
+              </tr>
+              <tr>
+                <td><strong>📍 Position Cursor B here</strong></td>
+                <td>Immediately snaps measurement Cursor B (dashed cyan ruler) to the exact timestamp under the cursor.</td>
+              </tr>
+              <tr>
+                <td><strong>🎯 Center Cursors A/B</strong></td>
+                <td>Positions both measurement rulers symmetrically in the current visible viewport.</td>
+              </tr>
+              <tr>
+                <td><strong>🚩 Insert marker at this point...</strong></td>
+                <td>Opens a dialog to create an operational milestone event anchored to the clicked timestamp.</td>
+              </tr>
+              <tr>
+                <td><strong>📷 Export Image (PNG)...</strong></td>
+                <td>Saves a crisp snapshot of the current view to an image file (<kbd>Ctrl+P</kbd>).</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="pen-panel">Pen Sidebar (Signals List)</h2>
+        <p>Positioned on the right side of the chart, the <strong>Pen Panel</strong> manages curve visibility and individual signal properties:</p>
+        <ul>
+          <li><strong>Color Swatches</strong>: each pen shows its corresponding curve color.</li>
+          <li><strong>Sky-Blue Selection Border</strong>: selecting any pen outlines it with a crisp sky-blue highlight (<code>#00B4F0</code>).</li>
+          <li><strong>Direct Removal (<kbd>×</kbd>)</strong>: each pen row contains a dedicated <kbd>×</kbd> button to instantly delete the tag from collection.</li>
+          <li><strong>Pen Context Menu (Right-Click)</strong>:
+            <ul>
+              <li><strong>⚙ Set as machine cycle trigger</strong>: binds the clicked boolean variable as the transition source for machine cycle tracking.</li>
+              <li><strong>📋 Copy NodeId</strong>: copies the full OPC UA identifier string to the system clipboard.</li>
+              <li><strong>🗑 Delete tag from collection</strong>: removes the variable from both spreadsheet and chart.</li>
+            </ul>
+          </li>
+          <li><strong>Batch Controls</strong>: click <strong>All</strong> to plot all signals, <strong>None</strong> to hide all, or <strong>× Delete</strong> to remove the active selection.</li>
+        </ul>
+      </section>
+
+      <footer class="topic-footer">
+        <a href="spreadsheet.html" class="btn-nav">&larr; Previous: Spreadsheet Mode</a>
+        <a href="marker.html" class="btn-nav">Next: Marker &amp; Sessions &rarr;</a>
+      </footer>
+    </main>
+  </div>
+
+</body>
+</html>

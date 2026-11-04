@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atalhos de Teclado e Diagnósticos - DMapFactory Help</title>
+  <link rel="stylesheet" href="../assets/css/help.css">
+  <script defer src="../assets/js/help.js"></script>
+</head>
+<body>
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <a href="index.html" class="brand">
+      <span class="brand-badge">DMAP</span>
+      <div>
+        <div class="brand-title">DMapFactory</div>
+        <div class="brand-subtitle">Manual do Usuário &amp; Ajuda Contextual</div>
+      </div>
+    </a>
+    <div class="topbar-actions">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" placeholder="Pesquisar tópicos..." />
+      </div>
+      <div class="lang-switch">
+        <a href="#" class="lang-btn active" data-lang="pt-BR">PT</a>
+        <a href="#" class="lang-btn" data-lang="en-US">EN</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Layout Container -->
+  <div class="layout-container">
+    
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+      <div class="sidebar-heading">Documentação</div>
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link">
+            <span class="nav-icon">📖</span> Visão Geral
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="conexao-opc.html" class="nav-link">
+            <span class="nav-icon">🔌</span> Conexões &amp; Tags OPC
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="certificados.html" class="nav-link">
+            <span class="nav-icon">🔐</span> Certificados de Segurança
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="planilha.html" class="nav-link">
+            <span class="nav-icon">📊</span> Modo Planilha
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="grafico.html" class="nav-link">
+            <span class="nav-icon">📈</span> Gráfico &amp; Penas
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="marcador.html" class="nav-link">
+            <span class="nav-icon">🚩</span> Marcador &amp; Sessões
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="atalhos.html" class="nav-link active">
+            <span class="nav-icon">⌨️</span> Atalhos &amp; Diagnóstico
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Content Area -->
+    <main class="content-wrapper">
+      <div class="breadcrumb">
+        <a href="index.html">Ajuda DMapFactory</a> &gt; <span>Atalhos &amp; Diagnósticos</span>
+      </div>
+
+      <header class="topic-header">
+        <h1>Atalhos de Teclado e Diagnósticos</h1>
+        <div class="topic-subtitle">Guia de produtividade, comandos rápidos e monitoramento de desempenho do sistema</div>
+      </header>
+
+      <section>
+        <h2>Tabela de Atalhos de Teclado Globais</h2>
+        <table class="help-table">
+          <thead>
+            <tr>
+              <th style="width: 170px;">Tecla / Atalho</th>
+              <th style="width: 200px;">Contexto</th>
+              <th>Ação Executada</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><kbd>F1</kbd></td>
+              <td>Qualquer tela / controle</td>
+              <td>Abre a <strong>Ajuda Sensível ao Contexto</strong> na página exata do componente focado.</td>
+            </tr>
+            <tr>
+              <td><kbd>F5</kbd></td>
+              <td>Janela Principal</td>
+              <td>Alterna entre o modo <strong>On-line</strong> (coleta ativa) e <strong>Off-line</strong> (pausa na amostragem).</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>N</kbd></td>
+              <td>Janela Principal</td>
+              <td>Cria um <strong>Novo Projeto</strong> em branco (.dmproj).</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>O</kbd></td>
+              <td>Janela Principal</td>
+              <td><strong>Abre um Projeto</strong> salvo anteriormente no disco.</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>S</kbd></td>
+              <td>Janela Principal</td>
+              <td><strong>Salva o Projeto</strong> atual mantendo conexões e configurações de amostragem.</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd></td>
+              <td>Janela Principal</td>
+              <td><strong>Salva o Projeto Como...</strong> permitindo escolher um novo nome e local.</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>O</kbd></td>
+              <td>Janela Principal</td>
+              <td><strong>Abre uma Sessão Gravada</strong> (.csv ou .session.json) reidratando histórico e marcadores.</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>E</kbd></td>
+              <td>Janela Principal</td>
+              <td><strong>Exporta a Planilha</strong> para Excel (.xlsx), CSV Largo, CSV Estreito ou Texto.</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>M</kbd></td>
+              <td>Janela Principal</td>
+              <td>Ativa o modo de <strong>Inserir Marcador</strong> temporal de evento na sessão.</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>1</kbd></td>
+              <td>Janela Principal</td>
+              <td>Alterna imediatamente para a aba <strong>Planilha</strong>.</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>2</kbd></td>
+              <td>Janela Principal</td>
+              <td>Alterna imediatamente para a aba <strong>Gráfico</strong>.</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>3</kbd></td>
+              <td>Janela Principal</td>
+              <td>Alterna imediatamente para a aba <strong>Tags e Valores Atuais</strong>.</td>
+            </tr>
+            <tr>
+              <td><kbd>Espaço</kbd></td>
+              <td>Planilha ou Gráfico</td>
+              <td>Alterna o <strong>Auto-scroll</strong> (na planilha) ou <strong>Auto-follow</strong> (no gráfico).</td>
+            </tr>
+            <tr>
+              <td><kbd>Esc</kbd></td>
+              <td>Janela Principal</td>
+              <td><strong>Cancela</strong> o modo ativo de inserção de marcador.</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + Clique</td>
+              <td>Navegador de Nós OPC UA</td>
+              <td>Permite a <strong>seleção múltipla</strong> de variáveis para inclusão simultânea em lote.</td>
+            </tr>
+            <tr>
+              <td><kbd>Delete</kbd></td>
+              <td>Planilha ou Painel de Penas</td>
+              <td>Exclui da coleta a <strong>tag selecionada</strong>.</td>
+            </tr>
+            <tr>
+              <td><kbd>Delete</kbd></td>
+              <td>Lista de Conexões</td>
+              <td>Exclui a conexão com o servidor OPC UA selecionado.</td>
+            </tr>
+            <tr>
+              <td><kbd>Roda do Mouse</kbd></td>
+              <td>Gráfico de Tendências</td>
+              <td>Executa <strong>Zoom In</strong> e <strong>Zoom Out</strong> horizontal na linha do tempo.</td>
+            </tr>
+            <tr>
+              <td><kbd>Arrasto do Mouse</kbd></td>
+              <td>Divisória do Cabeçalho da Planilha</td>
+              <td>Ajusta livremente a <strong>altura da linha de título</strong> das colunas verticais.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2>Guia de Menus de Contexto (Clique com o Botão Direito)</h2>
+        <p>O DMapFactory disponibiliza menus de contexto inteligentes em todos os principais módulos da interface:</p>
+        <table class="help-table">
+          <thead>
+            <tr>
+              <th style="width: 200px;">Componente</th>
+              <th style="width: 240px;">Onde Clicar</th>
+              <th>Opções Disponíveis no Menu</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Corpo da Planilha</strong></td>
+              <td>Em qualquer linha ou célula de dados</td>
+              <td>
+                • <strong>📍 Inserir Marcador nesta Linha</strong><br>
+                • <strong>📈 Focar instante no Gráfico (Cursor A)</strong> (sincronismo cruzado)<br>
+                • <strong>🏷 Definir como Gatilho de Ciclo</strong> (para tags booleanas)<br>
+                • <strong>Copiar valor da célula</strong><br>
+                • <strong>📋 Copiar Linha Inteira (TSV)</strong> (pronto para colar no Excel)<br>
+                • <strong>Copiar Horário</strong> (timestamp completo com milissegundos)
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Cabeçalho da Planilha</strong></td>
+              <td>No título de qualquer coluna de tag ou fixada</td>
+              <td>
+                • <strong>🗑 Deletar tag da coleta</strong><br>
+                • <strong>↔ Auto-ajustar largura desta coluna</strong><br>
+                • <strong>↔ Auto-ajustar largura de todas as colunas</strong><br>
+                • <strong>↕ Auto-ajustar altura da linha de título</strong>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Gráfico de Tendências</strong></td>
+              <td>Em qualquer ponto da área de plotagem</td>
+              <td>
+                • <strong>📋 Localizar na Planilha</strong> (seleciona a linha exata naquele instante)<br>
+                • <strong>📍 Inserir Marcador neste ponto</strong><br>
+                • <strong>Posicionar Cursor A aqui</strong><br>
+                • <strong>Posicionar Cursor B aqui</strong><br>
+                • <strong>Centralizar Cursores A/B</strong><br>
+                • <strong>Salvar Gráfico em Imagem (PNG)</strong>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Navegador de Nós OPC UA</strong></td>
+              <td>Sobre qualquer nó ou pasta na árvore</td>
+              <td>
+                • <strong>+ Adicionar à Planilha e Gráfico</strong><br>
+                • <strong>📁 Adicionar todas as variáveis desta pasta</strong><br>
+                • <strong>📋 Copiar NodeId</strong> (copia o identificador completo para a área de transferência)
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Painel de Penas do Gráfico</strong></td>
+              <td>Sobre qualquer item na lista lateral de sinais</td>
+              <td>
+                • <strong>🗑 Deletar esta tag da coleta</strong><br>
+                • <strong>Alternar visibilidade no gráfico (Plot)</strong><br>
+                • <strong>🏷 Definir como Gatilho de Ciclo</strong><br>
+                • <strong>📋 Copiar Endereço / NodeId</strong>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Grade de Logs</strong></td>
+              <td>Em qualquer mensagem de evento registrada</td>
+              <td>
+                • <strong>📋 Copiar Mensagem de Log</strong><br>
+                • <strong>📋 Copiar Todos os Logs Exibidos</strong><br>
+                • <strong>Limpar logs da tela</strong><br>
+                • <strong>Abrir pasta de arquivos de log…</strong> (abre o Windows Explorer no diretório de logs)
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2 id="diagnosticos">Métricas de Diagnóstico e Saúde do Sistema</h2>
+        <p>A barra de status inferior fornece métricas em tempo real para validar a performance da comunicação industrial:</p>
+        <ul>
+          <li><strong>Eventos por Segundo (Ev/s)</strong>: taxa de amostragem instantânea atualizada continuamente.</li>
+          <li><strong>Tamanho do Buffer</strong>: percentual de ocupação do anel circular de memória (<em>Circular Buffer</em>). Garante que nenhuma transição rápida seja descartada durante picos na rede.</li>
+          <li><strong>Tempo de Sessão</strong>: contabilização contínua do tempo transcorrido no ensaio.</li>
+          <li><strong>Painel de Logs Operacionais</strong>: registra mensagens classificadas por nível (<em>Information</em>, <em>Warning</em>, <em>Error</em>, <em>Debug</em>) com botões para <strong>Limpar</strong> e <strong>Pasta de Logs…</strong>.</li>
+        </ul>
+      </section>
+
+      <footer class="topic-footer">
+        <a href="marcador.html" class="btn-nav">&larr; Anterior: Marcador &amp; Sessões</a>
+        <a href="index.html" class="btn-nav">Início: Visão Geral &rarr;</a>
+      </footer>
+    </main>
+  </div>
+
+</body>
+</html>

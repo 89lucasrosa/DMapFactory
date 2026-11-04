@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>DMapFactory.Localization</RootNamespace>
+    <Description>Textos da interface em pt-BR (neutro), en-US e es.</Description>
+  </PropertyGroup>
+
+</Project>

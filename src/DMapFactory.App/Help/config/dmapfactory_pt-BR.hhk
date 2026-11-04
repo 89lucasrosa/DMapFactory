@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="DMapFactory DocGen">
+<!-- Sitemap 1.0 -->
+</HEAD><BODY>
+<UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Vis&atilde;o Geral">
+		<param name="Local" value="..\pt-BR\index.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="OPC UA">
+		<param name="Local" value="..\pt-BR\conexao-opc.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Conex&otilde;es">
+		<param name="Local" value="..\pt-BR\conexao-opc.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Navegador de Tags">
+		<param name="Local" value="..\pt-BR\conexao-opc.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Certificados">
+		<param name="Local" value="..\pt-BR\certificados.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Seguran&ccedil;a">
+		<param name="Local" value="..\pt-BR\certificados.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Planilha">
+		<param name="Local" value="..\pt-BR\planilha.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="T&iacute;tulos Verticais">
+		<param name="Local" value="..\pt-BR\planilha.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Booleanos Coloridos">
+		<param name="Local" value="..\pt-BR\planilha.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Gr&aacute;fico">
+		<param name="Local" value="..\pt-BR\grafico.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Penas">
+		<param name="Local" value="..\pt-BR\grafico.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Cursores A/B">
+		<param name="Local" value="..\pt-BR\grafico.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Marcador">
+		<param name="Local" value="..\pt-BR\marcador.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Atalhos">
+		<param name="Local" value="..\pt-BR\atalhos.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="F1">
+		<param name="Local" value="..\pt-BR\atalhos.html">
+		</OBJECT>
+</UL>
+</BODY></HTML>

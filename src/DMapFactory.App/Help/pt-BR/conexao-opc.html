@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conexões e Navegador OPC UA - DMapFactory Help</title>
+  <link rel="stylesheet" href="../assets/css/help.css">
+  <script defer src="../assets/js/help.js"></script>
+</head>
+<body>
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <a href="index.html" class="brand">
+      <span class="brand-badge">DMAP</span>
+      <div>
+        <div class="brand-title">DMapFactory</div>
+        <div class="brand-subtitle">Manual do Usuário &amp; Ajuda Contextual</div>
+      </div>
+    </a>
+    <div class="topbar-actions">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" placeholder="Pesquisar tópicos..." />
+      </div>
+      <div class="lang-switch">
+        <a href="#" class="lang-btn active" data-lang="pt-BR">PT</a>
+        <a href="#" class="lang-btn" data-lang="en-US">EN</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Layout Container -->
+  <div class="layout-container">
+    
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+      <div class="sidebar-heading">Documentação</div>
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link">
+            <span class="nav-icon">📖</span> Visão Geral
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="conexao-opc.html" class="nav-link active">
+            <span class="nav-icon">🔌</span> Conexões &amp; Tags OPC
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="certificados.html" class="nav-link">
+            <span class="nav-icon">🔐</span> Certificados de Segurança
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="planilha.html" class="nav-link">
+            <span class="nav-icon">📊</span> Modo Planilha
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="grafico.html" class="nav-link">
+            <span class="nav-icon">📈</span> Gráfico &amp; Penas
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="marcador.html" class="nav-link">
+            <span class="nav-icon">🚩</span> Marcador &amp; Sessões
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="atalhos.html" class="nav-link">
+            <span class="nav-icon">⌨️</span> Atalhos &amp; Diagnóstico
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Content Area -->
+    <main class="content-wrapper">
+      <div class="breadcrumb">
+        <a href="index.html">Ajuda DMapFactory</a> &gt; <span>Conexões e Tags OPC</span>
+      </div>
+
+      <header class="topic-header">
+        <h1>Conexões e Navegador OPC UA</h1>
+        <div class="topic-subtitle">Gerenciamento de servidores, credenciais de acesso e seleção de variáveis industriais</div>
+      </header>
+
+      <section>
+        <h2>Gerenciamento de Conexões</h2>
+        <p>O painel esquerdo superior do software lista todos os endpoints de servidores OPC UA configurados no projeto atual.</p>
+        
+        <h3>Como Adicionar uma Nova Conexão</h3>
+        <ol>
+          <li>Clique no botão <strong>Nova Conexão</strong> (<kbd>➕</kbd>) na barra de ferramentas ou no topo do painel de conexões.</li>
+          <li>No diálogo de configuração, informe:
+            <ul>
+              <li><strong>Nome Amigável</strong>: identificação para o servidor (ex: <em>CLP Linha 1</em>).</li>
+              <li><strong>Endpoint URL</strong>: endereço de comunicação (ex: <code>opc.tcp://192.168.0.10:4840</code>).</li>
+              <li><strong>Modo de Segurança</strong>: <code>None</code>, <code>Sign</code> ou <code>SignAndEncrypt</code>.</li>
+              <li><strong>Política de Segurança</strong>: escolha o algoritmo criptográfico suportado pelo servidor (ex: <code>Basic256Sha256</code>, <code>Aes128_Sha256_RsaOaep</code>).</li>
+              <li><strong>Tipo de Autenticação</strong>: Anônimo ou Usuário/Senha.</li>
+            </ul>
+          </li>
+          <li>Pressione <strong>Salvar</strong>. O servidor será adicionado à lista.</li>
+        </ol>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">💡 Proteção de Credenciais e Modos de Segurança (MG-04)</div>
+          A caixa de diálogo de conexão oculta automaticamente caracteres de senha com máscara de segurança (<code>PasswordBox</code>), e exibe os campos de credenciais apenas quando o modo <strong>Usuário / Senha</strong> estiver selecionado, garantindo conformidade com padrões de segurança cibernética industrial.
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">💡 Indicadores de Estado da Conexão</div>
+          Cada conexão possui uma sinalização visual colorida (bolinha):
+          <ul style="margin-top: 6px;">
+            <li><strong style="color: #10B981;">Verde</strong>: Conectado e comunicando normalmente.</li>
+            <li><strong style="color: #F59E0B;">Amarelo</strong>: Conectando ou em processo automático de reconexão.</li>
+            <li><strong style="color: #EF4444;">Vermelho</strong>: Falha de comunicação ou endpoint inacessível.</li>
+          </ul>
+        </div>
+
+        <h2>Taxa de Amostragem e Modo de Aquisição (FN-01)</h2>
+        <p>Na barra de ferramentas superior, você pode definir como o DMapFactory requisita os dados ao servidor OPC UA:</p>
+        <ul>
+          <li><strong>Taxa de Coleta (10 ms a 1000 ms)</strong>: define o intervalo de amostragem no CLP (ex: <code>10 ms</code> para sinais ultrarrápidos de posicionamento ou <code>1000 ms</code> para monitoramento térmico geral).</li>
+          <li><strong>Modo Assinatura (Subscription)</strong>: método recomendado padrão onde o servidor envia pacotes apenas quando ocorrem alterações de valor (<em>Report by Exception</em>), otimizando o tráfego de rede.</li>
+          <li><strong>Modo Varredura (Polling)</strong>: realiza leituras cíclicas forçadas em cada intervalo, garantindo leitura contínua mesmo em servidores com suporte limitado a notificações OPC UA.</li>
+        </ul>
+
+        <h2 id="navegador-tags">Navegador da Árvore de Nós OPC UA</h2>
+        <p>Ao selecionar uma conexão ativa na lista, a árvore de nós do servidor é carregada no painel <strong>Navegador OPC UA</strong>.</p>
+        
+        <h3>Busca Rápida de Tags e Auto-Expansão (FN-03)</h3>
+        <p>Em servidores com milhares de variáveis industriais, localize nós instantaneamente utilizando a <strong>Caixa de Busca</strong> no topo do navegador de nós:</p>
+        <ul>
+          <li>Digite qualquer trecho do nome ou do <em>NodeId</em> (ex: <code>Pressao</code>, <code>Sensor_12</code>, <code>ns=2;s=Motor</code>).</li>
+          <li>A árvore é filtrada em tempo real e todos os nós correspondentes são destacados com auto-expansão da hierarquia de pastas.</li>
+          <li>O botão <kbd>×</kbd> limpa a busca e restaura a visualização completa da árvore.</li>
+        </ul>
+
+        <h3>Adição de Variáveis à Coleta e Menu de Contexto</h3>
+        <ul>
+          <li><strong>Tag Individual</strong>: Navegue até a variável desejada (tipo <em>Variable</em>) e clique no botão <strong>Adicionar tag selecionada</strong>, dê duplo-clique no nó, ou clique com o botão direito e escolha <strong>➕ Adicionar variável selecionada</strong>.</li>
+          <li><strong>Seleção Múltipla com <kbd>Ctrl</kbd></strong>: Mantenha a tecla <kbd>Ctrl</kbd> pressionada para clicar e selecionar simultaneamente várias tags na árvore. Em seguida, clique em <strong>Adicionar tag selecionada</strong> para incluir todas as variáveis marcadas de uma só vez.</li>
+          <li><strong>Pasta Completa</strong>: Selecione um nó de pasta (tipo <em>Folder</em> ou <em>Object</em>) e clique em <strong>Adicionar pasta como tags</strong> (ou clique com botão direito &rarr; <strong>📁 Adicionar pasta como tags</strong>) para importar em lote todas as variáveis contidas naquele diretório.</li>
+          <li><strong>Copiar NodeId</strong>: Clique com o botão direito sobre qualquer nó e selecione <strong>📋 Copiar NodeId</strong> para colar o identificador exato na área de transferência.</li>
+        </ul>
+
+        <div class="callout callout-info">
+          <div class="callout-title">🔍 Painel de Atributos do Nó</div>
+          Ao clicar em qualquer nó da árvore, a seção inferior <strong>Atributos</strong> exibe instantaneamente suas propriedades de engenharia: <em>NodeId</em> completo, tipo de dado (<em>DataType</em>: Boolean, Int16, Float, String, etc.), nível de acesso (leitura/escrita) e valor atual em tempo real.
+        </div>
+      </section>
+
+      <footer class="topic-footer">
+        <a href="index.html" class="btn-nav">&larr; Anterior: Visão Geral</a>
+        <a href="certificados.html" class="btn-nav">Próximo: Certificados de Segurança &rarr;</a>
+      </footer>
+    </main>
+  </div>
+
+</body>
+</html>

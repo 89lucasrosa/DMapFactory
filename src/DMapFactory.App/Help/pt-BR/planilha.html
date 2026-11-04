@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modo Planilha (Formato Amplo) - DMapFactory Help</title>
+  <link rel="stylesheet" href="../assets/css/help.css">
+  <script defer src="../assets/js/help.js"></script>
+</head>
+<body>
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <a href="index.html" class="brand">
+      <span class="brand-badge">DMAP</span>
+      <div>
+        <div class="brand-title">DMapFactory</div>
+        <div class="brand-subtitle">Manual do Usuário &amp; Ajuda Contextual</div>
+      </div>
+    </a>
+    <div class="topbar-actions">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" placeholder="Pesquisar tópicos..." />
+      </div>
+      <div class="lang-switch">
+        <a href="#" class="lang-btn active" data-lang="pt-BR">PT</a>
+        <a href="#" class="lang-btn" data-lang="en-US">EN</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Layout Container -->
+  <div class="layout-container">
+    
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+      <div class="sidebar-heading">Documentação</div>
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link">
+            <span class="nav-icon">📖</span> Visão Geral
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="conexao-opc.html" class="nav-link">
+            <span class="nav-icon">🔌</span> Conexões &amp; Tags OPC
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="certificados.html" class="nav-link">
+            <span class="nav-icon">🔐</span> Certificados de Segurança
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="planilha.html" class="nav-link active">
+            <span class="nav-icon">📊</span> Modo Planilha
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="grafico.html" class="nav-link">
+            <span class="nav-icon">📈</span> Gráfico &amp; Penas
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="marcador.html" class="nav-link">
+            <span class="nav-icon">🚩</span> Marcador &amp; Sessões
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="atalhos.html" class="nav-link">
+            <span class="nav-icon">⌨️</span> Atalhos &amp; Diagnóstico
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Content Area -->
+    <main class="content-wrapper">
+      <div class="breadcrumb">
+        <a href="index.html">Ajuda DMapFactory</a> &gt; <span>Modo Planilha</span>
+      </div>
+
+      <header class="topic-header">
+        <h1>Modo Planilha (Formato Amplo)</h1>
+        <div class="topic-subtitle">Apresentação tabular temporal multivariável (Wide Format) com títulos verticais e sinais booleanos coloridos</div>
+      </header>
+
+      <section>
+        <h2>Conceito Wide Format (RF-GRD-01..10)</h2>
+        <p>A primeira aba principal exibe os dados em <strong>formato amplo</strong>. Diferente de tabelas convencionais onde cada linha é um registro isolado de uma tag, aqui cada <strong>linha representa um instante no tempo</strong> (timestamp) e cada <strong>coluna representa uma variável monitorada</strong>, permitindo visualizar com clareza o estado simultâneo de todo o maquinário.</p>
+
+        <h2>Visualização de Sinais Booleanos por Cores</h2>
+        <p>Para facilitar a identificação rápida do estado de sensores digitais, relés e alarmes, as variáveis booleanas não são exibidas como números simples (0 ou 1):</p>
+        <ul>
+          <li><strong>Verde Vivo</strong>: indica estado verdadeiro (<code>True</code> / nível lógico alto / ligado).</li>
+          <li><strong>Cinza Neutro Suave</strong>: indica estado falso (<code>False</code> / nível lógico baixo / desligado).</li>
+        </ul>
+
+        <h2>Títulos das Colunas na Vertical</h2>
+        <p>Ao monitorar dezenas de variáveis, títulos horizontais longos ocupam muito espaço horizontal. Marque a opção <strong>Títulos verticais</strong> na barra da planilha para orientar o texto a 90 graus.</p>
+        
+        <h3>Ajuste da Altura da Linha de Cabeçalho</h3>
+        <p>Quando os títulos estiverem na vertical, você pode ajustar a altura da linha para que os nomes fiquem 100% legíveis:</p>
+        <ul>
+          <li><strong>Botões <kbd>−</kbd> e <kbd>+</kbd></strong>: diminuem ou aumentam a altura em passos de 20 pixels.</li>
+          <li><strong>Botão <kbd>↕ Auto</kbd></strong>: calcula automaticamente a altura ideal com base no maior nome de tag cadastrado.</li>
+          <li><strong>Redimensionamento com o Mouse</strong>: posicione o cursor na linha divisória inferior do cabeçalho da planilha e arraste para cima ou para baixo para definir a altura livremente.</li>
+        </ul>
+
+        <h3>Auto-Ajuste de Larguras (<kbd>↔ Auto-ajustar larguras</kbd>)</h3>
+        <p>O botão de auto-ajuste recalcula a largura ideal de cada coluna, considerando o texto do título (seja vertical ou horizontal) e a largura dos dados numéricos contidos nas linhas, eliminando espaços vazios desperdiçados.</p>
+
+        <h2>Exclusão Precisa de Tags na Planilha</h2>
+        <p>Para remover uma tag específica da coleta sem afetar as demais variáveis:</p>
+        <ol>
+          <li><strong>Botão Direito no Título da Coluna</strong>: clique com o botão direito do mouse sobre o cabeçalho de qualquer tag para abrir o menu contextual e selecione <strong>🗑 Deletar tag '...' da coleta</strong>.</li>
+          <li><strong>Tecla <kbd>Delete</kbd></strong>: clique em uma célula ou cabeçalho da coluna correspondente e pressione a tecla <kbd>Delete</kbd>.</li>
+          <li><strong>Barra de Ferramentas</strong>: ao selecionar qualquer célula ou título, o botão principal da barra superior se atualiza para <strong>Excluir tag (&lt;Nome&gt;)</strong>.</li>
+        </ol>
+
+        <h2>Pausa Inteligente do Auto-scroll (FN-04)</h2>
+        <p>Ao analisar dados em tempo real com alta taxa de amostragem, o auto-scroll contínuo poderia dificultar a leitura de amostras anteriores. O DMapFactory conta com detecção inteligente de rolagem:</p>
+        <ul>
+          <li><strong>Pausa Automática ao Rolar para Cima</strong>: se você rolar a barra de rolagem vertical para inspecionar linhas anteriores, o acompanhamento automático é pausado temporariamente, mantendo a visualização fixa na linha sob análise.</li>
+          <li><strong>Retomada Suave</strong>: ao rolar novamente até a última linha da base, ou ao clicar no checkbox <em>Auto-scroll</em>, o acompanhamento em tempo real é reativado imediatamente.</li>
+        </ul>
+
+        <h2>Menu de Contexto e Sincronização Cruzada Gráfico &harr; Planilha</h2>
+        <p>Ao clicar com o <strong>botão direito do mouse</strong> sobre qualquer célula ou linha da planilha, um menu contextual com ferramentas analíticas é exibido:</p>
+        <div class="table-container">
+          <table class="topic-table">
+            <thead>
+              <tr>
+                <th>Ação</th>
+                <th>Descrição</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>📈 Focar instante no Gráfico (Cursor A)</strong></td>
+                <td>Sincroniza instantaneamente a visualização com o gráfico de tendências. Posiciona o <strong>Cursor A</strong> no exato timestamp da linha selecionada para análise de formato de onda.</td>
+              </tr>
+              <tr>
+                <td><strong>🚩 Inserir marcador nesta linha...</strong></td>
+                <td>Insere um marcador de evento com texto personalizado associado ao timestamp exato da linha selecionada.</td>
+              </tr>
+              <tr>
+                <td><strong>⚙ Definir como gatilho de ciclo de máquina</strong></td>
+                <td>(Exibido em colunas booleanas) Define a variável sob o cursor como a fonte de transição para detecção automática de ciclos de máquina.</td>
+              </tr>
+              <tr>
+                <td><strong>📋 Copiar Linha (TSV - Formato Excel)</strong></td>
+                <td>Copia todos os valores da linha no formato separado por tabulações, pronto para colar direto no Microsoft Excel ou Bloco de Notas (<kbd>Ctrl+C</kbd>).</td>
+              </tr>
+              <tr>
+                <td><strong>📋 Copiar Valor da Célula</strong></td>
+                <td>Copia apenas o valor pontual da variável sob o cursor.</td>
+              </tr>
+              <tr>
+                <td><strong>⏱ Copiar Timestamp da Linha</strong></td>
+                <td>Copia a data/hora precisa (formato <code>yyyy-MM-dd HH:mm:ss.fff</code>).</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2>Recursos Adicionais da Planilha</h2>
+        <ul>
+          <li><strong>Estilo de Linha Selecionada</strong>: a linha selecionada recebe um elegante contorno em <strong>azul celeste</strong> (<code>#00B4F0</code>), mantendo legíveis os valores de todas as colunas.</li>
+          <li><strong>Auto-scroll</strong>: rola a planilha automaticamente para acompanhar as últimas amostras recebidas em tempo real.</li>
+          <li><strong>Taxa de Coleta e Modos</strong>: configure intervalos entre <code>10 ms</code> e <code>1000 ms</code> via seletor na barra de ferramentas superior, alternando entre <em>Assinatura (Subscription)</em> e <em>Varredura (Polling)</em>.</li>
+          <li><strong>Coleta Contínua (1 s)</strong>: garante que mesmo em variáveis sem transição de valor, uma nova linha seja registrada a cada 1 segundo.</li>
+          <li><strong>Agrupar Mesmo Timestamp (P3)</strong>: unifica alterações ocorridas no mesmo instante em uma única linha.</li>
+        </ul>
+      </section>
+
+      <footer class="topic-footer">
+        <a href="certificados.html" class="btn-nav">&larr; Anterior: Certificados de Segurança</a>
+        <a href="grafico.html" class="btn-nav">Próximo: Gráfico &amp; Penas &rarr;</a>
+      </footer>
+    </main>
+  </div>
+
+</body>
+</html>

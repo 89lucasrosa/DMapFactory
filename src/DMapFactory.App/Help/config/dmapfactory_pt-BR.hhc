@@ -1,0 +1,40 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="DMapFactory DocGen">
+<!-- Sitemap 1.0 -->
+</HEAD><BODY>
+<OBJECT type="text/site properties">
+	<param name="ImageType" value="Folder">
+</OBJECT>
+<UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Vis&atilde;o Geral e Introdu&ccedil;&atilde;o">
+		<param name="Local" value="..\pt-BR\index.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Conex&otilde;es e Navegador OPC UA">
+		<param name="Local" value="..\pt-BR\conexao-opc.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Gerenciador de Certificados de Seguran&ccedil;a">
+		<param name="Local" value="..\pt-BR\certificados.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Modo Planilha (Wide Format)">
+		<param name="Local" value="..\pt-BR\planilha.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Modo Gr&aacute;fico de Tend&ecirc;ncias e Penas">
+		<param name="Local" value="..\pt-BR\grafico.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Marcador de Amostras e Grava&ccedil;&atilde;o de Sess&otilde;es">
+		<param name="Local" value="..\pt-BR\marcador.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Atalhos de Teclado e Diagn&oacute;sticos">
+		<param name="Local" value="..\pt-BR\atalhos.html">
+		</OBJECT>
+</UL>
+</BODY></HTML>

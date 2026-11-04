@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marcador de Amostras e Sessões - DMapFactory Help</title>
+  <link rel="stylesheet" href="../assets/css/help.css">
+  <script defer src="../assets/js/help.js"></script>
+</head>
+<body>
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <a href="index.html" class="brand">
+      <span class="brand-badge">DMAP</span>
+      <div>
+        <div class="brand-title">DMapFactory</div>
+        <div class="brand-subtitle">Manual do Usuário &amp; Ajuda Contextual</div>
+      </div>
+    </a>
+    <div class="topbar-actions">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" placeholder="Pesquisar tópicos..." />
+      </div>
+      <div class="lang-switch">
+        <a href="#" class="lang-btn active" data-lang="pt-BR">PT</a>
+        <a href="#" class="lang-btn" data-lang="en-US">EN</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Layout Container -->
+  <div class="layout-container">
+    
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+      <div class="sidebar-heading">Documentação</div>
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link">
+            <span class="nav-icon">📖</span> Visão Geral
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="conexao-opc.html" class="nav-link">
+            <span class="nav-icon">🔌</span> Conexões &amp; Tags OPC
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="certificados.html" class="nav-link">
+            <span class="nav-icon">🔐</span> Certificados de Segurança
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="planilha.html" class="nav-link">
+            <span class="nav-icon">📊</span> Modo Planilha
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="grafico.html" class="nav-link">
+            <span class="nav-icon">📈</span> Gráfico &amp; Penas
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="marcador.html" class="nav-link active">
+            <span class="nav-icon">🚩</span> Marcador &amp; Sessões
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="atalhos.html" class="nav-link">
+            <span class="nav-icon">⌨️</span> Atalhos &amp; Diagnóstico
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Content Area -->
+    <main class="content-wrapper">
+      <div class="breadcrumb">
+        <a href="index.html">Ajuda DMapFactory</a> &gt; <span>Marcador &amp; Sessões</span>
+      </div>
+
+      <header class="topic-header">
+        <h1>Marcador de Amostras e Gravação de Sessões</h1>
+        <div class="topic-subtitle">Sinalização de eventos operacionais, congelamento de snapshots e persistência de dados</div>
+      </header>
+
+      <section>
+        <h2>Para que Serve o Botão "Marcador"?</h2>
+        <p>Durante rotinas de comissionamento em campo, validação de receitas, testes de esteira ou auditoria de falhas em máquinas industriais, é fundamental correlacionar o momento exato em que um evento físico aconteceu com o sinal gravado pelo CLP.</p>
+        <p>O botão <strong>Marcador</strong> (ícone de bandeira <kbd>🚩</kbd> na barra de ferramentas) permite que o operador insira uma marca temporal imediata na coleta em andamento.</p>
+
+        <div class="callout callout-info">
+          <div class="callout-title">📌 Comportamento do Marcador</div>
+          Ao acionar o botão Marcador:
+          <ul style="margin-top: 6px;">
+            <li><strong>Na Planilha</strong>: a linha exata daquele instante recebe um indicador especial na coluna de marcador, destacando visualmente as variáveis presentes naquele milissegundo.</li>
+            <li><strong>No Gráfico</strong>: é desenhada uma linha vertical tracejada ou marco de anotação contendo o timestamp e a descrição do evento, permitindo correlacionar picos analógicos ou transições digitais ao evento operacional.</li>
+          </ul>
+        </div>
+
+        <h2>Gatilho Customizado de Ciclo de Máquina (FN-02)</h2>
+        <p>Além da marcação manual, o DMapFactory possui cálculo automatizado de <strong>Ciclos de Máquina</strong> com base em qualquer variável digital do CLP:</p>
+        <ul>
+          <li><strong>Configuração Descomplicada</strong>: basta clicar com o botão direito sobre o cabeçalho/célula de uma tag booleana na planilha ou sobre a pena no gráfico e selecionar <strong>⚙ Definir como gatilho de ciclo de máquina</strong>.</li>
+          <li><strong>Detecção de Borda</strong>: a cada transição de estado da variável configurada (por exemplo, <em>Sensor_Fim_De_Curso</em> de <code>0</code> para <code>1</code>), o software detecta o início de um novo ciclo.</li>
+          <li><strong>Cálculo Automático de Métricas</strong>: o sistema calcula a duração precisa do ciclo ($\Delta t$), incrementa o número do ciclo (ex: <code>#1</code>, <code>#2</code>, <code>#3</code>) e atualiza o <strong>Indicador de Ciclo Ativo</strong> no cabeçalho da barra superior e na coluna <em>Ciclo</em> da planilha.</li>
+        </ul>
+
+        <h2>Restauração Automática de Marcadores em Sessões Salvas (MG-02)</h2>
+        <p>Ao abrir uma sessão gravada previamente (via menu <em>Arquivo &gt; Abrir Sessão...</em> ou atalho <kbd>Ctrl+O</kbd>):</p>
+        <ul>
+          <li>Todos os <strong>marcadores de evento</strong> registrados durante a execução em campo são integralmente restaurados.</li>
+          <li>As marcações reaparecem tanto nas linhas correspondentes da planilha quanto como linhas verticais demarcatórias no gráfico de tendências, viabilizando análises pós-operacionais completas.</li>
+        </ul>
+
+        <h2>Formatos de Exportação Suportados</h2>
+        <p>Através do botão <strong>Exportar Planilha</strong> na barra de ferramentas ou atalho <kbd>Ctrl+E</kbd>, é possível exportar o histórico temporal nos seguintes formatos:</p>
+        <ul>
+          <li><strong>Planilha Microsoft Excel (.xlsx)</strong>: arquivo de pasta de trabalho pronto para análise gerencial, fórmulas e tabelas dinâmicas.</li>
+          <li><strong>CSV Amplo (Wide Format .csv)</strong>: colunas separadas por ponto-e-vírgula com timestamps nas linhas e variáveis nas colunas (otimizado para Power BI, Pandas e Python).</li>
+          <li><strong>CSV Estreito (Narrow Format .csv)</strong>: estrutura relacional longa (Timestamp, Tag, Valor, Qualidade), ideal para importação em bancos de dados SQL/NoSQL.</li>
+          <li><strong>Texto Tabulado (TSV .txt / Área de Transferência)</strong>: cópia rápida de linhas selecionadas para colar direto em planilhas sem precisar salvar arquivos intermediários.</li>
+          <li><strong>Banco de Dados de Sessão (.db / SQLite)</strong>: arquivo autocontido com rastreabilidade total de dados e marcadores.</li>
+        </ul>
+      </section>
+
+      <footer class="topic-footer">
+        <a href="grafico.html" class="btn-nav">&larr; Anterior: Gráfico &amp; Penas</a>
+        <a href="atalhos.html" class="btn-nav">Próximo: Atalhos &amp; Diagnóstico &rarr;</a>
+      </footer>
+    </main>
+  </div>
+
+</body>
+</html>

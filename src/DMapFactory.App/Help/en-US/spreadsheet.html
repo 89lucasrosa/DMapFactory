@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spreadsheet Mode (Wide Format) - DMapFactory Help</title>
+  <link rel="stylesheet" href="../assets/css/help.css">
+  <script defer src="../assets/js/help.js"></script>
+</head>
+<body>
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <a href="index.html" class="brand">
+      <span class="brand-badge">DMAP</span>
+      <div>
+        <div class="brand-title">DMapFactory</div>
+        <div class="brand-subtitle">User Manual &amp; Context-Sensitive Help</div>
+      </div>
+    </a>
+    <div class="topbar-actions">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" placeholder="Search topics..." />
+      </div>
+      <div class="lang-switch">
+        <a href="#" class="lang-btn" data-lang="pt-BR">PT</a>
+        <a href="#" class="lang-btn active" data-lang="en-US">EN</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Layout Container -->
+  <div class="layout-container">
+    
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+      <div class="sidebar-heading">Documentation</div>
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link">
+            <span class="nav-icon">📖</span> Overview
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="opc-connection.html" class="nav-link">
+            <span class="nav-icon">🔌</span> OPC Connections &amp; Tags
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="certificates.html" class="nav-link">
+            <span class="nav-icon">🔐</span> Security Certificates
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="spreadsheet.html" class="nav-link active">
+            <span class="nav-icon">📊</span> Spreadsheet Mode
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="chart.html" class="nav-link">
+            <span class="nav-icon">📈</span> Trend Chart &amp; Pens
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="marker.html" class="nav-link">
+            <span class="nav-icon">🚩</span> Marker &amp; Sessions
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="shortcuts.html" class="nav-link">
+            <span class="nav-icon">⌨️</span> Shortcuts &amp; Diagnostics
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Content Area -->
+    <main class="content-wrapper">
+      <div class="breadcrumb">
+        <a href="index.html">DMapFactory Help</a> &gt; <span>Spreadsheet Mode</span>
+      </div>
+
+      <header class="topic-header">
+        <h1>Spreadsheet Mode (Wide Format)</h1>
+        <div class="topic-subtitle">Multivariable time-series tabular representation with vertical headers and color-filled boolean indicators</div>
+      </header>
+
+      <section>
+        <h2>Wide Format Architecture (RF-GRD-01..10)</h2>
+        <p>The primary view displays data in <strong>Wide Format</strong>. Unlike narrow row-based logging where each record represents a single isolated variable event, each <strong>row represents an exact point in time</strong> (timestamp) and each <strong>column corresponds to a monitored variable</strong>, offering a comprehensive snapshot of entire machine lines simultaneously.</p>
+
+        <h2>Color-Coded Boolean Signals</h2>
+        <p>To enable rapid operator diagnosis of discrete sensors, interlocks, and state alarms, digital variables are rendered with solid color-filled blocks instead of plain numbers (0 or 1):</p>
+        <ul>
+          <li><strong>Bright Green</strong>: indicates True / Logic High / Active State.</li>
+          <li><strong>Muted Dark Gray</strong>: indicates False / Logic Low / Inactive State.</li>
+        </ul>
+
+        <h2>Vertical Column Headers</h2>
+        <p>When tracking dozens of tags, long horizontal headers consume excessive screen space. Check the <strong>Vertical column headers</strong> option on the spreadsheet toolbar to rotate text 90 degrees.</p>
+        
+        <h3>Header Row Height Adjustment</h3>
+        <p>When headers are oriented vertically, customize row height to ensure full label visibility:</p>
+        <ul>
+          <li><strong>Buttons <kbd>−</kbd> and <kbd>+</kbd></strong>: decrease or increase row height in 20-pixel increments.</li>
+          <li><strong>Button <kbd>↕ Auto</kbd></strong>: automatically calculates the optimal header height based on the longest tag alias.</li>
+          <li><strong>Interactive Mouse Dragging</strong>: hover over the bottom border of the column header and drag up or down to set any desired height.</li>
+        </ul>
+
+        <h3>Auto-Fit Column Widths (<kbd>↔ Auto-fit widths</kbd>)</h3>
+        <p>The auto-fit button re-evaluates the required width for every column, taking into account both header orientation (vertical or horizontal) and cell data contents to eliminate wasted space.</p>
+
+        <h2>Precise Tag Removal in Spreadsheet</h2>
+        <p>To remove a specific variable from acquisition without disturbing other columns:</p>
+        <ol>
+          <li><strong>Right-Click Column Header</strong>: right-click any tag header to open the contextual menu and select <strong>🗑 Delete tag '...' from collection</strong>.</li>
+          <li><strong>Keyboard <kbd>Delete</kbd> Key</strong>: click any cell or header in the desired column and press <kbd>Delete</kbd>.</li>
+          <li><strong>Toolbar Button</strong>: clicking any cell dynamically updates the main toolbar button to <strong>Delete tag (&lt;Alias&gt;)</strong>.</li>
+        </ol>
+
+        <h2>Smart Auto-Scroll Pause (FN-04)</h2>
+        <p>When analyzing high-frequency real-time signals, continuous auto-scrolling can interfere with inspecting previous rows. DMapFactory features intelligent scroll detection:</p>
+        <ul>
+          <li><strong>Automatic Pause on Scroll Up</strong>: scrolling up manually to inspect earlier records temporarily suspends automatic scrolling, locking the view on the current row under inspection without clearing the checkbox.</li>
+          <li><strong>Smooth Resumption</strong>: scrolling back to the bottom or re-checking the <em>Auto-scroll</em> checkbox immediately resumes live tracking.</li>
+        </ul>
+
+        <h2>Context Menu &amp; Chart &harr; Spreadsheet Cross-Synchronization</h2>
+        <p>Right-clicking any cell or row in the spreadsheet opens a contextual menu with productivity and diagnostics tools:</p>
+        <div class="table-container">
+          <table class="topic-table">
+            <thead>
+              <tr>
+                <th>Action</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>📈 Focus timestamp on Chart (Cursor A)</strong></td>
+                <td>Instantly synchronizes view with the trend chart. Positions <strong>Cursor A</strong> at the exact timestamp of the selected row for waveform examination.</td>
+              </tr>
+              <tr>
+                <td><strong>🚩 Insert marker on this row...</strong></td>
+                <td>Adds a custom text session marker associated with the exact timestamp of the selected row.</td>
+              </tr>
+              <tr>
+                <td><strong>⚙ Set as machine cycle trigger</strong></td>
+                <td>(Available on boolean columns) Assigns the clicked boolean variable as the transition source for automated machine cycle calculation.</td>
+              </tr>
+              <tr>
+                <td><strong>📋 Copy Row (TSV - Excel Format)</strong></td>
+                <td>Copies the full row in tab-separated format, ready to paste directly into Microsoft Excel, Google Sheets, or text editors (<kbd>Ctrl+C</kbd>).</td>
+              </tr>
+              <tr>
+                <td><strong>📋 Copy Cell Value</strong></td>
+                <td>Copies the discrete value of the clicked variable.</td>
+              </tr>
+              <tr>
+                <td><strong>⏱ Copy Row Timestamp</strong></td>
+                <td>Copies the high-precision timestamp string (<code>yyyy-MM-dd HH:mm:ss.fff</code>).</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2>Additional Spreadsheet Controls</h2>
+        <ul>
+          <li><strong>Sky-Blue Row Highlight</strong>: selected rows feature an elegant sky-blue border (<code>#00B4F0</code>) that keeps all cell values completely legible.</li>
+          <li><strong>Auto-scroll</strong>: keeps the grid pinned to newly arriving real-time samples.</li>
+          <li><strong>Sampling Rate &amp; Modes</strong>: select intervals between <code>10 ms</code> and <code>1000 ms</code> from the top toolbar, toggling between <em>Subscription</em> and <em>Polling</em> modes.</li>
+          <li><strong>Continuous Sampling (1 s)</strong>: forces a complete row log every 1 second, even when variables experience no value changes.</li>
+          <li><strong>Group Same Timestamp (P3)</strong>: bundles simultaneous tag transitions into a single unified row.</li>
+        </ul>
+      </section>
+
+      <footer class="topic-footer">
+        <a href="certificates.html" class="btn-nav">&larr; Previous: Security Certificates</a>
+        <a href="chart.html" class="btn-nav">Next: Trend Chart &amp; Pens &rarr;</a>
+      </footer>
+    </main>
+  </div>
+
+</body>
+</html>

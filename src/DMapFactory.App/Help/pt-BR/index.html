@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visão Geral e Introdução - DMapFactory Help</title>
+  <link rel="stylesheet" href="../assets/css/help.css">
+  <script defer src="../assets/js/help.js"></script>
+</head>
+<body>
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <a href="index.html" class="brand">
+      <span class="brand-badge">DMAP</span>
+      <div>
+        <div class="brand-title">DMapFactory</div>
+        <div class="brand-subtitle">Manual do Usuário &amp; Ajuda Contextual</div>
+      </div>
+    </a>
+    <div class="topbar-actions">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" placeholder="Pesquisar tópicos..." />
+      </div>
+      <div class="lang-switch">
+        <a href="#" class="lang-btn active" data-lang="pt-BR">PT</a>
+        <a href="#" class="lang-btn" data-lang="en-US">EN</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Layout Container -->
+  <div class="layout-container">
+    
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+      <div class="sidebar-heading">Documentação</div>
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link active">
+            <span class="nav-icon">📖</span> Visão Geral
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="conexao-opc.html" class="nav-link">
+            <span class="nav-icon">🔌</span> Conexões &amp; Tags OPC
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="certificados.html" class="nav-link">
+            <span class="nav-icon">🔐</span> Certificados de Segurança
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="planilha.html" class="nav-link">
+            <span class="nav-icon">📊</span> Modo Planilha
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="grafico.html" class="nav-link">
+            <span class="nav-icon">📈</span> Gráfico &amp; Penas
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="marcador.html" class="nav-link">
+            <span class="nav-icon">🚩</span> Marcador &amp; Sessões
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="atalhos.html" class="nav-link">
+            <span class="nav-icon">⌨️</span> Atalhos &amp; Diagnóstico
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Content Area -->
+    <main class="content-wrapper">
+      <div class="breadcrumb">
+        <a href="index.html">Ajuda DMapFactory</a> &gt; <span>Visão Geral</span>
+      </div>
+
+      <header class="topic-header">
+        <h1>Visão Geral do DMapFactory</h1>
+        <div class="topic-subtitle">Sistema de Coleta, Análise e Visualização Temporal de Dados Industriais OPC UA</div>
+      </header>
+
+      <section>
+        <h2>Introdução ao Software</h2>
+        <p>O <strong>DMapFactory</strong> é uma ferramenta desktop de alto desempenho projetada para monitoramento, análise diagnóstica e registro de telemetria industrial em tempo real via protocolo <strong>OPC UA (Open Platform Communications Unified Architecture)</strong>.</p>
+        <p>Desenvolvido com tecnologia .NET 10 e WPF, ele combina a precisão da amostragem temporal com recursos avançados de visualização simultânea em <strong>Planilha de Formato Amplo</strong> e <strong>Gráfico de Tendências Contínuo</strong>.</p>
+
+        <div class="callout callout-info">
+          <div class="callout-title">💡 Ajuda Sensível ao Contexto (F1)</div>
+          A qualquer momento durante o uso do software, pressione a tecla <kbd>F1</kbd> para abrir diretamente o tópico de ajuda correspondente à tela, aba ou controle em que você estiver trabalhando.
+        </div>
+
+        <h2>Módulos Principais</h2>
+        <div class="card-grid">
+          <a href="conexao-opc.html" class="card">
+            <div class="card-icon">🔌</div>
+            <div class="card-title">Comunicação OPC UA</div>
+            <div class="card-desc">Conexão a múltiplos servidores, navegação hierárquica por nós de variáveis e inclusão rápida de tags.</div>
+          </a>
+          <a href="certificados.html" class="card">
+            <div class="card-icon">🔐</div>
+            <div class="card-title">Gestão de Certificados</div>
+            <div class="card-desc">Gerador de certificados da aplicação, importação de chaves PFX e administração de certificados de servidores confiáveis.</div>
+          </a>
+          <a href="planilha.html" class="card">
+            <div class="card-icon">📊</div>
+            <div class="card-title">Modo Planilha</div>
+            <div class="card-desc">Visualização tabular em formato amplo (Wide Format), títulos verticais ajustáveis e realce de booleanos por cores.</div>
+          </a>
+          <a href="grafico.html" class="card">
+            <div class="card-icon">📈</div>
+            <div class="card-title">Gráfico de Tendências</div>
+            <div class="card-desc">Plotagem interativa de alto desempenho via ScottPlot, mira crosshair, cursores de medição A/B e painel lateral de penas.</div>
+          </a>
+          <a href="marcador.html" class="card">
+            <div class="card-icon">🚩</div>
+            <div class="card-title">Marcador de Amostras</div>
+            <div class="card-desc">Inserção de eventos e anotações na linha do tempo com visualização sincronizada entre planilha e gráfico.</div>
+          </a>
+          <a href="atalhos.html" class="card">
+            <div class="card-icon">⌨️</div>
+            <div class="card-title">Atalhos e Diagnósticos</div>
+            <div class="card-desc">Tabela de comandos rápidos, métricas de buffer de memória, taxas de eventos e log operacional.</div>
+          </a>
+        </div>
+
+        <h2 id="novidades">Destaques da Versão e Melhorias de Produtividade</h2>
+        <div class="callout callout-tip">
+          <div class="callout-title">⚡ Experiência de Usuário e Alta Performance</div>
+          Esta versão traz um conjunto abrangente de inovações desenvolvidas para máxima agilidade operacional:
+          <ul style="margin-top: 8px;">
+            <li><strong>Atalhos de Teclado Globais</strong>: controle completo via teclado (<kbd>Ctrl+N</kbd>, <kbd>Ctrl+O</kbd>, <kbd>Ctrl+S</kbd>, <kbd>Ctrl+E</kbd>, <kbd>Ctrl+M</kbd>, <kbd>Ctrl+1/2/3</kbd>, <kbd>F5</kbd>, <kbd>Espaço</kbd>, <kbd>Esc</kbd>).</li>
+            <li><strong>Menus de Contexto em Todos os Componentes</strong>: clique com o botão direito na planilha, cabeçalhos, gráfico de tendências, árvore OPC UA, painel de penas e grade de logs para ações imediatas.</li>
+            <li><strong>Sincronização Cruzada Bidirecional</strong>: localize instantaneamente no gráfico o instante de qualquer linha da planilha, e vice-versa, com um clique.</li>
+            <li><strong>Pausa Inteligente do Auto-scroll</strong>: examine amostras anteriores com rolagem natural sem interrupções da coleta em tempo real.</li>
+            <li><strong>Busca Rápida de Nós OPC UA</strong>: filtro dinâmico instantâneo com expansão automática de pastas.</li>
+            <li><strong>Gatilho Customizado de Ciclos de Máquina</strong>: configure qualquer tag digital como disparador de ciclo operacional com cálculo automático de $\Delta t$.</li>
+            <li><strong>Motor Gráfico Otimizado &amp; Buffer Zero-GC</strong>: visualização fluida a 60 FPS com downsampling adaptativo e busca binária $O(\log N)$.</li>
+          </ul>
+        </div>
+
+        <h2 id="painel-logs">Painel Operacional e Registro de Eventos</h2>
+        <p>A parte inferior da aplicação conta com uma <strong>Barra de Status</strong> e um <strong>Painel de Log</strong> integrado:</p>
+        <ul>
+          <li><strong>Indicador On-line / Off-line</strong>: exibe o estado de amostragem em tempo real (Verde = On-line, Cinza = Off-line).</li>
+          <li><strong>Contador de Conexões</strong>: quantidade de conexões ativas e saudáveis.</li>
+          <li><strong>Taxa de Eventos/s</strong>: fluxo instantâneo de transições e leituras processadas por segundo.</li>
+          <li><strong>Tamanho do Buffer</strong>: volume atual de amostras mantidas na memória interna para análise.</li>
+          <li><strong>Tempo de Sessão</strong>: cronômetro em formato <code>HH:mm:ss</code> indicando o tempo decorrido da coleta.</li>
+          <li><strong>Indicador de Ciclo Ativo</strong>: exibe o ciclo operacional em curso detectado pelo gatilho booleano.</li>
+        </ul>
+      </section>
+
+      <footer class="topic-footer">
+        <div>DMapFactory &copy; 2026 - Documentação Oficial</div>
+        <a href="conexao-opc.html" class="btn-nav">Próximo: Conexões &amp; Tags OPC &rarr;</a>
+      </footer>
+    </main>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sample Marker &amp; Sessions - DMapFactory Help</title>
+  <link rel="stylesheet" href="../assets/css/help.css">
+  <script defer src="../assets/js/help.js"></script>
+</head>
+<body>
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <a href="index.html" class="brand">
+      <span class="brand-badge">DMAP</span>
+      <div>
+        <div class="brand-title">DMapFactory</div>
+        <div class="brand-subtitle">User Manual &amp; Context-Sensitive Help</div>
+      </div>
+    </a>
+    <div class="topbar-actions">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" placeholder="Search topics..." />
+      </div>
+      <div class="lang-switch">
+        <a href="#" class="lang-btn" data-lang="pt-BR">PT</a>
+        <a href="#" class="lang-btn active" data-lang="en-US">EN</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Layout Container -->
+  <div class="layout-container">
+    
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+      <div class="sidebar-heading">Documentation</div>
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link">
+            <span class="nav-icon">📖</span> Overview
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="opc-connection.html" class="nav-link">
+            <span class="nav-icon">🔌</span> OPC Connections &amp; Tags
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="certificates.html" class="nav-link">
+            <span class="nav-icon">🔐</span> Security Certificates
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="spreadsheet.html" class="nav-link">
+            <span class="nav-icon">📊</span> Spreadsheet Mode
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="chart.html" class="nav-link">
+            <span class="nav-icon">📈</span> Trend Chart &amp; Pens
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="marker.html" class="nav-link active">
+            <span class="nav-icon">🚩</span> Marker &amp; Sessions
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="shortcuts.html" class="nav-link">
+            <span class="nav-icon">⌨️</span> Shortcuts &amp; Diagnostics
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Content Area -->
+    <main class="content-wrapper">
+      <div class="breadcrumb">
+        <a href="index.html">DMapFactory Help</a> &gt; <span>Marker &amp; Sessions</span>
+      </div>
+
+      <header class="topic-header">
+        <h1>Sample Marker &amp; Session Recording</h1>
+        <div class="topic-subtitle">Operational event tagging, snapshot timeline flags, and data persistence</div>
+      </header>
+
+      <section>
+        <h2>What is the Purpose of the "Marker" Button?</h2>
+        <p>During plant commissioning, recipe changeovers, conveyor performance tests, or machine trip investigations, engineers must correlate physical events observed on the plant floor with digital signals captured by the PLC.</p>
+        <p>The <strong>Marker</strong> button (flag icon <kbd>🚩</kbd> on the main toolbar) allows the operator to inject an immediate timestamped marker into the live acquisition stream.</p>
+
+        <div class="callout callout-info">
+          <div class="callout-title">📌 Marker Behavior</div>
+          When triggering a Marker:
+          <ul style="margin-top: 6px;">
+            <li><strong>In Spreadsheet</strong>: the exact row corresponding to that timestamp is visually flagged in the marker column, spotlighting all tag values in that precise millisecond.</li>
+            <li><strong>On Chart</strong>: a vertical dashed annotation line is drawn at that exact timestamp with the event description, allowing instant visual correlation of analog spikes or digital transitions.</li>
+          </ul>
+        </div>
+
+        <h2>Custom Machine Cycle Trigger (FN-02)</h2>
+        <p>Beyond manual milestone markers, DMapFactory offers automated <strong>Machine Cycle Tracking</strong> driven by any digital PLC tag:</p>
+        <ul>
+          <li><strong>Zero-Friction Configuration</strong>: right-click any boolean tag in the spreadsheet or pen list and select <strong>⚙ Set as machine cycle trigger</strong>.</li>
+          <li><strong>Edge Detection</strong>: whenever the selected variable changes state (e.g., <em>EndOfStroke_Sensor</em> from <code>0</code> to <code>1</code>), the acquisition engine registers the inception of a new machine cycle.</li>
+          <li><strong>Automated Cycle Metrics</strong>: computes the exact cycle duration ($\Delta t$), increments the cycle index (e.g. <code>#1</code>, <code>#2</code>, <code>#3</code>), and displays the <strong>Active Cycle Indicator</strong> in the top header and within the spreadsheet <em>Cycle</em> column.</li>
+        </ul>
+
+        <h2>Automatic Marker Restoration on Loaded Sessions (MG-02)</h2>
+        <p>When loading a previously recorded acquisition session (via <em>File &gt; Open Session...</em> or shortcut <kbd>Ctrl+O</kbd>):</p>
+        <ul>
+          <li>All historical <strong>event markers</strong> logged during the live run are fully restored.</li>
+          <li>Markers are seamlessly recreated on their corresponding spreadsheet rows and plotted as vertical annotation markers across the trend chart, providing post-mortem diagnostic fidelity.</li>
+        </ul>
+
+        <h2>Supported Data Export Formats</h2>
+        <p>Using the <strong>Export Spreadsheet</strong> button or shortcut <kbd>Ctrl+E</kbd>, save your session data in any of the following standard formats:</p>
+        <ul>
+          <li><strong>Microsoft Excel Workbook (.xlsx)</strong>: formatted workbook ready for management reports, pivot tables, and formulas.</li>
+          <li><strong>Wide CSV (.csv)</strong>: semicolon-delimited text with timestamps along rows and tags across columns (optimized for Power BI, Pandas, and Python analytics).</li>
+          <li><strong>Narrow CSV (.csv)</strong>: normalized key-value records (Timestamp, Tag, Value, Quality), ideal for SQL/NoSQL data lake pipelines.</li>
+          <li><strong>Tab-Separated Values (TSV / Clipboard)</strong>: rapid row copying to paste directly into spreadsheets without generating intermediate files.</li>
+          <li><strong>Session Database (.db / SQLite)</strong>: self-contained binary database ensuring complete audit trail traceability and permanent archival.</li>
+        </ul>
+      </section>
+
+      <footer class="topic-footer">
+        <a href="chart.html" class="btn-nav">&larr; Previous: Trend Chart &amp; Pens</a>
+        <a href="shortcuts.html" class="btn-nav">Next: Shortcuts &amp; Diagnostics &rarr;</a>
+      </footer>
+    </main>
+  </div>
+
+</body>
+</html>

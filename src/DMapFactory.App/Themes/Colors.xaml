@@ -1,0 +1,47 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--
+        Paleta cinza de baixo contraste (doc 02, seção 8.2).
+        Todas as cores ficam centralizadas aqui para facilitar ajustes e um futuro tema escuro.
+    -->
+    <Color x:Key="BackgroundColor">#E9EAEC</Color>
+    <Color x:Key="SurfaceColor">#F3F4F5</Color>
+    <Color x:Key="SurfaceAltColor">#ECEDEF</Color>
+    <Color x:Key="HoverColor">#E1E3E6</Color>
+    <Color x:Key="PressedColor">#D6D9DD</Color>
+    <Color x:Key="BorderColor">#D3D6DA</Color>
+    <Color x:Key="TextPrimaryColor">#3C4046</Color>
+    <Color x:Key="TextSecondaryColor">#727780</Color>
+    <Color x:Key="TextDisabledColor">#A4A8AE</Color>
+    <Color x:Key="AccentColor">#6E8398</Color>
+    <Color x:Key="AccentSoftColor">#DCE3EA</Color>
+    <Color x:Key="ChangedColor">#E3E8EE</Color>
+    <Color x:Key="GoodColor">#7A9E7E</Color>
+    <Color x:Key="UncertainColor">#C4A866</Color>
+    <Color x:Key="BadColor">#B87A7E</Color>
+    <Color x:Key="MarkerColor">#FEF3C7</Color>
+    <Color x:Key="MarkerBorderColor">#D97706</Color>
+
+    <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}" />
+    <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}" />
+    <SolidColorBrush x:Key="SurfaceAltBrush" Color="{StaticResource SurfaceAltColor}" />
+    <SolidColorBrush x:Key="HoverBrush" Color="{StaticResource HoverColor}" />
+    <SolidColorBrush x:Key="PressedBrush" Color="{StaticResource PressedColor}" />
+    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}" />
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}" />
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}" />
+    <SolidColorBrush x:Key="TextDisabledBrush" Color="{StaticResource TextDisabledColor}" />
+    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
+    <SolidColorBrush x:Key="AccentSoftBrush" Color="{StaticResource AccentSoftColor}" />
+    <SolidColorBrush x:Key="ChangedBrush" Color="{StaticResource ChangedColor}" />
+    <SolidColorBrush x:Key="GoodBrush" Color="{StaticResource GoodColor}" />
+    <SolidColorBrush x:Key="UncertainBrush" Color="{StaticResource UncertainColor}" />
+    <SolidColorBrush x:Key="BadBrush" Color="{StaticResource BadColor}" />
+    <SolidColorBrush x:Key="MarkerBrush" Color="{StaticResource MarkerColor}" />
+    <SolidColorBrush x:Key="MarkerBorderBrush" Color="{StaticResource MarkerBorderColor}" />
+
+    <FontFamily x:Key="UiFont">Segoe UI Variable Text, Segoe UI</FontFamily>
+    <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+    <FontFamily x:Key="MonoFont">Cascadia Mono, Consolas</FontFamily>
+    <CornerRadius x:Key="ControlRadius">4</CornerRadius>
+</ResourceDictionary>

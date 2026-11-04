@@ -1,0 +1,19 @@
+## .NET / Visual Studio
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.userprefs
+TestResults/
+publish/
+artifacts/
+
+## Rider / VS Code
+.idea/
+.vscode/
+
+## Dados gerados em tempo de execução
+*.log
+sessions/
+pki/

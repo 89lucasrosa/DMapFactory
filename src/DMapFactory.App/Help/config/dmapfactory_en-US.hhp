@@ -1,0 +1,36 @@
+[OPTIONS]
+Compatibility=1.1 or later
+Compiled file=..\..\..\bin\Help\DMapFactory.en-US.chm
+Contents file=dmapfactory_en-US.hhc
+Default topic=..\en-US\index.html
+Display compile progress=Yes
+Full-text search=Yes
+Index file=dmapfactory_en-US.hhk
+Language=0x409 English (United States)
+Title=DMapFactory - Help Manual
+
+[FILES]
+..\en-US\index.html
+..\en-US\opc-connection.html
+..\en-US\certificates.html
+..\en-US\spreadsheet.html
+..\en-US\chart.html
+..\en-US\marker.html
+..\en-US\shortcuts.html
+..\assets\css\help.css
+..\assets\js\help.js
+
+[MAP]
+#include dmapfactory.h
+
+[ALIAS]
+IDH_OVERVIEW=index.html
+IDH_OPC_CONNECTION=opc-connection.html
+IDH_TAG_BROWSER=opc-connection.html#tag-browser
+IDH_CERTIFICATES=certificates.html
+IDH_SPREADSHEET=spreadsheet.html
+IDH_CHART=chart.html
+IDH_PEN_PANEL=chart.html#pen-panel
+IDH_MARKER=marker.html
+IDH_SHORTCUTS=shortcuts.html
+IDH_LOG_PANEL=shortcuts.html#diagnostics

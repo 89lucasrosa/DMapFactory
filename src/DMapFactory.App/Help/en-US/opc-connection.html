@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OPC Connections &amp; Tag Browser - DMapFactory Help</title>
+  <link rel="stylesheet" href="../assets/css/help.css">
+  <script defer src="../assets/js/help.js"></script>
+</head>
+<body>
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <a href="index.html" class="brand">
+      <span class="brand-badge">DMAP</span>
+      <div>
+        <div class="brand-title">DMapFactory</div>
+        <div class="brand-subtitle">User Manual &amp; Context-Sensitive Help</div>
+      </div>
+    </a>
+    <div class="topbar-actions">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" placeholder="Search topics..." />
+      </div>
+      <div class="lang-switch">
+        <a href="#" class="lang-btn" data-lang="pt-BR">PT</a>
+        <a href="#" class="lang-btn active" data-lang="en-US">EN</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Layout Container -->
+  <div class="layout-container">
+    
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+      <div class="sidebar-heading">Documentation</div>
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link">
+            <span class="nav-icon">📖</span> Overview
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="opc-connection.html" class="nav-link active">
+            <span class="nav-icon">🔌</span> OPC Connections &amp; Tags
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="certificates.html" class="nav-link">
+            <span class="nav-icon">🔐</span> Security Certificates
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="spreadsheet.html" class="nav-link">
+            <span class="nav-icon">📊</span> Spreadsheet Mode
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="chart.html" class="nav-link">
+            <span class="nav-icon">📈</span> Trend Chart &amp; Pens
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="marker.html" class="nav-link">
+            <span class="nav-icon">🚩</span> Marker &amp; Sessions
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="shortcuts.html" class="nav-link">
+            <span class="nav-icon">⌨️</span> Shortcuts &amp; Diagnostics
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Content Area -->
+    <main class="content-wrapper">
+      <div class="breadcrumb">
+        <a href="index.html">DMapFactory Help</a> &gt; <span>OPC Connections &amp; Tags</span>
+      </div>
+
+      <header class="topic-header">
+        <h1>OPC UA Connections &amp; Tag Browser</h1>
+        <div class="topic-subtitle">Server endpoint management, security policies, and industrial variable selection</div>
+      </header>
+
+      <section>
+        <h2>Managing Connections</h2>
+        <p>The top-left panel displays all configured OPC UA server endpoints in the current project.</p>
+        
+        <h3>How to Add a New Connection</h3>
+        <ol>
+          <li>Click the <strong>Add Connection</strong> button (<kbd>➕</kbd>) on the toolbar or connection panel header.</li>
+          <li>In the dialog, specify:
+            <ul>
+              <li><strong>Connection Name</strong>: friendly label (e.g. <em>PLC Line 1</em>).</li>
+              <li><strong>Endpoint URL</strong>: network address (e.g. <code>opc.tcp://192.168.0.10:4840</code>).</li>
+              <li><strong>Security Mode</strong>: <code>None</code>, <code>Sign</code>, or <code>SignAndEncrypt</code>.</li>
+              <li><strong>Security Policy</strong>: cryptographic suite (e.g. <code>Basic256Sha256</code>, <code>Aes128_Sha256_RsaOaep</code>).</li>
+              <li><strong>Authentication</strong>: Anonymous or Username/Password credentials.</li>
+            </ul>
+          </li>
+          <li>Click <strong>Save</strong> to register the server in the project list.</li>
+        </ol>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">💡 Credential Protection &amp; Security Compliance (MG-04)</div>
+          The connection setup dialog automatically secures authentication credentials behind masked password fields (<code>PasswordBox</code>), revealing user/password input rows only when the <strong>Username / Password</strong> mode is selected, ensuring strict industrial cybersecurity compliance.
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">💡 Connection Status Indicators</div>
+          Each connection features a colored status dot:
+          <ul style="margin-top: 6px;">
+            <li><strong style="color: #10B981;">Green</strong>: Connected and communicating normally.</li>
+            <li><strong style="color: #F59E0B;">Yellow</strong>: Connecting or in automatic reconnection retry.</li>
+            <li><strong style="color: #EF4444;">Red</strong>: Connection fault or unreachable endpoint.</li>
+          </ul>
+        </div>
+
+        <h2>Sampling Rate &amp; Acquisition Modes (FN-01)</h2>
+        <p>The top toolbar provides immediate control over how DMapFactory polls or receives data from the OPC UA server:</p>
+        <ul>
+          <li><strong>Sampling Rate (10 ms to 1000 ms)</strong>: adjusts the hardware inspection interval (e.g. <code>10 ms</code> for high-speed servo positioning or <code>1000 ms</code> for general thermal monitoring).</li>
+          <li><strong>Subscription Mode</strong>: the default, recommended event-driven pattern where the server only transmits data packets when variable transitions occur (<em>Report by Exception</em>), optimizing network bandwidth.</li>
+          <li><strong>Polling Mode</strong>: executes active cyclic batch reads at each elapsed interval, ensuring persistent data points on legacy servers with limited notification capabilities.</li>
+        </ul>
+
+        <h2 id="tag-browser">OPC UA Node Tree Browser</h2>
+        <p>Selecting an active connection loads its address space in the <strong>OPC UA Browser</strong> tree.</p>
+        
+        <h3>Quick Node Search &amp; Auto-Expansion (FN-03)</h3>
+        <p>On servers hosting thousands of complex tags, locate variables immediately using the <strong>Search Box</strong> at the top of the node tree:</p>
+        <ul>
+          <li>Type any substring of the display name or <em>NodeId</em> (e.g. <code>Pressure</code>, <code>Sensor_12</code>, <code>ns=2;s=Motor</code>).</li>
+          <li>The tree filters results in real-time, highlighting matches and automatically expanding parent folder containers.</li>
+          <li>Clicking the <kbd>×</kbd> button clears the search query and restores full tree visibility.</li>
+        </ul>
+
+        <h3>Adding Variables &amp; Context Menu Actions</h3>
+        <ul>
+          <li><strong>Single Tag</strong>: Select a variable node and click <strong>Add Selected Tag</strong>, double-click the item, or right-click and choose <strong>➕ Add selected variable</strong>.</li>
+          <li><strong>Multi-Selection with <kbd>Ctrl</kbd></strong>: Hold down the <kbd>Ctrl</kbd> key while clicking multiple nodes in the tree to select them simultaneously, then click <strong>Add Selected Tag</strong> to batch-import all selected variables.</li>
+          <li><strong>Entire Folder</strong>: Select a folder or object container and click <strong>Add Folder as Tags</strong> (or right-click &rarr; <strong>📁 Add folder as tags</strong>) to recursively enroll all variables within it.</li>
+          <li><strong>Copy NodeId</strong>: Right-click any node and choose <strong>📋 Copy NodeId</strong> to copy the exact identifier string to the system clipboard.</li>
+        </ul>
+
+        <div class="callout callout-info">
+          <div class="callout-title">🔍 Node Attributes Panel</div>
+          Clicking any node in the tree immediately updates the lower <strong>Attributes</strong> panel, revealing its <em>NodeId</em>, data type (<em>DataType</em>: Boolean, Int32, Float, String, etc.), read/write permissions, and current live value.
+        </div>
+      </section>
+
+      <footer class="topic-footer">
+        <a href="index.html" class="btn-nav">&larr; Previous: Overview</a>
+        <a href="certificates.html" class="btn-nav">Next: Security Certificates &rarr;</a>
+      </footer>
+    </main>
+  </div>
+
+</body>
+</html>

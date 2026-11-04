@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modo Gráfico de Tendências e Penas - DMapFactory Help</title>
+  <link rel="stylesheet" href="../assets/css/help.css">
+  <script defer src="../assets/js/help.js"></script>
+</head>
+<body>
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <a href="index.html" class="brand">
+      <span class="brand-badge">DMAP</span>
+      <div>
+        <div class="brand-title">DMapFactory</div>
+        <div class="brand-subtitle">Manual do Usuário &amp; Ajuda Contextual</div>
+      </div>
+    </a>
+    <div class="topbar-actions">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" placeholder="Pesquisar tópicos..." />
+      </div>
+      <div class="lang-switch">
+        <a href="#" class="lang-btn active" data-lang="pt-BR">PT</a>
+        <a href="#" class="lang-btn" data-lang="en-US">EN</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Layout Container -->
+  <div class="layout-container">
+    
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+      <div class="sidebar-heading">Documentação</div>
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link">
+            <span class="nav-icon">📖</span> Visão Geral
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="conexao-opc.html" class="nav-link">
+            <span class="nav-icon">🔌</span> Conexões &amp; Tags OPC
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="certificados.html" class="nav-link">
+            <span class="nav-icon">🔐</span> Certificados de Segurança
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="planilha.html" class="nav-link">
+            <span class="nav-icon">📊</span> Modo Planilha
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="grafico.html" class="nav-link active">
+            <span class="nav-icon">📈</span> Gráfico &amp; Penas
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="marcador.html" class="nav-link">
+            <span class="nav-icon">🚩</span> Marcador &amp; Sessões
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="atalhos.html" class="nav-link">
+            <span class="nav-icon">⌨️</span> Atalhos &amp; Diagnóstico
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Content Area -->
+    <main class="content-wrapper">
+      <div class="breadcrumb">
+        <a href="index.html">Ajuda DMapFactory</a> &gt; <span>Gráfico &amp; Penas</span>
+      </div>
+
+      <header class="topic-header">
+        <h1>Modo Gráfico de Tendências e Penas</h1>
+        <div class="topic-subtitle">Motor gráfico temporal de alta resolução com análise por cursores e gestão visual de sinais</div>
+      </header>
+
+      <section>
+        <h2>Visualizador Gráfico de Tendências</h2>
+        <p>A aba <strong>Gráfico</strong> renderiza as curvas de evolução temporal de todas as variáveis monitoradas em tempo real através do motor <strong>ScottPlot 5</strong>, garantindo alta taxa de atualização com baixo consumo de processador.</p>
+
+        <h2>Barra de Ferramentas de Navegação</h2>
+        <p>A barra superior do gráfico disponibiliza controles imediatos de ajuste:</p>
+        <table class="help-table">
+          <thead>
+            <tr>
+              <th>Controle</th>
+              <th>Ação</th>
+              <th>Descrição</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>🔍+ / 🔍−</strong></td>
+              <td>Zoom Horizontal</td>
+              <td>Reduz ou expande a janela de tempo visualizada. Também pode ser feito girando a roda do mouse sobre o gráfico.</td>
+            </tr>
+            <tr>
+              <td><strong>↔ Tudo</strong></td>
+              <td>Ajuste Completo</td>
+              <td>Enquadra todo o histórico de dados coletado desde o início da sessão.</td>
+            </tr>
+            <tr>
+              <td><strong>Y+ / Y−</strong></td>
+              <td>Escala Vertical</td>
+              <td>Amplia ou reduz a escala dos eixos de valor numérico.</td>
+            </tr>
+            <tr>
+              <td><strong>Auto Y</strong></td>
+              <td>Reset de Escala</td>
+              <td>Restaura o cálculo de escala vertical automático conforme a amplitude dos sinais visíveis.</td>
+            </tr>
+            <tr>
+              <td><strong>📷 PNG</strong></td>
+              <td>Captura de Tela</td>
+              <td>Exporta a visualização atual do gráfico diretamente para um arquivo de imagem em alta definição.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2>Modos de Visualização e Diagnóstico de Curva</h2>
+        <ul>
+          <li><strong>Degrau (Step)</strong>: mantém o valor constante até a próxima transição, ideal para sinais digitais (0/1) e estados discretos. Desmarque para traçado linear em grandezas analógicas (temperatura, pressão, vazão).</li>
+          <li><strong>Pontos (●)</strong>: destaca com círculos os instantes exatos em que cada amostra foi coletada pelo driver OPC UA.</li>
+          <li><strong>Mira (Crosshair)</strong>: exibe linhas guia ortogonais e um painel flutuante com a leitura precisa de cada pena na posição do cursor do mouse.</li>
+          <li><strong>Cursores A/B</strong>: ativa dois cursores verticais de medição diferencial. Arraste-os pelo gráfico para calcular instantaneamente o intervalo de tempo ($\Delta t$) e a variação de grandeza ($\Delta Y$). O botão <em>Centralizar A/B</em> posiciona os cursores na janela visível.</li>
+        </ul>
+
+        <h2>Motor Gráfico e Otimização de Desempenho (PF-01, PF-07)</h2>
+        <p>O DMapFactory utiliza um pipeline gráfico de altíssimo desempenho desenvolvido em ScottPlot 5 com renderização acelerada por GPU e CPU:</p>
+        <ul>
+          <li><strong>Downsampling Adaptativo sem Perda de Extremos (PF-01)</strong>: ao renderizar centenas de milhares de pontos temporais, o algoritmo agrupa amostras preservando rigorosamente os picos máximos e mínimos reais do processo (detecção perfeita de transientes e ruídos), mantendo taxa de quadros a 60 FPS com consumo mínimo de memória.</li>
+          <li><strong>Busca Binária Temporal $O(\log N)$ (PF-07)</strong>: a leitura de amplitude dos sinais para os Cursores A/B e Mira (Crosshair) utiliza indexação de busca binária, permitindo medições instantâneas sem travamento mesmo com milhões de amostras em memória.</li>
+        </ul>
+
+        <h2>Menu de Contexto do Gráfico e Sincronização Bidirecional</h2>
+        <p>Ao clicar com o <strong>botão direito do mouse sobre qualquer área do gráfico</strong>, um menu contextual de alta precisão é aberto:</p>
+        <div class="table-container">
+          <table class="topic-table">
+            <thead>
+              <tr>
+                <th>Comando</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>📊 Localizar na Planilha</strong></td>
+                <td><strong>Sincronização Bidirecional Gráfico &rarr; Planilha</strong>: localiza instantaneamente na primeira aba a amostra de tempo mais próxima do ponto clicado, selecionando a linha correspondente e rolando a planilha até ela.</td>
+              </tr>
+              <tr>
+                <td><strong>📍 Posicionar Cursor A aqui</strong></td>
+                <td>Move imediatamente o Cursor A (linha tracejada amarela) para o timestamp sob o cursor.</td>
+              </tr>
+              <tr>
+                <td><strong>📍 Posicionar Cursor B aqui</strong></td>
+                <td>Move imediatamente o Cursor B (linha tracejada azul) para o timestamp sob o cursor.</td>
+              </tr>
+              <tr>
+                <td><strong>🎯 Centralizar Cursores A/B</strong></td>
+                <td>Posiciona ambas as réguas de medição de forma equidistante no centro da tela atual.</td>
+              </tr>
+              <tr>
+                <td><strong>🚩 Inserir marcador neste ponto...</strong></td>
+                <td>Abre o diálogo para registrar um evento operacional no timestamp exato clicado no gráfico.</td>
+              </tr>
+              <tr>
+                <td><strong>📷 Exportar Imagem PNG...</strong></td>
+                <td>Salva uma captura gráfica nítida em resolução nativa no disco (<kbd>Ctrl+P</kbd>).</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="painel-penas">Painel Lateral de Penas (Sinais)</h2>
+        <p>No canto direito do gráfico, o <strong>Painel de Penas</strong> permite gerenciar individualmente a visibilidade e as propriedades de cada variável plotada:</p>
+        <ul>
+          <li><strong>Identificação por Cores</strong>: cada pena possui uma legenda cromática correspondente à cor da sua curva no gráfico.</li>
+          <li><strong>Seleção com Contorno Celeste</strong>: ao clicar em uma pena, ela é selecionada com contorno em azul celeste (<code>#00B4F0</code>).</li>
+          <li><strong>Exclusão Individual (<kbd>×</kbd>)</strong>: cada linha de pena conta com um botão direto <kbd>×</kbd> para remover a tag da coleta.</li>
+          <li><strong>Menu de Contexto da Pena (Clique Direito)</strong>:
+            <ul>
+              <li><strong>⚙ Definir como gatilho de ciclo de máquina</strong>: vincula a tag booleana selecionada ao motor de contagem de ciclos da máquina.</li>
+              <li><strong>📋 Copiar NodeId</strong>: copia o identificador OPC UA completo para a área de transferência.</li>
+              <li><strong>🗑 Deletar tag da coleta</strong>: remove a variável da planilha e do gráfico.</li>
+            </ul>
+          </li>
+          <li><strong>Botões Globais</strong>: utilize <strong>Todas</strong> para ativar todas as curvas, <strong>Nenhuma</strong> para ocultar todas, ou <strong>× Excluir</strong> para apagar a tag atualmente selecionada.</li>
+        </ul>
+      </section>
+
+      <footer class="topic-footer">
+        <a href="planilha.html" class="btn-nav">&larr; Anterior: Modo Planilha</a>
+        <a href="marcador.html" class="btn-nav">Próximo: Marcador &amp; Sessões &rarr;</a>
+      </footer>
+    </main>
+  </div>
+
+</body>
+</html>

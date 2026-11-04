@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Keyboard Shortcuts &amp; Diagnostics - DMapFactory Help</title>
+  <link rel="stylesheet" href="../assets/css/help.css">
+  <script defer src="../assets/js/help.js"></script>
+</head>
+<body>
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <a href="index.html" class="brand">
+      <span class="brand-badge">DMAP</span>
+      <div>
+        <div class="brand-title">DMapFactory</div>
+        <div class="brand-subtitle">User Manual &amp; Context-Sensitive Help</div>
+      </div>
+    </a>
+    <div class="topbar-actions">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" placeholder="Search topics..." />
+      </div>
+      <div class="lang-switch">
+        <a href="#" class="lang-btn" data-lang="pt-BR">PT</a>
+        <a href="#" class="lang-btn active" data-lang="en-US">EN</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Layout Container -->
+  <div class="layout-container">
+    
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+      <div class="sidebar-heading">Documentation</div>
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link">
+            <span class="nav-icon">📖</span> Overview
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="opc-connection.html" class="nav-link">
+            <span class="nav-icon">🔌</span> OPC Connections &amp; Tags
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="certificates.html" class="nav-link">
+            <span class="nav-icon">🔐</span> Security Certificates
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="spreadsheet.html" class="nav-link">
+            <span class="nav-icon">📊</span> Spreadsheet Mode
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="chart.html" class="nav-link">
+            <span class="nav-icon">📈</span> Trend Chart &amp; Pens
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="marker.html" class="nav-link">
+            <span class="nav-icon">🚩</span> Marker &amp; Sessions
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="shortcuts.html" class="nav-link active">
+            <span class="nav-icon">⌨️</span> Shortcuts &amp; Diagnostics
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Content Area -->
+    <main class="content-wrapper">
+      <div class="breadcrumb">
+        <a href="index.html">DMapFactory Help</a> &gt; <span>Shortcuts &amp; Diagnostics</span>
+      </div>
+
+      <header class="topic-header">
+        <h1>Keyboard Shortcuts &amp; Diagnostics</h1>
+        <div class="topic-subtitle">Productivity hotkeys, fast commands, and acquisition health monitoring</div>
+      </header>
+
+      <section>
+        <h2>Global Keyboard Shortcuts Reference</h2>
+        <table class="help-table">
+          <thead>
+            <tr>
+              <th style="width: 170px;">Key / Shortcut</th>
+              <th style="width: 200px;">Context</th>
+              <th>Action Triggered</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><kbd>F1</kbd></td>
+              <td>Any window / control</td>
+              <td>Opens <strong>Context-Sensitive Help</strong> on the exact topic for the active module.</td>
+            </tr>
+            <tr>
+              <td><kbd>F5</kbd></td>
+              <td>Main Window</td>
+              <td>Toggles between <strong>Online</strong> (active sampling) and <strong>Offline</strong> (paused).</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>N</kbd></td>
+              <td>Main Window</td>
+              <td>Creates a <strong>New Project</strong> (.dmproj).</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>O</kbd></td>
+              <td>Main Window</td>
+              <td><strong>Opens an Existing Project</strong> from disk.</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>S</kbd></td>
+              <td>Main Window</td>
+              <td><strong>Saves the Current Project</strong> with all connections and sampling parameters.</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd></td>
+              <td>Main Window</td>
+              <td><strong>Saves the Project As...</strong> with a new filename.</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>O</kbd></td>
+              <td>Main Window</td>
+              <td><strong>Opens a Recorded Session</strong> (.csv or .session.json) restoring timeline and markers.</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>E</kbd></td>
+              <td>Main Window</td>
+              <td><strong>Exports the Spreadsheet</strong> to Excel (.xlsx), Wide CSV, Narrow CSV, or TSV.</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>M</kbd></td>
+              <td>Main Window</td>
+              <td>Enables <strong>Marker Insertion</strong> mode for labeling events along the timeline.</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>1</kbd></td>
+              <td>Main Window</td>
+              <td>Switches immediately to the <strong>Spreadsheet</strong> tab.</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>2</kbd></td>
+              <td>Main Window</td>
+              <td>Switches immediately to the <strong>Trend Chart</strong> tab.</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>3</kbd></td>
+              <td>Main Window</td>
+              <td>Switches immediately to the <strong>Tags and Live Values</strong> tab.</td>
+            </tr>
+            <tr>
+              <td><kbd>Space</kbd></td>
+              <td>Spreadsheet or Chart</td>
+              <td>Toggles <strong>Auto-scroll</strong> (in spreadsheet) or <strong>Auto-follow</strong> (in chart).</td>
+            </tr>
+            <tr>
+              <td><kbd>Esc</kbd></td>
+              <td>Main Window</td>
+              <td><strong>Cancels</strong> active marker placement mode.</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + Click</td>
+              <td>OPC UA Node Tree</td>
+              <td>Enables <strong>multi-selection</strong> of variable nodes for batch addition.</td>
+            </tr>
+            <tr>
+              <td><kbd>Delete</kbd></td>
+              <td>Spreadsheet or Pen Panel</td>
+              <td>Deletes the <strong>selected tag</strong> from collection.</td>
+            </tr>
+            <tr>
+              <td><kbd>Delete</kbd></td>
+              <td>Connection List</td>
+              <td>Deletes the selected OPC UA connection.</td>
+            </tr>
+            <tr>
+              <td><kbd>Mouse Wheel</kbd></td>
+              <td>Trend Plot</td>
+              <td>Performs horizontal <strong>Zoom In</strong> and <strong>Zoom Out</strong> along timeline.</td>
+            </tr>
+            <tr>
+              <td><kbd>Mouse Drag</kbd></td>
+              <td>Spreadsheet Header Border</td>
+              <td>Smoothly resizes the <strong>column header row height</strong>.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2>Right-Click Context Menus Guide</h2>
+        <p>DMapFactory provides fast right-click contextual actions throughout all major UI components:</p>
+        <table class="help-table">
+          <thead>
+            <tr>
+              <th style="width: 200px;">Component</th>
+              <th style="width: 240px;">Where to Click</th>
+              <th>Available Menu Commands</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Spreadsheet Body</strong></td>
+              <td>On any data row or cell</td>
+              <td>
+                • <strong>📍 Place Marker on this Row</strong><br>
+                • <strong>📈 Focus Timestamp on Chart (Cursor A)</strong> (cross-synchronization)<br>
+                • <strong>🏷 Set as Machine Cycle Trigger</strong> (for boolean tags)<br>
+                • <strong>Copy Cell Value</strong><br>
+                • <strong>📋 Copy Entire Row (TSV)</strong> (ready to paste directly into Excel)<br>
+                • <strong>Copy Timestamp</strong> (full millisecond-accurate ISO timestamp)
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Spreadsheet Header</strong></td>
+              <td>On any column header title</td>
+              <td>
+                • <strong>🗑 Delete tag from collection</strong><br>
+                • <strong>↔ Auto-fit this column width</strong><br>
+                • <strong>↔ Auto-fit all column widths</strong><br>
+                • <strong>↕ Auto-fit header row height</strong>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Trend Plot Canvas</strong></td>
+              <td>Any point within the chart area</td>
+              <td>
+                • <strong>📋 Locate in Spreadsheet</strong> (selects corresponding row instantly)<br>
+                • <strong>📍 Place Marker at this point</strong><br>
+                • <strong>Position Cursor A here</strong><br>
+                • <strong>Position Cursor B here</strong><br>
+                • <strong>Center Cursors A/B</strong><br>
+                • <strong>Save Chart Image (PNG)</strong>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>OPC UA Node Tree</strong></td>
+              <td>On any folder or variable node</td>
+              <td>
+                • <strong>+ Add to Spreadsheet &amp; Chart</strong><br>
+                • <strong>📁 Add all folder variables as tags</strong><br>
+                • <strong>📋 Copy NodeId</strong> (copies full address identifier to clipboard)
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Chart Pen Panel</strong></td>
+              <td>On any pen item in the signal list</td>
+              <td>
+                • <strong>🗑 Delete tag from collection</strong><br>
+                • <strong>Toggle plot visibility (IsPlotted)</strong><br>
+                • <strong>🏷 Set as Cycle Trigger</strong><br>
+                • <strong>📋 Copy Address / NodeId</strong>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Log Grid</strong></td>
+              <td>On any recorded log entry</td>
+              <td>
+                • <strong>📋 Copy Log Message</strong><br>
+                • <strong>📋 Copy All Filtered Logs</strong><br>
+                • <strong>Clear logs from screen</strong><br>
+                • <strong>Open log folder in Windows Explorer…</strong>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2 id="diagnostics">Health Metrics &amp; Diagnostic Log</h2>
+        <p>The bottom status bar exposes key indicators to verify system health in real-world plants:</p>
+        <ul>
+          <li><strong>Events per Second (Ev/s)</strong>: instantaneous update frequency indicating OPC UA driver throughput.</li>
+          <li><strong>Buffer Size</strong>: memory occupancy percentage in the zero-allocation circular buffer.</li>
+          <li><strong>Session Duration</strong>: running chronometer tracking the duration of the current industrial run.</li>
+          <li><strong>Operational Event Log</strong>: categorized log stream (<em>Information</em>, <em>Warning</em>, <em>Error</em>, <em>Debug</em>) with dedicated <strong>Clear</strong> and <strong>Log Folder…</strong> buttons.</li>
+        </ul>
+      </section>
+
+      <footer class="topic-footer">
+        <a href="marker.html" class="btn-nav">&larr; Previous: Marker &amp; Sessions</a>
+        <a href="index.html" class="btn-nav">Home: Overview &rarr;</a>
+      </footer>
+    </main>
+  </div>
+
+</body>
+</html>

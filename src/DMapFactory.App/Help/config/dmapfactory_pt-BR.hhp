@@ -1,0 +1,27 @@
+[OPTIONS]
+Compatibility=1.1 or later
+Compiled file=..\..\..\bin\Help\DMapFactory.pt-BR.chm
+Contents file=dmapfactory_pt-BR.hhc
+Default topic=..\pt-BR\index.html
+Display compile progress=Yes
+Full-text search=Yes
+Index file=dmapfactory_pt-BR.hhk
+Language=0x416 Portuguese (Brazil)
+Title=DMapFactory - Manual de Ajuda
+
+[FILES]
+..\pt-BR\index.html
+..\pt-BR\conexao-opc.html
+..\pt-BR\certificados.html
+..\pt-BR\planilha.html
+..\pt-BR\grafico.html
+..\pt-BR\marcador.html
+..\pt-BR\atalhos.html
+..\assets\css\help.css
+..\assets\js\help.js
+
+[MAP]
+#include dmapfactory.h
+
+[ALIAS]
+#include dmapfactory.ali
