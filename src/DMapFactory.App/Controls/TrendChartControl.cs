@@ -46,6 +46,8 @@ public sealed class TrendChartControl : FrameworkElement
     private static readonly Brush MarkerBadgeBgBrush = CreateFrozenBrush("#FFFBEB");
     private static readonly Pen MarkerBadgeBorderPen = CreateFrozenPen("#D97706", 1.2);
     private static readonly Brush MarkerTextBrush = CreateFrozenBrush("#92400E");
+    private static readonly Pen MarkerSelectedBadgeBorderPen = CreateFrozenPen("#B45309", 2.2);
+    private static readonly Brush MarkerSelectedBadgeBgBrush = CreateFrozenBrush("#FDE68A");
 
     private IReadOnlyList<ChartSeriesData> _series = [];
     private IReadOnlyList<SessionMarker> _markers = [];
@@ -59,12 +61,17 @@ public sealed class TrendChartControl : FrameworkElement
     private double _yZoomFactor = 1.0;
     private double _yPanOffset;
 
+    public SessionMarker? SelectedMarker { get; set; }
+    public event Action<SessionMarker?>? MarkerSelected;
+
     private double _cursorARatio = 0.30;
     private double _cursorBRatio = 0.70;
     private int _draggingCursor; // 0 = none, 1 = A, 2 = B
     private bool _nextClickMovesB;
 
     private bool _isPanning;
+    private bool _isLeftPanning;
+    private bool _isPanMode;
     private Point _panStartPoint;
     private Point? _hoverPoint;
 
@@ -85,6 +92,36 @@ public sealed class TrendChartControl : FrameworkElement
         MouseMove += OnMouseMove;
         MouseLeave += OnMouseLeave;
         MouseWheel += OnMouseWheel;
+    }
+
+    public bool IsPanMode
+    {
+        get => _isPanMode;
+        set
+        {
+            if (_isPanMode != value)
+            {
+                _isPanMode = value;
+                if (!_isPanMode && _isLeftPanning)
+                {
+                    _isLeftPanning = false;
+                    ReleaseMouseCapture();
+                }
+                UpdateCursor();
+            }
+        }
+    }
+
+    private void UpdateCursor()
+    {
+        if (_isPanMode)
+        {
+            Cursor = _isLeftPanning ? Cursors.ScrollWE : Cursors.Hand;
+        }
+        else
+        {
+            Cursor = null;
+        }
     }
 
     public bool StepInterpolation
@@ -130,7 +167,7 @@ public sealed class TrendChartControl : FrameworkElement
     {
         get
         {
-            if (!_showCrosshair || !_hoverPoint.HasValue)
+            if (!_hoverPoint.HasValue)
                 return null;
             Rect plotRect = GetPlotRect(ActualWidth, ActualHeight);
             if (!plotRect.Contains(_hoverPoint.Value) || plotRect.Width <= 10)
@@ -151,6 +188,9 @@ public sealed class TrendChartControl : FrameworkElement
             return "—";
 
         double val = SampleValueAt(s.Points, timestampUtc.Value);
+        if (double.IsNaN(val))
+            return "— (Bad)";
+
         return s.IsBoolean
             ? (val != 0 ? "1 (ON)" : "0 (OFF)")
             : val.ToString("G6", CultureInfo.InvariantCulture);
@@ -266,13 +306,31 @@ public sealed class TrendChartControl : FrameworkElement
 
     private void OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        if (!_showCursors) return;
-
         Rect plotRect = GetPlotRect(ActualWidth, ActualHeight);
         if (plotRect.Width <= 10) return;
 
         Point pt = e.GetPosition(this);
         if (pt.X < plotRect.Left || pt.X > plotRect.Right) return;
+
+        if (_isPanMode)
+        {
+            _isLeftPanning = true;
+            _panStartPoint = pt;
+            CaptureMouse();
+            UpdateCursor();
+            e.Handled = true;
+            return;
+        }
+
+        var clickedMarker = GetMarkerNearPixel(pt, 16.0);
+        if (clickedMarker != SelectedMarker)
+        {
+            SelectedMarker = clickedMarker;
+            MarkerSelected?.Invoke(clickedMarker);
+            InvalidateVisual();
+        }
+
+        if (!_showCursors) return;
 
         double ratio = Math.Clamp((pt.X - plotRect.Left) / plotRect.Width, 0.0, 1.0);
         double xA = plotRect.Left + _cursorARatio * plotRect.Width;
@@ -311,6 +369,15 @@ public sealed class TrendChartControl : FrameworkElement
 
     private void OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
+        if (_isLeftPanning)
+        {
+            _isLeftPanning = false;
+            ReleaseMouseCapture();
+            UpdateCursor();
+            e.Handled = true;
+            return;
+        }
+
         if (_draggingCursor != 0)
         {
             _draggingCursor = 0;
@@ -354,6 +421,18 @@ public sealed class TrendChartControl : FrameworkElement
         if (plotRect.Width <= 10) return;
 
         Point pt = e.GetPosition(this);
+
+        if (_isLeftPanning && e.LeftButton == MouseButtonState.Pressed)
+        {
+            double dx = pt.X - _panStartPoint.X;
+            if (Math.Abs(dx) >= 1.0)
+            {
+                double deltaRatio = -dx / plotRect.Width;
+                _panStartPoint = pt;
+                HorizontalPanRequested?.Invoke(deltaRatio);
+            }
+            return;
+        }
 
         if (_draggingCursor != 0 && e.LeftButton == MouseButtonState.Pressed)
         {
@@ -399,6 +478,13 @@ public sealed class TrendChartControl : FrameworkElement
 
     private void OnMouseLeave(object sender, MouseEventArgs e)
     {
+        if (_isLeftPanning && e.LeftButton != MouseButtonState.Pressed)
+        {
+            _isLeftPanning = false;
+            ReleaseMouseCapture();
+            UpdateCursor();
+        }
+
         if (_hoverPoint.HasValue)
         {
             _hoverPoint = null;
@@ -575,6 +661,12 @@ public sealed class TrendChartControl : FrameworkElement
 
                     foreach (var pt in s.Points)
                     {
+                        if (double.IsNaN(pt.Value))
+                        {
+                            started = false;
+                            continue;
+                        }
+
                         double x = TimeToX(pt.TimestampUtc, plotRect, spanTicks);
                         double y = ValueToY(pt.Value, yMin, yMax, analogRect);
 
@@ -611,6 +703,7 @@ public sealed class TrendChartControl : FrameworkElement
                     for (int i = 0; i < s.Points.Count; i += step)
                     {
                         var pt = s.Points[i];
+                        if (double.IsNaN(pt.Value)) continue;
                         double x = TimeToX(pt.TimestampUtc, plotRect, spanTicks);
                         double y = ValueToY(pt.Value, yMin, yMax, analogRect);
                         dc.DrawEllipse(pointBrush, null, new Point(x, y), 3.0, 3.0);
@@ -644,10 +737,10 @@ public sealed class TrendChartControl : FrameworkElement
                 for (int i = 0; i < s.Points.Count; i++)
                 {
                     var pt = s.Points[i];
-                    if (pt.Value == 0) continue;
+                    if (double.IsNaN(pt.Value) || pt.Value == 0) continue;
 
                     double x1 = TimeToX(pt.TimestampUtc, plotRect, spanTicks);
-                    double x2 = (i + 1 < s.Points.Count)
+                    double x2 = (i + 1 < s.Points.Count && !double.IsNaN(s.Points[i + 1].Value))
                         ? TimeToX(s.Points[i + 1].TimestampUtc, plotRect, spanTicks)
                         : plotRect.Right;
 
@@ -667,6 +760,12 @@ public sealed class TrendChartControl : FrameworkElement
 
                     foreach (var pt in s.Points)
                     {
+                        if (double.IsNaN(pt.Value))
+                        {
+                            started = false;
+                            continue;
+                        }
+
                         double x = TimeToX(pt.TimestampUtc, plotRect, spanTicks);
                         double y = pt.Value != 0 ? stripTop : stripBottom;
                         if (!started)
@@ -725,7 +824,10 @@ public sealed class TrendChartControl : FrameworkElement
                 markerIdx++;
 
                 Rect badgeRect = new(badgeX, badgeY, badgeW, badgeH);
-                dc.DrawRoundedRectangle(MarkerBadgeBgBrush, MarkerBadgeBorderPen, badgeRect, 3, 3);
+                bool isSelected = ReferenceEquals(marker, SelectedMarker);
+                var bgBrush = isSelected ? MarkerSelectedBadgeBgBrush : MarkerBadgeBgBrush;
+                var borderPen = isSelected ? MarkerSelectedBadgeBorderPen : MarkerBadgeBorderPen;
+                dc.DrawRoundedRectangle(bgBrush, borderPen, badgeRect, isSelected ? 4 : 3, isSelected ? 4 : 3);
                 dc.DrawText(ft, new Point(badgeX + 4, badgeY + 2));
             }
         }

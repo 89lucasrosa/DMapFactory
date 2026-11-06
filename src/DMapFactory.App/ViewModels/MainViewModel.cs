@@ -82,6 +82,7 @@ public sealed partial class MainViewModel : ObservableObject
 
         Loc.Instance.PropertyChanged += OnLanguageChanged;
         _sessionManager.BatchProcessed += OnSessionBatchProcessed;
+        _securityManager.CertificateTrustChanged += OnCertificateTrustChanged;
 
         _statusTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(250), DispatcherPriority.Background,
             (_, _) => RefreshStatusAndValues(), Application.Current.Dispatcher);
@@ -199,8 +200,24 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty] private bool _showChartCrosshair = true;
     [ObservableProperty] private bool _showChartPensPanel = true;
     [ObservableProperty] private bool _fitAllChartRange;
+    [ObservableProperty] private bool _isChartPanMode;
     [ObservableProperty] private double _chartTimeOffsetSeconds;
     [ObservableProperty] private string _cursorDeltaText = "Δt = —";
+    [ObservableProperty] private bool _hasSelectedMarker;
+    [ObservableProperty] private SessionMarker? _selectedMarker;
+    [ObservableProperty] private TimestampSourceMode _timestampSource = TimestampSourceMode.Auto;
+
+    partial void OnTimestampSourceChanged(TimestampSourceMode value)
+    {
+        foreach (var conn in Connections)
+        {
+            if (conn.Driver is OpcUaDriver opcDriver)
+            {
+                opcDriver.PreferredTimestampSource = value;
+            }
+        }
+        _logger.LogInformation("Fonte de timestamp alterada para: {Mode}", value);
+    }
 
     public IReadOnlyList<int> ChartWindowOptions { get; } = [5, 10, 15, 30, 60, 120, 300, 600, 1800, 3600];
 
@@ -276,6 +293,14 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (value > 0)
             FitAllChartRange = false;
+    }
+
+    partial void OnIsChartPanModeChanged(bool value)
+    {
+        if (value)
+        {
+            FitAllChartRange = false;
+        }
     }
 
     partial void OnSelectedConnectionChanged(ConnectionItemViewModel? value)
@@ -536,11 +561,18 @@ public sealed partial class MainViewModel : ObservableObject
             _logger.LogWarning("Aviso ao encerrar driver anterior da conexão '{Name}': {Message}", target.Name, ex.Message);
         }
 
-        var newDriver = new OpcUaDriver(updatedConfig, _securityManager, _driverLogger);
+        var newDriver = new OpcUaDriver(updatedConfig, _securityManager, _driverLogger)
+        {
+            PreferredTimestampSource = TimestampSource
+        };
         newDriver.StateChanged += (_, args) => Application.Current?.Dispatcher.InvokeAsync(() =>
         {
             target.State = args.State;
             target.StatusMessage = args.Reason;
+            if (args.State != ConnectionState.Connected)
+            {
+                HandleConnectionDisconnectedWhileOnline(target, args.Reason);
+            }
             RefreshStatusAndValues();
             NotifyConnectionStateChanged();
         });
@@ -599,6 +631,7 @@ public sealed partial class MainViewModel : ObservableObject
 
                 if (IsOnline)
                 {
+                    HandleConnectionDisconnectedWhileOnline(item, "Desconectado pelo usuário");
                     var remainingConnected = Connections.Where(c => c.IsConnected).ToList();
                     if (remainingConnected.Count == 0)
                     {
@@ -612,7 +645,7 @@ public sealed partial class MainViewModel : ObservableObject
                     }
                 }
 
-                _logger.LogInformation("Conexão '{Name}' ({Endpoint}) desconectada.", item.Name, item.EndpointUrl);
+                _logger.LogInformation("Conexão '{Name}' ({Endpoint}) desconectada pelo usuário.", item.Name, item.EndpointUrl);
             }
             else
             {
@@ -835,6 +868,27 @@ public sealed partial class MainViewModel : ObservableObject
         SessionMarkers.Clear();
         _markerCounter = 1;
         _logger.LogInformation("Linhas da planilha limpas.");
+    }
+
+    public Action? RequestOpenFindDialog { get; set; }
+    public Action? RequestOpenFindMarkerDialog { get; set; }
+
+    [RelayCommand]
+    private void OpenFindValueDialog()
+    {
+        RequestOpenFindDialog?.Invoke();
+    }
+
+    [RelayCommand]
+    private void OpenFindMarkerDialog()
+    {
+        RequestOpenFindMarkerDialog?.Invoke();
+    }
+
+    [RelayCommand]
+    private void SetTimestampSource(TimestampSourceMode mode)
+    {
+        TimestampSource = mode;
     }
 
     [RelayCommand]
@@ -1373,13 +1427,20 @@ public sealed partial class MainViewModel : ObservableObject
 
     private ConnectionItemViewModel RegisterConnectionViewModel(ConnectionConfig cfg)
     {
-        var driver = new OpcUaDriver(cfg, _securityManager, _driverLogger);
+        var driver = new OpcUaDriver(cfg, _securityManager, _driverLogger)
+        {
+            PreferredTimestampSource = TimestampSource
+        };
         var itemVm = new ConnectionItemViewModel(cfg, driver);
 
         driver.StateChanged += (_, args) => Application.Current?.Dispatcher.InvokeAsync(() =>
         {
             itemVm.State = args.State;
             itemVm.StatusMessage = args.Reason;
+            if (args.State != ConnectionState.Connected)
+            {
+                HandleConnectionDisconnectedWhileOnline(itemVm, args.Reason);
+            }
             RefreshStatusAndValues();
             NotifyConnectionStateChanged();
         });
@@ -1388,6 +1449,70 @@ public sealed partial class MainViewModel : ObservableObject
         SelectedConnection ??= itemVm;
         NotifyConnectionStateChanged();
         return itemVm;
+    }
+
+    private void HandleConnectionDisconnectedWhileOnline(ConnectionItemViewModel itemVm, string? reason)
+    {
+        if (!IsOnline) return;
+
+        var tagsToMarkBad = MonitoredTags.Where(t => t.Config.ConnectionId == itemVm.Config.Id).ToList();
+        if (tagsToMarkBad.Count == 0) return;
+
+        var badSamples = new List<Sample>(tagsToMarkBad.Count);
+        var nowUtc = DateTime.UtcNow;
+
+        foreach (var tag in tagsToMarkBad)
+        {
+            tag.Quality = QualityClass.Bad;
+            tag.ValueText = "— (Bad)";
+            badSamples.Add(new Sample(
+                tag.Config.Id,
+                nowUtc,
+                nowUtc,
+                TimestampOrigin.Local,
+                null,
+                Opc.Ua.StatusCodes.Bad));
+        }
+
+        if (badSamples.Count > 0)
+        {
+            var newRows = _sessionManager.Snapshot.ApplyBatch(badSamples);
+            if (newRows.Count > 0)
+            {
+                OnSessionBatchProcessed(newRows);
+            }
+        }
+    }
+
+    private void OnCertificateTrustChanged(string thumbprint, CertificateTrustStatus status)
+    {
+        if (status is CertificateTrustStatus.Rejected or CertificateTrustStatus.Unknown)
+        {
+            foreach (var conn in Connections.ToList())
+            {
+                if (conn.Driver is OpcUaDriver opcDriver && opcDriver.IsUsingServerCertificate(thumbprint))
+                {
+                    _logger.LogWarning("Desconectando conexão '{Name}' porque o certificado do servidor ({Thumbprint}) foi {Action}.",
+                        conn.Config.Name, thumbprint, status == CertificateTrustStatus.Rejected ? "rejeitado" : "removido");
+                    _ = Application.Current?.Dispatcher?.InvokeAsync(async () =>
+                    {
+                        if (conn.IsConnected)
+                        {
+                            await conn.Driver.DisconnectAsync();
+                            conn.State = conn.Driver.State;
+                            if (ReferenceEquals(SelectedConnection, conn))
+                            {
+                                BrowserRoots.Clear();
+                                SelectedNodeAttributes = null;
+                            }
+                            HandleConnectionDisconnectedWhileOnline(conn, "Certificado rejeitado ou removido");
+                            RefreshStatusAndValues();
+                            NotifyConnectionStateChanged();
+                        }
+                    });
+                }
+            }
+        }
     }
 
     private void OnSessionBatchProcessed(IReadOnlyList<WideSpreadsheetRow> newRows)

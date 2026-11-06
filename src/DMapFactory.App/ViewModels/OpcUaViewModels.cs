@@ -261,6 +261,8 @@ public sealed partial class ChartInspectorRowViewModel : ObservableObject
     public string GetTagValueText(int tagId) =>
         _valuesByTagId.TryGetValue(tagId, out var val) ? val : "—";
 
+    public string this[int tagId] => GetTagValueText(tagId);
+
     public void UpdateReadout(string timestampText, IReadOnlyDictionary<int, string> valuesByTagId)
     {
         bool changed = !string.Equals(TimestampText, timestampText, StringComparison.Ordinal);
@@ -292,6 +294,7 @@ public sealed partial class ChartInspectorRowViewModel : ObservableObject
         }
 
         OnPropertyChanged(nameof(TimestampText));
+        OnPropertyChanged(System.Windows.Data.Binding.IndexerName);
         OnPropertyChanged(string.Empty);
     }
 }

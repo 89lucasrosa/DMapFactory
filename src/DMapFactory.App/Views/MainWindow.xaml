@@ -29,6 +29,8 @@
         <KeyBinding Modifiers="Control+Shift" Key="O" Command="{Binding OpenRecordedSessionCommand}" />
         <KeyBinding Modifiers="Control" Key="E" Command="{Binding ExportSpreadsheetCommand}" />
         <KeyBinding Modifiers="Control" Key="M" Command="{Binding AddMarkerCommand}" />
+        <KeyBinding Modifiers="Control" Key="F" Command="{Binding OpenFindValueDialogCommand}" />
+        <KeyBinding Modifiers="Control+Shift" Key="M" Command="{Binding OpenFindMarkerDialogCommand}" />
     </Window.InputBindings>
 
     <Grid>
@@ -76,13 +78,24 @@
                           InputGestureText="Alt+F4" />
             </MenuItem>
             <MenuItem Header="_Editar">
+                <MenuItem Header="Localizar valor…"
+                          Command="{Binding OpenFindValueDialogCommand}"
+                          InputGestureText="Ctrl+F"
+                          ToolTip="Localizar valor de tag na planilha ou no gráfico (Ctrl+F)" />
+                <MenuItem Header="Localizar marcadores…"
+                          Command="{Binding OpenFindMarkerDialogCommand}"
+                          InputGestureText="Ctrl+Shift+M"
+                          ToolTip="Buscar e navegar pelos marcadores existentes na sessão (Ctrl+Shift+M)" />
+                <Separator />
                 <MenuItem Header="Inserir marcador"
                           Command="{Binding AddMarkerCommand}"
                           InputGestureText="Ctrl+M" />
                 <MenuItem Header="Editar marcador…"
-                          Click="EditSelectedMarkerMenuItem_Click" />
+                          Click="EditSelectedMarkerMenuItem_Click"
+                          IsEnabled="{Binding HasSelectedMarker}" />
                 <MenuItem Header="Excluir marcador"
-                          Click="DeleteSelectedMarkerMenuItem_Click" />
+                          Click="DeleteSelectedMarkerMenuItem_Click"
+                          IsEnabled="{Binding HasSelectedMarker}" />
                 <Separator />
                 <MenuItem Header="Limpar linhas"
                           Command="{Binding ClearSpreadsheetRowsCommand}" />
@@ -116,6 +129,9 @@
                           IsCheckable="True"
                           IsChecked="{Binding AutoFollowChart, Mode=TwoWay}"
                           InputGestureText="Espaço" />
+                <MenuItem Header="Modo Pan no gráfico (arrastar com mouse)"
+                          IsCheckable="True"
+                          IsChecked="{Binding IsChartPanMode, Mode=TwoWay}" />
                 <MenuItem Header="Painel de penas no gráfico"
                           IsCheckable="True"
                           IsChecked="{Binding ShowChartPensPanel, Mode=TwoWay}" />
@@ -128,6 +144,17 @@
                 <MenuItem Header="Grade no gráfico"
                           IsCheckable="True"
                           IsChecked="{Binding ShowChartGrid, Mode=TwoWay}" />
+                <Separator />
+                <MenuItem x:Name="TimestampSourceMenu" Header="Fonte do Timestamp" SubmenuOpened="TimestampSourceMenu_SubmenuOpened">
+                    <MenuItem x:Name="TsAutoMenuItem" Header="Automático (Fonte ➔ Servidor ➔ Local)"
+                              IsCheckable="True" Click="SetTimestampSourceAuto_Click" />
+                    <MenuItem x:Name="TsSourceMenuItem" Header="Fonte / CLP (SourceTimestamp)"
+                              IsCheckable="True" Click="SetTimestampSourceSource_Click" />
+                    <MenuItem x:Name="TsServerMenuItem" Header="Servidor OPC UA (ServerTimestamp)"
+                              IsCheckable="True" Click="SetTimestampSourceServer_Click" />
+                    <MenuItem x:Name="TsLocalMenuItem" Header="Sistema Operacional / Local (PC)"
+                              IsCheckable="True" Click="SetTimestampSourceLocal_Click" />
+                </MenuItem>
             </MenuItem>
             <MenuItem Header="{Binding [Menu_Help], Source={x:Static loc:Loc.Instance}}">
                 <MenuItem Header="{Binding [Menu_HelpTopics], Source={x:Static loc:Loc.Instance}}"
@@ -544,9 +571,13 @@
                                                 Content="↕ Auto"
                                                 ToolTip="Auto-ajustar altura da linha do título para exibir o texto completo na vertical" />
 
-                                        <Button Click="AutoFitColumnWidths_Click" Padding="8,2" Margin="0,2,12,2"
+                                        <Button Click="AutoFitColumnWidths_Click" Padding="8,2" Margin="0,2,10,2"
                                                 Content="↔ Auto-ajustar larguras"
                                                 ToolTip="Ajusta automaticamente a largura de todas as colunas com base no título (vertical ou horizontal) e nas informações contidas em cada coluna" />
+
+                                        <Button Click="ExportSpreadsheetPng_Click" Padding="7,2" Margin="0,2,12,2"
+                                                Content="📷 PNG"
+                                                ToolTip="Salvar range atual visível da planilha em imagem PNG" />
 
                                         <TextBlock Text="{Binding SpreadsheetRows.Count, StringFormat=Linhas: {0:N0}}"
                                                    Style="{StaticResource SecondaryText}" VerticalAlignment="Center" Margin="0,2,6,2" />
@@ -608,8 +639,16 @@
                                             Content="◀" ToolTip="Voltar no tempo (25% da janela)" />
                                     <Button Command="{Binding ChartPanRightCommand}" Padding="6,2" Margin="0,2,2,2"
                                             Content="▶" ToolTip="Avançar no tempo (25% da janela)" />
-                                    <Button Command="{Binding ChartJumpToLiveCommand}" Padding="6,2" Margin="0,2,10,2"
+                                    <Button Command="{Binding ChartJumpToLiveCommand}" Padding="6,2" Margin="0,2,6,2"
                                             Content="▶|" ToolTip="Voltar para o tempo real (Ao vivo)" />
+
+                                    <ToggleButton IsChecked="{Binding IsChartPanMode, Mode=TwoWay}" Padding="7,2" Margin="0,2,10,2"
+                                                  ToolTip="Modo Pan (Mão): arraste o gráfico mantendo o botão esquerdo pressionado para navegar no tempo">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="✋" FontSize="13" Margin="0,0,3,0" VerticalAlignment="Center" />
+                                            <TextBlock Text="Pan" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </ToggleButton>
 
                                     <TextBlock Text="Janela (s):" Style="{StaticResource SecondaryText}"
                                                VerticalAlignment="Center" Margin="0,2,4,2" />

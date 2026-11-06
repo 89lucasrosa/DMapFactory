@@ -57,6 +57,28 @@ public sealed class OpcUaDriver : IDriver
     public string Protocol => "OPCUA";
     public ConnectionConfig Connection { get; }
     public ConnectionState State => _state;
+    public TimestampSourceMode PreferredTimestampSource { get; set; } = TimestampSourceMode.Auto;
+
+    private X509Certificate2? GetCurrentServerCertificate()
+    {
+        var raw = _session?.ConfiguredEndpoint?.Description?.ServerCertificate;
+        if (raw is not { Length: > 0 }) return null;
+        try
+        {
+            return X509CertificateLoader.LoadCertificate(raw);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public bool IsUsingServerCertificate(string thumbprint)
+    {
+        using var serverCert = GetCurrentServerCertificate();
+        if (serverCert is null) return false;
+        return string.Equals(serverCert.Thumbprint, thumbprint, StringComparison.OrdinalIgnoreCase);
+    }
 
     public event EventHandler<ConnectionStateChangedEventArgs>? StateChanged;
 
@@ -139,7 +161,9 @@ public sealed class OpcUaDriver : IDriver
         }
     }
 
-    public async Task DisconnectAsync(CancellationToken ct = default)
+    public Task DisconnectAsync(CancellationToken ct = default) => DisconnectAsync(isUserRequested: false, ct);
+
+    public async Task DisconnectAsync(bool isUserRequested, CancellationToken ct = default)
     {
         foreach (var groupId in _groups.Keys.ToArray())
         {
@@ -167,7 +191,8 @@ public sealed class OpcUaDriver : IDriver
             }
         }
 
-        SetState(Connection.Enabled ? ConnectionState.Disconnected : ConnectionState.Disabled, null);
+        string disconnectReason = isUserRequested ? "Desconectado pelo usuário" : "Desconectado";
+        SetState(Connection.Enabled ? ConnectionState.Disconnected : ConnectionState.Disabled, disconnectReason);
     }
 
     public async Task<IReadOnlyList<BrowseNode>> BrowseAsync(string? parentId, CancellationToken ct = default)
@@ -622,7 +647,7 @@ public sealed class OpcUaDriver : IDriver
         }
     }
 
-    private static void OnMonitoredItemNotification(
+    private void OnMonitoredItemNotification(
         MonitoredItem item,
         MonitoredItemNotificationEventArgs e,
         ISampleSink sink)
@@ -646,25 +671,70 @@ public sealed class OpcUaDriver : IDriver
         }
     }
 
-    private static Sample ToSample(int tagId, DataValue dv, DateTime receivedUtc)
+    private Sample ToSample(int tagId, DataValue dv, DateTime receivedUtc)
     {
         DateTime ts;
         TimestampOrigin origin;
 
-        if (dv.SourceTimestamp != DateTime.MinValue && dv.SourceTimestamp.Year > 1970)
+        bool hasSource = dv.SourceTimestamp != DateTime.MinValue && dv.SourceTimestamp.Year > 1970;
+        bool hasServer = dv.ServerTimestamp != DateTime.MinValue && dv.ServerTimestamp.Year > 1970;
+
+        switch (PreferredTimestampSource)
         {
-            ts = DateTime.SpecifyKind(dv.SourceTimestamp, DateTimeKind.Utc);
-            origin = TimestampOrigin.Source;
-        }
-        else if (dv.ServerTimestamp != DateTime.MinValue && dv.ServerTimestamp.Year > 1970)
-        {
-            ts = DateTime.SpecifyKind(dv.ServerTimestamp, DateTimeKind.Utc);
-            origin = TimestampOrigin.Server;
-        }
-        else
-        {
-            ts = receivedUtc;
-            origin = TimestampOrigin.Local;
+            case TimestampSourceMode.Local:
+                ts = receivedUtc;
+                origin = TimestampOrigin.Local;
+                break;
+
+            case TimestampSourceMode.Server:
+                if (hasServer)
+                {
+                    ts = DateTime.SpecifyKind(dv.ServerTimestamp, DateTimeKind.Utc);
+                    origin = TimestampOrigin.Server;
+                }
+                else
+                {
+                    ts = receivedUtc;
+                    origin = TimestampOrigin.Local;
+                }
+                break;
+
+            case TimestampSourceMode.Source:
+                if (hasSource)
+                {
+                    ts = DateTime.SpecifyKind(dv.SourceTimestamp, DateTimeKind.Utc);
+                    origin = TimestampOrigin.Source;
+                }
+                else if (hasServer)
+                {
+                    ts = DateTime.SpecifyKind(dv.ServerTimestamp, DateTimeKind.Utc);
+                    origin = TimestampOrigin.Server;
+                }
+                else
+                {
+                    ts = receivedUtc;
+                    origin = TimestampOrigin.Local;
+                }
+                break;
+
+            case TimestampSourceMode.Auto:
+            default:
+                if (hasSource)
+                {
+                    ts = DateTime.SpecifyKind(dv.SourceTimestamp, DateTimeKind.Utc);
+                    origin = TimestampOrigin.Source;
+                }
+                else if (hasServer)
+                {
+                    ts = DateTime.SpecifyKind(dv.ServerTimestamp, DateTimeKind.Utc);
+                    origin = TimestampOrigin.Server;
+                }
+                else
+                {
+                    ts = receivedUtc;
+                    origin = TimestampOrigin.Local;
+                }
+                break;
         }
 
         return new Sample(tagId, ts, receivedUtc, origin, dv.Value, dv.StatusCode.Code);
@@ -672,6 +742,26 @@ public sealed class OpcUaDriver : IDriver
 
     private void OnSessionKeepAlive(ISession session, KeepAliveEventArgs e)
     {
+        using var serverCert = GetCurrentServerCertificate();
+        if (serverCert is not null && DateTime.UtcNow > serverCert.NotAfter)
+        {
+            string expiredMsg = $"O certificado do servidor expirou em {serverCert.NotAfter:yyyy-MM-dd HH:mm:ss} UTC.";
+            _logger.LogError("Sessão {Name} encerrada: {Reason}", Connection.Name, expiredMsg);
+            SetState(ConnectionState.Faulted, expiredMsg);
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await DisconnectAsync().ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Erro ao desconectar sessão {Name} após certificado expirar.", Connection.Name);
+                }
+            });
+            return;
+        }
+
         if (!ServiceResult.IsBad(e.Status)) return;
         if (_reconnectHandler is not null) return;
 
@@ -783,6 +873,23 @@ public sealed class OpcUaDriver : IDriver
     {
         _state = state;
         StateChanged?.Invoke(this, new ConnectionStateChangedEventArgs(state, reason));
+
+        if (state == ConnectionState.Faulted)
+        {
+            _logger.LogError("Conexão '{Name}' falhou (Faulted). Motivo: {Reason}", Connection.Name, reason ?? "Desconhecido");
+        }
+        else if (state == ConnectionState.Reconnecting)
+        {
+            _logger.LogWarning("Conexão '{Name}' reconectando. Motivo: {Reason}", Connection.Name, reason ?? "KeepAlive");
+        }
+        else if (state == ConnectionState.Disconnected)
+        {
+            _logger.LogInformation("Conexão '{Name}' desconectada. Detalhe: {Reason}", Connection.Name, reason ?? "Nenhum");
+        }
+        else if (state == ConnectionState.Connected)
+        {
+            _logger.LogInformation("Conexão '{Name}' estabelecida com sucesso.", Connection.Name);
+        }
     }
 
     private sealed record RunningGroup(Subscription? Subscription, CancellationTokenSource? PollingCts);

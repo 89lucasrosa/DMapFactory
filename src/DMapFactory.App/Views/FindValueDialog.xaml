@@ -1,0 +1,100 @@
+<Window x:Class="DMapFactory.App.Views.FindValueDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:DMapFactory.App.ViewModels"
+        mc:Ignorable="d"
+        Title="Localizar Valor"
+        Width="500" SizeToContent="Height" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource BackgroundBrush}"
+        FontFamily="{StaticResource UiFont}" FontSize="13"
+        Foreground="{StaticResource TextPrimaryBrush}"
+        ShowInTaskbar="False">
+
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Cabeçalho -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
+            <TextBlock Style="{StaticResource Icon}" Text="&#xE721;" FontSize="20" Foreground="{StaticResource AccentBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="Localizar na Planilha e Gráfico" FontWeight="SemiBold" FontSize="15" />
+                <TextBlock Style="{StaticResource SecondaryText}" FontSize="11" Text="Busca valores registrados de uma tag e navega diretamente até o ponto correspondente." />
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Formulário de Busca -->
+        <Border Grid.Row="1" Style="{StaticResource Panel}" Padding="12" Margin="0,0,0,12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="10" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="125" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Seletor de Tag -->
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Tag:" VerticalAlignment="Center" FontWeight="SemiBold" />
+                <ComboBox Grid.Row="0" Grid.Column="1" x:Name="TagComboBox"
+                          VerticalAlignment="Center">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Margin="2,1">
+                                <Rectangle Width="10" Height="10" RadiusX="2" RadiusY="2" Fill="{Binding PenBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Alias}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                <TextBlock Text="{Binding Address, StringFormat='({0})'}" Style="{StaticResource SecondaryText}" FontSize="11" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <!-- Valor Procurado -->
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Valor procurado:" VerticalAlignment="Center" FontWeight="SemiBold" />
+                <TextBox Grid.Row="2" Grid.Column="1" x:Name="SearchValueTextBox"
+                         Padding="6,4" VerticalAlignment="Center"
+                         KeyDown="SearchValueTextBox_KeyDown" />
+
+                <!-- Opções de Busca -->
+                <WrapPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2">
+                    <CheckBox x:Name="ExactMatchCheckBox" Content="Coincidência exata" IsChecked="True" Margin="0,0,16,4" VerticalAlignment="Center"
+                              ToolTip="Busca pelo valor exato da tag ou equivalente numérico/booleano." />
+                    <CheckBox x:Name="OnlyTransitionsCheckBox" Content="Apenas transições" IsChecked="False" Margin="0,0,16,4" VerticalAlignment="Center"
+                              ToolTip="Localiza apenas linhas onde o valor da tag mudou." />
+                    <CheckBox x:Name="CaseSensitiveCheckBox" Content="Diferenciar maiúsculas" IsChecked="False" Margin="0,0,0,4" VerticalAlignment="Center"
+                              ToolTip="Diferencia letras maiúsculas e minúsculas ao comparar textos." />
+                </WrapPanel>
+            </Grid>
+        </Border>
+
+        <!-- Barra de Status e Feedback -->
+        <Border Grid.Row="2" Background="{StaticResource SurfaceAltBrush}" CornerRadius="{StaticResource ControlRadius}" Padding="10,6" Margin="0,0,0,14" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+            <DockPanel LastChildFill="True">
+                <Button x:Name="ViewSwitchButton" DockPanel.Dock="Right" Padding="8,2" Margin="6,0,0,0"
+                        Click="ViewSwitchButton_Click" VerticalAlignment="Center" FontSize="11" />
+                <TextBlock x:Name="StatusTextBlock" Text="Digite o valor procurado e pressione Próximo (ou Enter)." VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+            </DockPanel>
+        </Border>
+
+        <!-- Botões de Ação -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button x:Name="FindPrevButton" Content="◀ Anterior" Padding="14,5" Margin="0,0,8,0" Click="FindPrevButton_Click"
+                    ToolTip="Localizar ocorrência anterior (Shift+Enter ou Shift+F3)" />
+            <Button x:Name="FindNextButton" Content="Próximo ▶" IsDefault="True" Padding="14,5" Margin="0,0,8,0" Click="FindNextButton_Click"
+                    Background="{StaticResource AccentSoftBrush}" BorderBrush="{StaticResource AccentBrush}" FontWeight="SemiBold"
+                    ToolTip="Localizar próxima ocorrência (Enter ou F3)" />
+            <Button Content="Fechar" IsCancel="True" Padding="14,5" Click="CloseButton_Click" />
+        </StackPanel>
+    </Grid>
+</Window>

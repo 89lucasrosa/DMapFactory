@@ -2,6 +2,8 @@ using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using DMapFactory.Core.Models;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Opc.Ua;
 using Opc.Ua.Client;
 using Opc.Ua.Configuration;
@@ -97,12 +99,16 @@ public sealed record DiscoveredServerCertificate(
 public sealed class OpcUaSecurityManager
 {
     private readonly string _pkiRoot;
+    private readonly ILogger<OpcUaSecurityManager> _logger;
     private readonly SemaphoreSlim _initLock = new(1, 1);
     private readonly ConcurrentDictionary<string, DateTime> _recentRejections = new(StringComparer.OrdinalIgnoreCase);
     private ApplicationConfiguration? _config;
 
-    public OpcUaSecurityManager(string? pkiRootDirectory = null)
+    public event Action<string, CertificateTrustStatus>? CertificateTrustChanged;
+
+    public OpcUaSecurityManager(string? pkiRootDirectory = null, ILogger<OpcUaSecurityManager>? logger = null)
     {
+        _logger = logger ?? NullLogger<OpcUaSecurityManager>.Instance;
         _pkiRoot = pkiRootDirectory ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "DMapFactory", "pki");
@@ -412,6 +418,9 @@ public sealed class OpcUaSecurityManager
         await RemoveServerCertificateInternalAsync(config, cert.Thumbprint, fromTrusted: false).ConfigureAwait(false);
         await config.CertificateValidator.UpdateAsync(config.SecurityConfiguration).ConfigureAwait(false);
 
+        _logger.LogInformation("Certificado de servidor confiado (Trusted): {Subject} [{Thumbprint}]", cert.Subject, cert.Thumbprint);
+        CertificateTrustChanged?.Invoke(cert.Thumbprint, CertificateTrustStatus.Trusted);
+
         string? path = FindFirstCertificateFileInDirectory(TrustedPeersDirectory, cert.Thumbprint) ?? TrustedPeersDirectory;
         return ToInfo(cert, path, CertificateTrustStatus.Trusted);
     }
@@ -434,6 +443,9 @@ public sealed class OpcUaSecurityManager
 
         await RemoveServerCertificateInternalAsync(config, cert.Thumbprint, fromTrusted: true).ConfigureAwait(false);
         await config.CertificateValidator.UpdateAsync(config.SecurityConfiguration).ConfigureAwait(false);
+
+        _logger.LogWarning("Certificado de servidor rejeitado (Rejected): {Subject} [{Thumbprint}]", cert.Subject, cert.Thumbprint);
+        CertificateTrustChanged?.Invoke(cert.Thumbprint, CertificateTrustStatus.Rejected);
 
         string? path = FindFirstCertificateFileInDirectory(RejectedPeersDirectory, cert.Thumbprint) ?? RejectedPeersDirectory;
         return ToInfo(cert, path, CertificateTrustStatus.Rejected);
@@ -475,6 +487,9 @@ public sealed class OpcUaSecurityManager
         var config = await GetOrCreateConfigurationAsync(ct).ConfigureAwait(false);
         await RemoveServerCertificateInternalAsync(config, thumbprint, fromTrusted).ConfigureAwait(false);
         await config.CertificateValidator.UpdateAsync(config.SecurityConfiguration).ConfigureAwait(false);
+
+        _logger.LogInformation("Certificado de servidor removido da lista {Store}: [{Thumbprint}]", fromTrusted ? "Trusted" : "Rejected", thumbprint);
+        CertificateTrustChanged?.Invoke(thumbprint, CertificateTrustStatus.Unknown);
     }
 
     /// <summary>
@@ -547,6 +562,9 @@ public sealed class OpcUaSecurityManager
                     value.Endpoints,
                     value.Raw));
             }
+
+            _logger.LogInformation("Descoberta de certificados em {Url} concluída. {Count} certificado(s) de servidor encontrado(s).",
+                discoveryUrl, results.Count);
 
             return results;
         }
@@ -681,6 +699,8 @@ public sealed class OpcUaSecurityManager
         await config.CertificateValidator.UpdateAsync(config.SecurityConfiguration).ConfigureAwait(false);
 
         string? filePath = FindFirstCertificateFileInDirectory(OwnCertsDirectory, loaded.Thumbprint) ?? OwnCertsDirectory;
+        _logger.LogInformation("Novo certificado de aplicação autoassinado gerado com sucesso: {Subject} [{Thumbprint}] (Válido de {NotBefore:yyyy-MM-dd} até {NotAfter:yyyy-MM-dd}, RSA {KeySize} bits)",
+            loaded.Subject, loaded.Thumbprint, loaded.NotBefore, loaded.NotAfter, keySize);
         return ToInfo(loaded, filePath, CertificateTrustStatus.Trusted);
     }
 
@@ -841,6 +861,7 @@ public sealed class OpcUaSecurityManager
             e.Accept = true;
             SaveCertificateToStoreSafe(_config?.SecurityConfiguration.TrustedPeerCertificates, e.Certificate);
             DeleteCertificateFilesByThumbprint(RejectedPeersDirectory, thumbprint);
+            _logger.LogInformation("Certificado de servidor aceito automaticamente (AutoAccept): {Subject} [{Thumbprint}]", e.Certificate.Subject, thumbprint);
             return;
         }
 
@@ -850,6 +871,7 @@ public sealed class OpcUaSecurityManager
         {
             e.Accept = false;
             SaveCertificateToStoreSafe(_config?.SecurityConfiguration.RejectedCertificateStore, e.Certificate);
+            _logger.LogWarning("Certificado de servidor rejeitado recentemente suprimido: {Subject} [{Thumbprint}]", e.Certificate.Subject, thumbprint);
             return;
         }
 
@@ -865,11 +887,13 @@ public sealed class OpcUaSecurityManager
                 _recentRejections.TryRemove(thumbprint, out _);
                 SaveCertificateToStoreSafe(_config?.SecurityConfiguration.TrustedPeerCertificates, e.Certificate);
                 DeleteCertificateFilesByThumbprint(RejectedPeersDirectory, thumbprint);
+                _logger.LogInformation("Certificado de servidor aprovado pelo usuário no prompt: {Subject} [{Thumbprint}]", e.Certificate.Subject, thumbprint);
             }
             else
             {
                 _recentRejections[thumbprint] = DateTime.UtcNow;
                 SaveCertificateToStoreSafe(_config?.SecurityConfiguration.RejectedCertificateStore, e.Certificate);
+                _logger.LogWarning("Certificado de servidor rejeitado pelo usuário no prompt: {Subject} [{Thumbprint}]", e.Certificate.Subject, thumbprint);
             }
             return;
         }
@@ -877,6 +901,7 @@ public sealed class OpcUaSecurityManager
         // 5. Sem auto-accept e sem prompt (ou rejeitado): rejeita e garante persistência na pasta Rejected
         e.Accept = false;
         SaveCertificateToStoreSafe(_config?.SecurityConfiguration.RejectedCertificateStore, e.Certificate);
+        _logger.LogWarning("Certificado de servidor não confiável rejeitado: {Subject} [{Thumbprint}] (Motivo: {Status})", e.Certificate.Subject, thumbprint, e.Error.StatusCode);
     }
 
     private static void SaveCertificateToStoreSafe(CertificateStoreIdentifier? trustList, X509Certificate2 cert)
