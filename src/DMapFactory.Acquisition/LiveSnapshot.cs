@@ -15,6 +15,9 @@ public sealed class LiveSnapshot
     private long _nextRowNumber = 1;
 
     private DateTime? _pendingTimestampUtc;
+    private DateTime? _pendingSourceTimestampUtc;
+    private DateTime? _pendingServerTimestampUtc;
+    private DateTime? _pendingLocalTimestampUtc;
     private Dictionary<int, object?>? _pendingSnapshot;
     private HashSet<int>? _pendingChangedTags;
     private int? _pendingCycleNumber;
@@ -24,8 +27,11 @@ public sealed class LiveSnapshot
     /// <summary>Quando true (padrão P3), mudanças com o mesmo SourceTimestamp são agrupadas na mesma linha.</summary>
     public bool GroupSameTimestamp { get; set; } = true;
 
-    /// <summary>Número máximo de linhas mantidas em memória para visualização ao vivo (o CSV em disco guarda 100%).</summary>
-    public int MaxRowsInMemory { get; set; } = 200_000;
+    /// <summary>Modo de fonte de timestamp ativo para exibição na planilha e no gráfico.</summary>
+    public TimestampSourceMode TimestampSource { get; set; } = TimestampSourceMode.Auto;
+
+    /// <summary>Número máximo de linhas mantidas em memória para visualização ao vivo (sem limitação artificial).</summary>
+    public int MaxRowsInMemory { get; set; } = int.MaxValue;
 
     /// <summary>Tag booleana opcional cujo valor true/false demarca o ciclo de máquina (RF-STO-08 / RF-GRD-10).</summary>
     public int? CycleTriggerTagId { get; set; }
@@ -44,12 +50,45 @@ public sealed class LiveSnapshot
             _rows.Clear();
             _nextRowNumber = 1;
             _pendingTimestampUtc = null;
+            _pendingSourceTimestampUtc = null;
+            _pendingServerTimestampUtc = null;
+            _pendingLocalTimestampUtc = null;
             _pendingSnapshot = null;
             _pendingChangedTags = null;
             _currentCycleNumber = 0;
             _inCycle = false;
             _lastRowTimestampUtc = null;
             _completedCycles.Clear();
+        }
+    }
+
+    public void ApplyTimestampSourceToAllRows(TimestampSourceMode mode)
+    {
+        lock (_lock)
+        {
+            TimestampSource = mode;
+
+            var tagKeys = _latestByTag.Keys.ToList();
+            foreach (var key in tagKeys)
+            {
+                var prev = _latestByTag[key];
+                DateTime resolved = prev.ResolveTimestamp(mode, out var origin);
+                _latestByTag[key] = prev with
+                {
+                    TimestampUtc = resolved,
+                    Origin = origin
+                };
+            }
+
+            DateTime? prevRowTs = null;
+            foreach (var r in _rows)
+            {
+                DateTime newTs = r.ResolveTimestamp(mode);
+                TimeSpan? delta = prevRowTs.HasValue ? newTs - prevRowTs.Value : TimeSpan.Zero;
+                prevRowTs = newTs;
+                r.ApplyTimestampSource(mode, delta);
+            }
+            _lastRowTimestampUtc = prevRowTs;
         }
     }
 
@@ -78,8 +117,15 @@ public sealed class LiveSnapshot
 
         lock (_lock)
         {
-            foreach (var s in samples)
+            foreach (var rawSample in samples)
             {
+                DateTime effectiveTs = rawSample.ResolveTimestamp(TimestampSource, out var effectiveOrigin);
+                var s = rawSample with
+                {
+                    TimestampUtc = effectiveTs,
+                    Origin = effectiveOrigin
+                };
+
                 object? displayValue = s.Value ?? (s.Quality != QualityClass.Good ? $"[{s.Quality}]" : null);
                 bool valueChanged = !_workingState.TryGetValue(s.TagId, out var prevVal) || !Equals(prevVal, displayValue);
                 _latestByTag[s.TagId] = s;
@@ -88,6 +134,8 @@ public sealed class LiveSnapshot
                 bool isCycleStart = UpdateCycleState(in s);
                 int? activeCycle = _inCycle ? _currentCycleNumber : null;
 
+                DateTime sampleLocalTs = s.LocalTimestampUtc ?? DateTime.SpecifyKind(s.ReceivedUtc.ToLocalTime(), DateTimeKind.Utc);
+
                 if (GroupSameTimestamp &&
                     _pendingTimestampUtc.HasValue &&
                     _pendingTimestampUtc.Value == s.TimestampUtc &&
@@ -95,6 +143,11 @@ public sealed class LiveSnapshot
                     _pendingChangedTags is not null)
                 {
                     _pendingSnapshot[s.TagId] = displayValue;
+                    if (s.SourceTimestampUtc.HasValue)
+                        _pendingSourceTimestampUtc = s.SourceTimestampUtc;
+                    if (s.ServerTimestampUtc.HasValue)
+                        _pendingServerTimestampUtc = s.ServerTimestampUtc;
+                    _pendingLocalTimestampUtc = sampleLocalTs;
                     if (valueChanged)
                         _pendingChangedTags.Add(s.TagId);
                     if (isCycleStart) _pendingIsCycleStart = true;
@@ -104,6 +157,9 @@ public sealed class LiveSnapshot
                 {
                     CommitPendingLocked(committed);
                     _pendingTimestampUtc = s.TimestampUtc;
+                    _pendingSourceTimestampUtc = s.SourceTimestampUtc;
+                    _pendingServerTimestampUtc = s.ServerTimestampUtc;
+                    _pendingLocalTimestampUtc = sampleLocalTs;
                     _pendingSnapshot = new Dictionary<int, object?>(_workingState);
                     _pendingChangedTags = valueChanged ? [s.TagId] : [];
                     _pendingCycleNumber = activeCycle;
@@ -138,6 +194,7 @@ public sealed class LiveSnapshot
         lock (_lock)
         {
             var now = timestampUtc ?? DateTime.UtcNow;
+            var localNow = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
             TimeSpan? delta = _lastRowTimestampUtc.HasValue ? now - _lastRowTimestampUtc.Value : TimeSpan.Zero;
             _lastRowTimestampUtc = now;
 
@@ -146,6 +203,9 @@ public sealed class LiveSnapshot
             {
                 RowNumber = _nextRowNumber++,
                 TimestampUtc = now,
+                SourceTimestampUtc = now,
+                ServerTimestampUtc = now,
+                LocalTimestampUtc = timestampUtc ?? localNow,
                 ValuesByTagId = currentValues,
                 ChangedTagIds = new HashSet<int>(),
                 CycleNumber = _currentCycleNumber > 0 ? _currentCycleNumber : null,
@@ -155,10 +215,6 @@ public sealed class LiveSnapshot
             };
 
             _rows.Enqueue(row);
-            if (_rows.Count > MaxRowsInMemory)
-            {
-                _rows.Dequeue();
-            }
 
             return row;
         }
@@ -229,6 +285,9 @@ public sealed class LiveSnapshot
         {
             RowNumber = _nextRowNumber++,
             TimestampUtc = _pendingTimestampUtc.Value,
+            SourceTimestampUtc = _pendingSourceTimestampUtc,
+            ServerTimestampUtc = _pendingServerTimestampUtc,
+            LocalTimestampUtc = _pendingLocalTimestampUtc,
             ValuesByTagId = _pendingSnapshot,
             ChangedTagIds = _pendingChangedTags,
             CycleNumber = _pendingCycleNumber,
@@ -237,14 +296,13 @@ public sealed class LiveSnapshot
         };
 
         _rows.Enqueue(row);
-        if (_rows.Count > MaxRowsInMemory)
-        {
-            _rows.Dequeue();
-        }
 
         committed.Add(row);
 
         _pendingTimestampUtc = null;
+        _pendingSourceTimestampUtc = null;
+        _pendingServerTimestampUtc = null;
+        _pendingLocalTimestampUtc = null;
         _pendingSnapshot = null;
         _pendingChangedTags = null;
         _pendingIsCycleStart = false;

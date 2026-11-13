@@ -43,10 +43,10 @@ public sealed class SessionManager : ISampleSink, IAsyncDisposable
     private int _bufferedCount;
     private bool _isOnline;
 
-    public SessionManager(LiveSnapshot? snapshot = null, int bufferCapacity = 50_000)
+    public SessionManager(LiveSnapshot? snapshot = null, int bufferCapacity = 500_000)
     {
         Snapshot = snapshot ?? new LiveSnapshot();
-        _bufferCapacity = Math.Max(15_000, bufferCapacity);
+        _bufferCapacity = Math.Max(50_000, bufferCapacity);
     }
 
     public LiveSnapshot Snapshot { get; }

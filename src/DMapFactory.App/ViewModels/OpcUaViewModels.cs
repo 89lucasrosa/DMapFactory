@@ -203,12 +203,21 @@ public sealed partial class MonitoredTagViewModel : ObservableObject
     [ObservableProperty] private string _valueText = "—";
     [ObservableProperty] private QualityClass _quality = QualityClass.Good;
     [ObservableProperty] private DateTime? _timestampUtc;
-    [ObservableProperty] private TimestampOrigin _origin = TimestampOrigin.Source;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(OriginText))]
+    private TimestampOrigin _origin = TimestampOrigin.Source;
     [ObservableProperty] private bool _isPlotted = true;
     [ObservableProperty] private Color _penColor;
     [ObservableProperty] private Brush _penBrush;
     [ObservableProperty] private string _minValueText = "—";
     [ObservableProperty] private string _maxValueText = "—";
+
+    public string OriginText => Origin switch
+    {
+        TimestampOrigin.Source => "Fonte / CLP",
+        TimestampOrigin.Server => "Servidor OPC",
+        _ => "Sistema / PC"
+    };
 
     public bool IsBoolean =>
         string.Equals(DataType, "Boolean", StringComparison.OrdinalIgnoreCase) ||

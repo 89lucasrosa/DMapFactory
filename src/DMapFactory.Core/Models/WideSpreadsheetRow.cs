@@ -10,7 +10,10 @@ public sealed class WideSpreadsheetRow : System.ComponentModel.INotifyPropertyCh
     public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
 
     public required long RowNumber { get; init; }
-    public required DateTime TimestampUtc { get; init; }
+    public required DateTime TimestampUtc { get; set; }
+    public DateTime? SourceTimestampUtc { get; init; }
+    public DateTime? ServerTimestampUtc { get; init; }
+    public DateTime? LocalTimestampUtc { get; init; }
     public required IReadOnlyDictionary<int, object?> ValuesByTagId { get; init; }
     public required IReadOnlySet<int> ChangedTagIds { get; init; }
     public int? CycleNumber { get; init; }
@@ -18,6 +21,23 @@ public sealed class WideSpreadsheetRow : System.ComponentModel.INotifyPropertyCh
     public TimeSpan? DeltaTime { get; set; }
     public string? MarkerText { get; set; }
     public bool IsMarker => !string.IsNullOrEmpty(MarkerText);
+
+    public DateTime ResolveTimestamp(TimestampSourceMode mode) => mode switch
+    {
+        TimestampSourceMode.Local => LocalTimestampUtc ?? TimestampUtc,
+        TimestampSourceMode.Server => ServerTimestampUtc ?? SourceTimestampUtc ?? LocalTimestampUtc ?? TimestampUtc,
+        TimestampSourceMode.Source => SourceTimestampUtc ?? ServerTimestampUtc ?? LocalTimestampUtc ?? TimestampUtc,
+        _ => SourceTimestampUtc ?? ServerTimestampUtc ?? LocalTimestampUtc ?? TimestampUtc
+    };
+
+    public void ApplyTimestampSource(TimestampSourceMode mode, TimeSpan? deltaTime)
+    {
+        TimestampUtc = ResolveTimestamp(mode);
+        DeltaTime = deltaTime;
+        PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(TimestampUtc)));
+        PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(DeltaTime)));
+        PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(CycleDisplay)));
+    }
 
     public void SetMarker(string? text)
     {

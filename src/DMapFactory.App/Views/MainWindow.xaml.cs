@@ -31,6 +31,9 @@ public partial class MainWindow : Window
     private long _lastRenderedRowNumber = -1;
     private int _lastRenderedRowCount = -1;
     private DateTime? _frozenChartMaxUtc;
+    private DateTime _lastRowArrivalWallUtc = DateTime.UtcNow;
+    private bool _isAutoScrollingSpreadsheet;
+    private double _savedPensPanelWidth = 260;
     private FindMarkerDialog? _findMarkerDialog;
 
     private bool _isResizingHeaderHeight;
@@ -126,6 +129,32 @@ public partial class MainWindow : Window
         {
             switch (e.PropertyName)
             {
+                case nameof(MainViewModel.AutoScrollSpreadsheet):
+                    if (_vm.AutoScrollSpreadsheet && _vm.SpreadsheetRows.Count > 0 && SpreadsheetGrid.IsVisible)
+                    {
+                        ScrollSpreadsheetToBottom();
+                    }
+                    break;
+                case nameof(MainViewModel.TimestampSource):
+                    UpdateTimestampColumnHeader();
+                    SpreadsheetGrid.Items.Refresh();
+                    _frozenChartMaxUtc = null;
+                    RenderChart(force: true);
+                    break;
+                case nameof(MainViewModel.ShowChartPensPanel):
+                    if (_vm.ShowChartPensPanel)
+                    {
+                        ChartPensColumn.MinWidth = 150;
+                        ChartPensColumn.Width = new GridLength(_savedPensPanelWidth >= 150 ? _savedPensPanelWidth : 260);
+                    }
+                    else
+                    {
+                        if (ChartPensColumn.ActualWidth >= 150)
+                            _savedPensPanelWidth = ChartPensColumn.ActualWidth;
+                        ChartPensColumn.MinWidth = 0;
+                        ChartPensColumn.Width = new GridLength(0);
+                    }
+                    break;
                 case nameof(MainViewModel.AutoFollowChart):
                     if (_vm.AutoFollowChart)
                         _frozenChartMaxUtc = null;
@@ -680,7 +709,7 @@ public partial class MainWindow : Window
 
         SpreadsheetGrid.Columns.Add(new DataGridTextColumn
         {
-            Header = CreateFixedHeader("Timestamp (UTC)", rotateVertical: false, columnIndex: 1),
+            Header = CreateFixedHeader(_vm.TimestampColumnHeaderText, rotateVertical: false, columnIndex: 1),
             Width = new DataGridLength(CalculateColumnAutoWidth(1)),
             MinWidth = 110,
             Binding = new Binding(nameof(WideSpreadsheetRow.TimestampUtc))
@@ -832,6 +861,15 @@ public partial class MainWindow : Window
         ApplySpreadsheetHeaderHeight(effectiveHeaderHeight);
     }
 
+    private void UpdateTimestampColumnHeader()
+    {
+        if (SpreadsheetGrid.Columns.Count > 1)
+        {
+            SpreadsheetGrid.Columns[1].Header = CreateFixedHeader(_vm.TimestampColumnHeaderText, rotateVertical: false, columnIndex: 1);
+            AutoFitSingleColumn(1);
+        }
+    }
+
     private FrameworkElement CreateFixedHeader(string text, bool rotateVertical, int columnIndex)
     {
         var tb = new TextBlock
@@ -956,8 +994,9 @@ public partial class MainWindow : Window
 
         if (columnIndex == 1)
         {
-            // Coluna 'Timestamp (UTC)'
-            double headerWidth = MeasureTextWidth("Timestamp (UTC)", headerFont, 12, FontWeights.SemiBold, dpi) + 24;
+            // Coluna 'Timestamp'
+            string tsHeader = _vm.TimestampColumnHeaderText;
+            double headerWidth = MeasureTextWidth(tsHeader, headerFont, 12, FontWeights.SemiBold, dpi) + 24;
             double cellWidth = MeasureTextWidth("2026-10-24 23:59:59.999", cellFont, 12, FontWeights.Normal, dpi) + 22;
             return Math.Ceiling(Math.Max(headerWidth, cellWidth));
         }
@@ -1062,6 +1101,22 @@ public partial class MainWindow : Window
         return ft.WidthIncludingTrailingWhitespace;
     }
 
+    private void ScrollSpreadsheetToBottom()
+    {
+        if (_vm.SpreadsheetRows.Count == 0)
+            return;
+
+        _isAutoScrollingSpreadsheet = true;
+        try
+        {
+            SpreadsheetGrid.ScrollIntoView(_vm.SpreadsheetRows[^1]);
+        }
+        finally
+        {
+            Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => _isAutoScrollingSpreadsheet = false));
+        }
+    }
+
     private void RefreshSpreadsheetAndChart()
     {
         int count = _vm.SpreadsheetRows.Count;
@@ -1072,10 +1127,11 @@ public partial class MainWindow : Window
         {
             _lastRenderedRowCount = count;
             _lastRenderedRowNumber = lastRowNum;
+            _lastRowArrivalWallUtc = DateTime.UtcNow;
 
             if (_vm.AutoScrollSpreadsheet && count > 0 && SpreadsheetGrid.IsVisible)
             {
-                SpreadsheetGrid.ScrollIntoView(_vm.SpreadsheetRows[^1]);
+                ScrollSpreadsheetToBottom();
             }
         }
 
@@ -1095,14 +1151,20 @@ public partial class MainWindow : Window
 
         if (plottedTags.Count == 0)
         {
-            TrendPlot.UpdateChart([], DateTime.UtcNow.AddSeconds(-_vm.ChartWindowSeconds), DateTime.UtcNow, _vm.ShowChartCursors);
+            DateTime emptyNow = _vm.TimestampSource == TimestampSourceMode.Local
+                ? DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc)
+                : DateTime.UtcNow;
+            TrendPlot.UpdateChart([], emptyNow.AddSeconds(-_vm.ChartWindowSeconds), emptyNow, _vm.ShowChartCursors);
             return;
         }
 
         if (rows.Count == 0)
         {
             // Se ainda não há linhas na planilha, mas alguma tag já possui valor lido, plota o ponto atual
-            DateTime nowUtc = DateTime.UtcNow;
+            DateTime nowUtc = plottedTags.FirstOrDefault(t => t.TimestampUtc.HasValue)?.TimestampUtc
+                ?? (_vm.TimestampSource == TimestampSourceMode.Local
+                    ? DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc)
+                    : DateTime.UtcNow);
             DateTime fallbackMinUtc = nowUtc.AddSeconds(-Math.Max(5, _vm.ChartWindowSeconds));
             var liveSeries = new List<ChartSeriesData>();
 
@@ -1141,7 +1203,10 @@ public partial class MainWindow : Window
         else if (_vm.AutoFollowChart)
         {
             _frozenChartMaxUtc = null;
-            maxWindowUtc = _vm.IsOnline ? DateTime.UtcNow : latestDataUtc;
+            double elapsedSinceLastRowSec = _vm.IsOnline
+                ? Math.Clamp((DateTime.UtcNow - _lastRowArrivalWallUtc).TotalSeconds, 0.0, Math.Max(1.0, _vm.ChartWindowSeconds))
+                : 0.0;
+            maxWindowUtc = latestDataUtc.AddSeconds(elapsedSinceLastRowSec);
             minWindowUtc = maxWindowUtc.AddSeconds(-Math.Max(1, _vm.ChartWindowSeconds));
         }
         else
@@ -1237,7 +1302,9 @@ public partial class MainWindow : Window
                 }
             }
 
-            DateTime holdUntilUtc = maxWindowUtc < latestDataUtc ? maxWindowUtc : latestDataUtc;
+            DateTime holdUntilUtc = (_vm.IsOnline && _vm.AutoFollowChart && tagVm.Quality == QualityClass.Good)
+                ? maxWindowUtc
+                : (maxWindowUtc < latestDataUtc ? maxWindowUtc : latestDataUtc);
 
             // Se a tag tinha valor antes de minWindowUtc e não teve novas linhas dentro da janela, mantém linha constante
             if (points.Count == 0 && hasVal && holdUntilUtc >= minWindowUtc)
@@ -1297,8 +1364,40 @@ public partial class MainWindow : Window
 
     private static IReadOnlyList<ChartSeriesPoint> DownsampleSeries(List<ChartSeriesPoint> points, int targetMaxPoints, bool isBoolean)
     {
-        if (points.Count <= targetMaxPoints || isBoolean)
+        if (points.Count <= targetMaxPoints)
             return points;
+
+        if (isBoolean)
+        {
+            // Compacta valores consecutivos idênticos preservando todas as bordas de transição (0->1, 1->0 e NaN)
+            var compacted = new List<ChartSeriesPoint>(Math.Min(points.Count, targetMaxPoints * 2))
+            {
+                points[0]
+            };
+
+            for (int i = 1; i < points.Count - 1; i++)
+            {
+                var prev = points[i - 1];
+                var curr = points[i];
+                var next = points[i + 1];
+
+                bool diffFromPrev = double.IsNaN(curr.Value) != double.IsNaN(prev.Value) ||
+                                    (!double.IsNaN(curr.Value) && curr.Value != prev.Value);
+                bool diffFromNext = double.IsNaN(curr.Value) != double.IsNaN(next.Value) ||
+                                    (!double.IsNaN(curr.Value) && curr.Value != next.Value);
+
+                if (diffFromPrev || diffFromNext)
+                {
+                    compacted.Add(curr);
+                }
+            }
+
+            compacted.Add(points[^1]);
+            if (compacted.Count <= targetMaxPoints * 2)
+                return compacted;
+
+            points = compacted;
+        }
 
         var result = new List<ChartSeriesPoint>(targetMaxPoints + 2)
         {
@@ -1646,21 +1745,15 @@ public partial class MainWindow : Window
 
     private void SpreadsheetGrid_ScrollChanged(object sender, ScrollChangedEventArgs e)
     {
-        if (Math.Abs(e.VerticalChange) < 0.01) return;
+        if (_isAutoScrollingSpreadsheet)
+            return;
 
-        // FN-04: Pausa automática de auto-scroll ao rolar para cima para inspecionar histórico
-        if (e.VerticalOffset < e.ExtentHeight - e.ViewportHeight - 2.0)
+        // FN-04: Pausa automática de auto-scroll apenas quando o usuário rola manualmente para cima
+        if (e.VerticalChange < -0.5 && e.VerticalOffset < e.ExtentHeight - e.ViewportHeight - 4.0)
         {
             if (_vm.AutoScrollSpreadsheet)
             {
                 _vm.AutoScrollSpreadsheet = false;
-            }
-        }
-        else if (e.VerticalOffset >= e.ExtentHeight - e.ViewportHeight - 1.0)
-        {
-            if (!_vm.AutoScrollSpreadsheet && _vm.IsOnline)
-            {
-                _vm.AutoScrollSpreadsheet = true;
             }
         }
     }

@@ -274,12 +274,14 @@
         <Setter Property="Focusable" Value="False" />
     </Style>
 
-    <!-- ===== Indicador de estado (bolinha) ===== -->
+    <!-- ===== Indicador de estado (bolinha LED nítida) ===== -->
     <Style x:Key="StatusDot" TargetType="Ellipse">
-        <Setter Property="Width" Value="8" />
-        <Setter Property="Height" Value="8" />
-        <Setter Property="Margin" Value="0,0,6,0" />
+        <Setter Property="Width" Value="10" />
+        <Setter Property="Height" Value="10" />
+        <Setter Property="Margin" Value="0,0,7,0" />
         <Setter Property="VerticalAlignment" Value="Center" />
-        <Setter Property="Fill" Value="{StaticResource TextDisabledBrush}" />
+        <Setter Property="Fill" Value="{StaticResource DisconnectedBrush}" />
+        <Setter Property="Stroke" Value="{StaticResource DisconnectedStrokeBrush}" />
+        <Setter Property="StrokeThickness" Value="1.5" />
     </Style>
 </ResourceDictionary>

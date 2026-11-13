@@ -468,7 +468,7 @@ public sealed class OpcUaDriver : IDriver
             description,
             safeCurrentValue,
             sample.Quality,
-            valDv.SourceTimestamp != DateTime.MinValue ? valDv.SourceTimestamp : null);
+            sample.TimestampUtc);
     }
 
     public async Task<IReadOnlyList<Sample>> ReadAsync(IReadOnlyList<TagConfig> tags, CancellationToken ct = default)
@@ -490,10 +490,17 @@ public sealed class OpcUaDriver : IDriver
             null, 0, TimestampsToReturn.Both, nodesToRead, ct).ConfigureAwait(false);
 
         DateTime receivedUtc = DateTime.UtcNow;
+        DateTime localOsTime = DateTime.SpecifyKind(receivedUtc.ToLocalTime(), DateTimeKind.Utc);
+        DateTime? responseServerTs = response.ResponseHeader is not null &&
+                                     response.ResponseHeader.Timestamp != DateTime.MinValue &&
+                                     response.ResponseHeader.Timestamp.Year > 1970
+            ? DateTime.SpecifyKind(response.ResponseHeader.Timestamp, DateTimeKind.Utc)
+            : null;
+
         var results = new List<Sample>(tags.Count);
         for (int i = 0; i < tags.Count && i < response.Results.Count; i++)
         {
-            results.Add(ToSample(tags[i].Id, response.Results[i], receivedUtc));
+            results.Add(ToSample(tags[i].Id, response.Results[i], receivedUtc, localOsTime, responseServerTs));
         }
 
         return results;
@@ -616,6 +623,7 @@ public sealed class OpcUaDriver : IDriver
     {
         var interval = TimeSpan.FromMilliseconds(Math.Max(10, group.SamplingIntervalMs));
         using var timer = new PeriodicTimer(interval);
+        DateTime? lastBatchSourceTs = null;
 
         _logger.LogInformation("Aquisição periódica '{Group}' iniciada em '{Conn}' com taxa fixa de {Interval} ms ({Total} tags).",
             group.Name, Connection.Name, group.SamplingIntervalMs, group.Tags.Count);
@@ -626,11 +634,50 @@ public sealed class OpcUaDriver : IDriver
             {
                 if (_session is not { Connected: true }) continue;
 
-                DateTime cycleUtc = DateTime.UtcNow;
                 var samples = await ReadAsync(group.Tags, ct).ConfigureAwait(false);
+                if (samples.Count == 0) continue;
+
+                DateTime? batchSourceTs = null;
+                DateTime? batchServerTs = null;
+                DateTime batchLocalTs = samples[0].LocalTimestampUtc ?? DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+
                 foreach (var s in samples)
                 {
-                    var periodicSample = s with { TimestampUtc = cycleUtc };
+                    if (s.SourceTimestampUtc.HasValue && (!batchSourceTs.HasValue || s.SourceTimestampUtc.Value > batchSourceTs.Value))
+                        batchSourceTs = s.SourceTimestampUtc.Value;
+                    if (s.ServerTimestampUtc.HasValue && (!batchServerTs.HasValue || s.ServerTimestampUtc.Value > batchServerTs.Value))
+                        batchServerTs = s.ServerTimestampUtc.Value;
+                }
+
+                // Se estiver em modo Automático no polling e nenhuma variável mudou o SourceTimestamp desde o ciclo anterior,
+                // usa o ServerTimestamp (ou Local) como timestamp efetivo do ciclo periódico para que o relógio avance na taxa escolhida.
+                DateTime? effectiveSourceForAuto = batchSourceTs;
+                if (PreferredTimestampSource == TimestampSourceMode.Auto &&
+                    batchSourceTs.HasValue &&
+                    lastBatchSourceTs.HasValue &&
+                    batchSourceTs.Value <= lastBatchSourceTs.Value)
+                {
+                    effectiveSourceForAuto = batchServerTs ?? batchLocalTs;
+                }
+                if (batchSourceTs.HasValue)
+                    lastBatchSourceTs = batchSourceTs;
+
+                foreach (var s in samples)
+                {
+                    var normalized = s with
+                    {
+                        SourceTimestampUtc = PreferredTimestampSource == TimestampSourceMode.Auto
+                            ? effectiveSourceForAuto
+                            : (batchSourceTs ?? s.SourceTimestampUtc),
+                        ServerTimestampUtc = batchServerTs ?? s.ServerTimestampUtc,
+                        LocalTimestampUtc = batchLocalTs
+                    };
+                    DateTime resolvedTs = normalized.ResolveTimestamp(PreferredTimestampSource, out var resolvedOrigin);
+                    var periodicSample = normalized with
+                    {
+                        TimestampUtc = resolvedTs,
+                        Origin = resolvedOrigin
+                    };
                     sink.TryPublish(in periodicSample);
                 }
             }
@@ -649,90 +696,64 @@ public sealed class OpcUaDriver : IDriver
     {
         if (item.Handle is not TagConfig tag) return;
         DateTime receivedUtc = DateTime.UtcNow;
+        DateTime localOsTime = DateTime.SpecifyKind(receivedUtc.ToLocalTime(), DateTimeKind.Utc);
+        DateTime? publishServerTs = e?.NotificationValue is MonitoredItemNotification minMsg &&
+                                    minMsg.Message is not null &&
+                                    minMsg.Message.PublishTime != DateTime.MinValue &&
+                                    minMsg.Message.PublishTime.Year > 1970
+            ? DateTime.SpecifyKind(minMsg.Message.PublishTime, DateTimeKind.Utc)
+            : null;
 
         var values = item.DequeueValues();
         if (values is { Count: > 0 })
         {
             foreach (var dv in values)
             {
-                var sample = ToSample(tag.Id, dv, receivedUtc);
+                var sample = ToSample(tag.Id, dv, receivedUtc, localOsTime, publishServerTs);
                 sink.TryPublish(in sample);
             }
         }
         else if (e?.NotificationValue is MonitoredItemNotification min && min.Value is not null)
         {
-            var sample = ToSample(tag.Id, min.Value, receivedUtc);
+            var sample = ToSample(tag.Id, min.Value, receivedUtc, localOsTime, publishServerTs);
             sink.TryPublish(in sample);
         }
     }
 
-    private Sample ToSample(int tagId, DataValue dv, DateTime receivedUtc)
+    private Sample ToSample(
+        int tagId,
+        DataValue dv,
+        DateTime receivedUtc,
+        DateTime? localOsTime = null,
+        DateTime? fallbackServerUtc = null)
     {
-        DateTime ts;
-        TimestampOrigin origin;
+        DateTime localTs = localOsTime ?? DateTime.SpecifyKind(receivedUtc.ToLocalTime(), DateTimeKind.Utc);
 
         bool hasSource = dv.SourceTimestamp != DateTime.MinValue && dv.SourceTimestamp.Year > 1970;
         bool hasServer = dv.ServerTimestamp != DateTime.MinValue && dv.ServerTimestamp.Year > 1970;
 
-        switch (PreferredTimestampSource)
+        DateTime? sourceTs = hasSource ? DateTime.SpecifyKind(dv.SourceTimestamp, DateTimeKind.Utc) : null;
+        DateTime? serverTs = hasServer
+            ? DateTime.SpecifyKind(dv.ServerTimestamp, DateTimeKind.Utc)
+            : fallbackServerUtc;
+
+        var candidate = new Sample(
+            tagId,
+            localTs,
+            receivedUtc,
+            TimestampOrigin.Local,
+            dv.Value,
+            dv.StatusCode.Code,
+            sourceTs,
+            serverTs,
+            localTs);
+
+        DateTime resolvedTs = candidate.ResolveTimestamp(PreferredTimestampSource, out var resolvedOrigin);
+        return candidate with
         {
-            case TimestampSourceMode.Local:
-                ts = receivedUtc;
-                origin = TimestampOrigin.Local;
-                break;
-
-            case TimestampSourceMode.Server:
-                if (hasServer)
-                {
-                    ts = DateTime.SpecifyKind(dv.ServerTimestamp, DateTimeKind.Utc);
-                    origin = TimestampOrigin.Server;
-                }
-                else
-                {
-                    ts = receivedUtc;
-                    origin = TimestampOrigin.Local;
-                }
-                break;
-
-            case TimestampSourceMode.Source:
-                if (hasSource)
-                {
-                    ts = DateTime.SpecifyKind(dv.SourceTimestamp, DateTimeKind.Utc);
-                    origin = TimestampOrigin.Source;
-                }
-                else if (hasServer)
-                {
-                    ts = DateTime.SpecifyKind(dv.ServerTimestamp, DateTimeKind.Utc);
-                    origin = TimestampOrigin.Server;
-                }
-                else
-                {
-                    ts = receivedUtc;
-                    origin = TimestampOrigin.Local;
-                }
-                break;
-
-            case TimestampSourceMode.Auto:
-            default:
-                if (hasSource)
-                {
-                    ts = DateTime.SpecifyKind(dv.SourceTimestamp, DateTimeKind.Utc);
-                    origin = TimestampOrigin.Source;
-                }
-                else if (hasServer)
-                {
-                    ts = DateTime.SpecifyKind(dv.ServerTimestamp, DateTimeKind.Utc);
-                    origin = TimestampOrigin.Server;
-                }
-                else
-                {
-                    ts = receivedUtc;
-                    origin = TimestampOrigin.Local;
-                }
-                break;
-        }
-
-        return new Sample(tagId, ts, receivedUtc, origin, dv.Value, dv.StatusCode.Code);
+            TimestampUtc = resolvedTs,
+            Origin = resolvedOrigin
+        };
     }
 
     private void OnSessionKeepAlive(ISession session, KeepAliveEventArgs e)

@@ -66,6 +66,11 @@
                 <Separator />
                 <MenuItem Header="{Binding [Menu_OpenSession], Source={x:Static loc:Loc.Instance}}"
                           Command="{Binding OpenRecordedSessionCommand}" InputGestureText="Ctrl+Shift+O" />
+                <MenuItem Header="Configurar local de salvamento das sessões…"
+                          Command="{Binding ConfigureSessionsFolderCommand}"
+                          ToolTip="Escolher a pasta onde os arquivos CSV/Excel e JSON de sessão são criados ao entrar On-line/Off-line" />
+                <MenuItem Header="Abrir pasta de sessões salvas…"
+                          Command="{Binding OpenSessionsFolderCommand}" />
                 <MenuItem Header="{Binding [Toolbar_Export], Source={x:Static loc:Loc.Instance}}"
                           Command="{Binding ExportSpreadsheetCommand}" InputGestureText="Ctrl+E" />
                 <MenuItem Header="Gerenciador de certificados OPC UA…"
@@ -147,13 +152,13 @@
                 <Separator />
                 <MenuItem x:Name="TimestampSourceMenu" Header="Fonte do Timestamp" SubmenuOpened="TimestampSourceMenu_SubmenuOpened">
                     <MenuItem x:Name="TsAutoMenuItem" Header="Automático (Fonte ➔ Servidor ➔ Local)"
-                              IsCheckable="True" Click="SetTimestampSourceAuto_Click" />
+                              Click="SetTimestampSourceAuto_Click" />
                     <MenuItem x:Name="TsSourceMenuItem" Header="Fonte / CLP (SourceTimestamp)"
-                              IsCheckable="True" Click="SetTimestampSourceSource_Click" />
+                              Click="SetTimestampSourceSource_Click" />
                     <MenuItem x:Name="TsServerMenuItem" Header="Servidor OPC UA (ServerTimestamp)"
-                              IsCheckable="True" Click="SetTimestampSourceServer_Click" />
+                              Click="SetTimestampSourceServer_Click" />
                     <MenuItem x:Name="TsLocalMenuItem" Header="Sistema Operacional / Local (PC)"
-                              IsCheckable="True" Click="SetTimestampSourceLocal_Click" />
+                              Click="SetTimestampSourceLocal_Click" />
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="{Binding [Menu_Help], Source={x:Static loc:Loc.Instance}}">
@@ -320,10 +325,23 @@
                     <!-- Lista de conexões -->
                     <DockPanel Grid.Row="0">
                         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="0,2,4,0">
-                            <Button Padding="7,3" Margin="0,0,3,0"
+                            <Button Padding="6,3" Margin="0,0,2,0"
                                     Command="{Binding ConnectOrDisconnectSelectedCommand}"
-                                    ToolTip="{Binding ConnectButtonToolTip}"
-                                    Content="{Binding ConnectButtonText}" FontSize="11" FontWeight="SemiBold" />
+                                    ToolTip="{Binding ConnectButtonToolTip}">
+                                <TextBlock>
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock" BasedOn="{StaticResource Icon}">
+                                            <Setter Property="FontSize" Value="12" />
+                                            <Setter Property="Text" Value="&#xE703;" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsSelectedConnectionConnected}" Value="True">
+                                                    <Setter Property="Foreground" Value="{StaticResource GoodBrush}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Button>
                             <Button Padding="6,3" Margin="0,0,2,0"
                                      Command="{Binding AddConnectionCommand}"
                                      ToolTip="{Binding [Toolbar_AddConnection], Source={x:Static loc:Loc.Instance}}">
@@ -367,40 +385,45 @@
                                                       Click="RemoveConnectionMenuItem_Click" />
                                         </ContextMenu>
                                     </DockPanel.ContextMenu>
-                                    <Button DockPanel.Dock="Right" Padding="5,1" Margin="3,0,0,0"
-                                            VerticalAlignment="Center"
-                                            Command="{Binding DataContext.RemoveConnectionCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                            CommandParameter="{Binding}"
-                                            ToolTip="Excluir esta conexão"
-                                            Content="×" FontWeight="Bold" />
-                                    <Button DockPanel.Dock="Right" Padding="5,1" Margin="3,0,0,0"
-                                            VerticalAlignment="Center"
-                                            Command="{Binding DataContext.EditConnectionCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                            CommandParameter="{Binding}"
-                                            ToolTip="Editar esta conexão">
-                                        <TextBlock Style="{StaticResource Icon}" Text="&#xE70F;" FontSize="11" />
-                                    </Button>
-                                    <Button DockPanel.Dock="Right" Padding="6,1" Margin="4,0,0,0"
-                                            VerticalAlignment="Center"
-                                            Command="{Binding DataContext.ConnectOrDisconnectSelectedCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                            CommandParameter="{Binding}"
-                                            ToolTip="{Binding ConnectActionToolTip}"
-                                            Content="{Binding ConnectActionText}" FontSize="11" />
                                     <Ellipse DockPanel.Dock="Left">
                                         <Ellipse.Style>
                                             <Style TargetType="Ellipse" BasedOn="{StaticResource StatusDot}">
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding State}" Value="Connected">
                                                         <Setter Property="Fill" Value="{StaticResource GoodBrush}" />
+                                                        <Setter Property="Stroke" Value="{StaticResource GoodStrokeBrush}" />
+                                                        <Setter Property="Effect">
+                                                            <Setter.Value>
+                                                                <DropShadowEffect Color="#16A34A" BlurRadius="6" ShadowDepth="0" Opacity="0.65" />
+                                                            </Setter.Value>
+                                                        </Setter>
                                                     </DataTrigger>
                                                     <DataTrigger Binding="{Binding State}" Value="Connecting">
                                                         <Setter Property="Fill" Value="{StaticResource UncertainBrush}" />
+                                                        <Setter Property="Stroke" Value="{StaticResource UncertainStrokeBrush}" />
+                                                        <Setter Property="Effect">
+                                                            <Setter.Value>
+                                                                <DropShadowEffect Color="#F59E0B" BlurRadius="5" ShadowDepth="0" Opacity="0.55" />
+                                                            </Setter.Value>
+                                                        </Setter>
                                                     </DataTrigger>
                                                     <DataTrigger Binding="{Binding State}" Value="Reconnecting">
                                                         <Setter Property="Fill" Value="{StaticResource UncertainBrush}" />
+                                                        <Setter Property="Stroke" Value="{StaticResource UncertainStrokeBrush}" />
+                                                        <Setter Property="Effect">
+                                                            <Setter.Value>
+                                                                <DropShadowEffect Color="#F59E0B" BlurRadius="5" ShadowDepth="0" Opacity="0.55" />
+                                                            </Setter.Value>
+                                                        </Setter>
                                                     </DataTrigger>
                                                     <DataTrigger Binding="{Binding State}" Value="Faulted">
                                                         <Setter Property="Fill" Value="{StaticResource BadBrush}" />
+                                                        <Setter Property="Stroke" Value="{StaticResource BadStrokeBrush}" />
+                                                        <Setter Property="Effect">
+                                                            <Setter.Value>
+                                                                <DropShadowEffect Color="#EF4444" BlurRadius="6" ShadowDepth="0" Opacity="0.65" />
+                                                            </Setter.Value>
+                                                        </Setter>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
@@ -548,6 +571,15 @@
                                                   IsChecked="{Binding VerticalColumnHeaders}"
                                                   VerticalAlignment="Center" Margin="0,2,12,2"
                                                   ToolTip="Orienta os títulos das colunas na vertical para visualizar mais variáveis simultaneamente" />
+
+                                        <Rectangle Width="1" Height="16" Margin="0,2,10,2" Fill="{StaticResource BorderBrush}" />
+
+                                        <TextBlock Text="Fonte Ts:" Style="{StaticResource SecondaryText}"
+                                                   VerticalAlignment="Center" Margin="0,2,4,2" />
+                                        <ComboBox ItemsSource="{Binding TimestampSourceOptions}"
+                                                  SelectedIndex="{Binding SelectedTimestampSourceIndex}"
+                                                  Width="195" VerticalAlignment="Center" Margin="0,2,10,2"
+                                                  ToolTip="Selecionar a fonte do Timestamp exibido na planilha e no gráfico (Automático, Fonte/CLP, Servidor OPC UA ou Sistema Operacional/PC)" />
 
                                         <Rectangle Width="1" Height="16" Margin="0,2,10,2" Fill="{StaticResource BorderBrush}" />
 
@@ -712,8 +744,9 @@
                             <!-- Área Principal do Gráfico + Tabela Inspetora (Cursores A, B e Mira) + Painel Lateral de Penas -->
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" MinWidth="200" />
                                     <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition x:Name="ChartPensColumn" Width="260" MinWidth="150" MaxWidth="650" />
                                 </Grid.ColumnDefinitions>
 
                                 <Grid Grid.Column="0">
@@ -748,7 +781,29 @@
                                     </Border>
                                 </Grid>
 
-                                <Border Grid.Column="1" Width="250"
+                                <GridSplitter x:Name="ChartPensSplitter"
+                                              Grid.Column="1"
+                                              Width="6"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Stretch"
+                                              ResizeBehavior="PreviousAndNext"
+                                              ResizeDirection="Columns"
+                                              Cursor="SizeWE"
+                                              Background="{StaticResource BorderBrush}"
+                                              ToolTip="Arraste com o mouse para ajustar a largura do painel de penas">
+                                    <GridSplitter.Style>
+                                        <Style TargetType="GridSplitter">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ShowChartPensPanel}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </GridSplitter.Style>
+                                </GridSplitter>
+
+                                <Border Grid.Column="2"
                                         BorderBrush="{StaticResource BorderBrush}" BorderThickness="1,0,0,0"
                                         Background="{StaticResource SurfaceAltBrush}">
                                     <Border.Style>
@@ -884,6 +939,8 @@
                                                     Header="{Binding [Col_Value], Source={x:Static loc:Loc.Instance}}" />
                                 <DataGridTextColumn Width="0.8*" Binding="{Binding Quality}" IsReadOnly="True"
                                                     Header="{Binding [Col_Quality], Source={x:Static loc:Loc.Instance}}" />
+                                <DataGridTextColumn Width="0.9*" Binding="{Binding OriginText}" IsReadOnly="True"
+                                                    Header="Fonte Ts" />
                                 <DataGridTextColumn Width="1.4*" Binding="{Binding TimestampUtc, StringFormat=yyyy-MM-dd HH:mm:ss.fff}" IsReadOnly="True"
                                                     Header="{Binding [Col_Timestamp], Source={x:Static loc:Loc.Instance}}" />
                                 <DataGridTemplateColumn Width="50" Header="Ação">
@@ -956,6 +1013,7 @@
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsOnline}" Value="True">
                                         <Setter Property="Fill" Value="{StaticResource GoodBrush}" />
+                                        <Setter Property="Stroke" Value="{StaticResource GoodStrokeBrush}" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>

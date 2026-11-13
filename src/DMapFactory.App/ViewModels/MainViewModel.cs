@@ -79,6 +79,8 @@ public sealed partial class MainViewModel : ObservableObject
         _verticalColumnHeaders = settings.Current.VerticalColumnHeaders;
         _spreadsheetHeaderHeight = settings.Current.SpreadsheetHeaderHeight;
         _showMarkerColumn = settings.Current.ShowMarkerColumn;
+        _timestampSource = settings.Current.TimestampSource;
+        _sessionManager.Snapshot.TimestampSource = _timestampSource;
 
         Loc.Instance.PropertyChanged += OnLanguageChanged;
         _sessionManager.BatchProcessed += OnSessionBatchProcessed;
@@ -243,10 +245,52 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty] private string _cursorDeltaText = "Δt = —";
     [ObservableProperty] private bool _hasSelectedMarker;
     [ObservableProperty] private SessionMarker? _selectedMarker;
-    [ObservableProperty] private TimestampSourceMode _timestampSource = TimestampSourceMode.Auto;
+
+    public IReadOnlyList<string> TimestampSourceOptions { get; } =
+    [
+        "Automático (Fonte ➔ Servidor ➔ Local)",
+        "Fonte / CLP (SourceTimestamp)",
+        "Servidor OPC UA (ServerTimestamp)",
+        "Sistema Operacional / Local (PC)"
+    ];
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SelectedTimestampSourceIndex))]
+    [NotifyPropertyChangedFor(nameof(TimestampColumnHeaderText))]
+    private TimestampSourceMode _timestampSource = TimestampSourceMode.Auto;
+
+    public int SelectedTimestampSourceIndex
+    {
+        get => (int)TimestampSource;
+        set
+        {
+            var mode = value switch
+            {
+                1 => TimestampSourceMode.Source,
+                2 => TimestampSourceMode.Server,
+                3 => TimestampSourceMode.Local,
+                _ => TimestampSourceMode.Auto
+            };
+            if (TimestampSource != mode)
+            {
+                TimestampSource = mode;
+            }
+        }
+    }
+
+    public string TimestampColumnHeaderText => TimestampSource switch
+    {
+        TimestampSourceMode.Source => "Timestamp (Fonte / CLP)",
+        TimestampSourceMode.Server => "Timestamp (Servidor OPC)",
+        TimestampSourceMode.Local => "Timestamp (Sistema / PC)",
+        _ => "Timestamp (Auto)"
+    };
 
     partial void OnTimestampSourceChanged(TimestampSourceMode value)
     {
+        _settings.Current.TimestampSource = value;
+        _settings.Save();
+
         foreach (var conn in Connections)
         {
             if (conn.Driver is OpcUaDriver opcDriver)
@@ -254,7 +298,49 @@ public sealed partial class MainViewModel : ObservableObject
                 opcDriver.PreferredTimestampSource = value;
             }
         }
-        _logger.LogInformation("Fonte de timestamp alterada para: {Mode}", value);
+
+        _sessionManager.Snapshot.ApplyTimestampSourceToAllRows(value);
+
+        var latest = _sessionManager.Snapshot.GetLatestSamples();
+        foreach (var tagVm in MonitoredTags)
+        {
+            if (latest.TryGetValue(tagVm.Config.Id, out var s))
+                tagVm.UpdateFromSample(in s);
+        }
+
+        _ = RefreshTagsWithCurrentTimestampSourceAsync();
+
+        string sourceLabel = value switch
+        {
+            TimestampSourceMode.Source => "Fonte / CLP (SourceTimestamp)",
+            TimestampSourceMode.Server => "Servidor OPC UA (ServerTimestamp)",
+            TimestampSourceMode.Local => "Sistema Operacional / Local (PC)",
+            _ => "Automático (Fonte ➔ Servidor ➔ Local)"
+        };
+        _logger.LogInformation("Fonte do Timestamp alterada para: {Mode}.", sourceLabel);
+    }
+
+    private async Task RefreshTagsWithCurrentTimestampSourceAsync()
+    {
+        try
+        {
+            foreach (var conn in Connections.Where(c => c.IsConnected))
+            {
+                var connTags = MonitoredTags.Where(t => t.Config.ConnectionId == conn.Config.Id).ToList();
+                if (connTags.Count == 0) continue;
+
+                var samples = await conn.Driver.ReadAsync(connTags.Select(t => t.Config).ToList());
+                for (int i = 0; i < connTags.Count && i < samples.Count; i++)
+                {
+                    var s = samples[i];
+                    connTags[i].UpdateFromSample(in s);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Aviso ao atualizar leitura após troca de fonte de timestamp");
+        }
     }
 
     public IReadOnlyList<int> ChartWindowOptions { get; } = [5, 10, 15, 30, 60, 120, 300, 600, 1800, 3600];
@@ -478,15 +564,83 @@ public sealed partial class MainViewModel : ObservableObject
         _logger.LogInformation("Projeto salvo em {Path}", path);
     }
 
+    public string GetEffectiveSessionsFolder()
+    {
+        if (!string.IsNullOrWhiteSpace(_project.SessionsFolder))
+            return _project.SessionsFolder;
+        if (!string.IsNullOrWhiteSpace(_settings.Current.DefaultSessionsFolder))
+            return _settings.Current.DefaultSessionsFolder;
+        return SettingsService.DefaultSessionsFolder;
+    }
+
+    [RelayCommand]
+    private void ConfigureSessionsFolder()
+    {
+        string currentFolder = GetEffectiveSessionsFolder();
+        try
+        {
+            Directory.CreateDirectory(currentFolder);
+        }
+        catch { }
+
+        var dlg = new OpenFolderDialog
+        {
+            Title = "Selecionar pasta para salvar arquivos de sessão (CSV/Excel e JSON)",
+            InitialDirectory = Directory.Exists(currentFolder)
+                ? currentFolder
+                : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+        };
+
+        if (dlg.ShowDialog() != true || string.IsNullOrWhiteSpace(dlg.FolderName))
+            return;
+
+        string chosenFolder = dlg.FolderName;
+        try
+        {
+            Directory.CreateDirectory(chosenFolder);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Não foi possível criar/acessar a pasta selecionada '{Folder}'", chosenFolder);
+            return;
+        }
+
+        _settings.Current.DefaultSessionsFolder = chosenFolder;
+        _settings.Save();
+        _project.SessionsFolder = chosenFolder;
+
+        _logger.LogInformation("Local de salvamento dos arquivos de sessão (On-line/Off-line) configurado para: {Folder}", chosenFolder);
+    }
+
+    [RelayCommand]
+    private void OpenSessionsFolder()
+    {
+        try
+        {
+            string folder = GetEffectiveSessionsFolder();
+            Directory.CreateDirectory(folder);
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = folder,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Não foi possível abrir a pasta de sessões");
+        }
+    }
+
     [RelayCommand]
     private async Task OpenRecordedSessionAsync()
     {
+        string sessionsDir = GetEffectiveSessionsFolder();
         var ofd = new OpenFileDialog
         {
             Title = Loc.Instance["Menu_OpenSession"],
             Filter = "Sessão DMapFactory (*.csv;*.session.json)|*.csv;*.session.json",
-            InitialDirectory = Directory.Exists(SettingsService.DefaultSessionsFolder)
-                ? SettingsService.DefaultSessionsFolder
+            InitialDirectory = Directory.Exists(sessionsDir)
+                ? sessionsDir
                 : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
         };
         if (ofd.ShowDialog() != true) return;
@@ -1194,9 +1348,6 @@ public sealed partial class MainViewModel : ObservableObject
                 SpreadsheetRows.Add(markerRow);
             else
                 SpreadsheetRows.Insert(insertIdx, markerRow);
-
-            if (SpreadsheetRows.Count > 10_000)
-                SpreadsheetRows.RemoveAt(0);
         }
 
         _logger.LogInformation("Marcador '{Marker}' inserido em {Timestamp:HH:mm:ss.fff}.",
@@ -1577,8 +1728,6 @@ public sealed partial class MainViewModel : ObservableObject
             foreach (var r in newRows)
             {
                 SpreadsheetRows.Add(r);
-                if (SpreadsheetRows.Count > 10_000)
-                    SpreadsheetRows.RemoveAt(0);
             }
         }, DispatcherPriority.Background);
     }
@@ -1774,14 +1923,11 @@ public sealed partial class MainViewModel : ObservableObject
         try
         {
             var samples = await conn.Driver.ReadAsync(added.Select(a => a.Config).ToList());
-            DateTime sweepUtc = DateTime.UtcNow;
-            var normalizedSamples = new List<Sample>(samples.Count);
 
             for (int i = 0; i < added.Count && i < samples.Count; i++)
             {
                 var s = samples[i];
                 added[i].UpdateFromSample(in s);
-                normalizedSamples.Add(s with { TimestampUtc = sweepUtc });
             }
 
             if (!IsOnline)
@@ -1795,9 +1941,9 @@ public sealed partial class MainViewModel : ObservableObject
                 var drivers = Connections.Select(c => (IDriver)c.Driver).ToList();
                 await _sessionManager.UpdateGroupsAsync(_project, drivers);
 
-                foreach (var ns in normalizedSamples)
+                foreach (var s in samples)
                 {
-                    _sessionManager.TryPublish(in ns);
+                    _sessionManager.TryPublish(in s);
                 }
             }
         }
