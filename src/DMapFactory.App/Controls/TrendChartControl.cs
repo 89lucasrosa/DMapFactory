@@ -571,25 +571,34 @@ public sealed class TrendChartControl : FrameworkElement
         double yMin = 0, yMax = 100;
         if (analogSeries.Count > 0)
         {
-            yMin = analogSeries.SelectMany(s => s.Points).Min(p => p.Value);
-            yMax = analogSeries.SelectMany(s => s.Points).Max(p => p.Value);
-            if (Math.Abs(yMax - yMin) < 1e-6)
-            {
-                double baseDelta = Math.Max(1.0, Math.Abs(yMax) * 0.1);
-                yMin -= baseDelta;
-                yMax += baseDelta;
-            }
-            else
-            {
-                double pad = (yMax - yMin) * 0.10;
-                yMin -= pad;
-                yMax += pad;
-            }
+            var validValues = analogSeries.SelectMany(s => s.Points)
+                                          .Where(p => !double.IsNaN(p.Value) && !double.IsInfinity(p.Value))
+                                          .Select(p => p.Value)
+                                          .ToList();
 
-            double center = (yMin + yMax) / 2.0 + _yPanOffset * (yMax - yMin);
-            double halfSpan = (yMax - yMin) / (2.0 * _yZoomFactor);
-            yMin = center - halfSpan;
-            yMax = center + halfSpan;
+            if (validValues.Count > 0)
+            {
+                yMin = validValues.Min();
+                yMax = validValues.Max();
+
+                if (Math.Abs(yMax - yMin) < 1e-6)
+                {
+                    double baseDelta = Math.Max(1.0, Math.Abs(yMax) * 0.1);
+                    yMin -= baseDelta;
+                    yMax += baseDelta;
+                }
+                else
+                {
+                    double pad = (yMax - yMin) * 0.10;
+                    yMin -= pad;
+                    yMax += pad;
+                }
+
+                double center = (yMin + yMax) / 2.0 + _yPanOffset * (yMax - yMin);
+                double halfSpan = (yMax - yMin) / (2.0 * _yZoomFactor);
+                yMin = center - halfSpan;
+                yMax = center + halfSpan;
+            }
         }
 
         // Grade horizontal + rótulos Y (apenas quando há área analógica visível)
@@ -985,7 +994,12 @@ public sealed class TrendChartControl : FrameworkElement
 
     private static double ValueToY(double val, double yMin, double yMax, Rect analogRect)
     {
-        double ratio = (val - yMin) / Math.Max(1e-9, yMax - yMin);
+        if (double.IsNaN(val) || double.IsNaN(yMin) || double.IsNaN(yMax))
+            return analogRect.Bottom;
+
+        double span = yMax - yMin;
+        if (Math.Abs(span) < 1e-9) span = 1.0;
+        double ratio = (val - yMin) / span;
         return analogRect.Bottom - Math.Clamp(ratio, 0.0, 1.0) * analogRect.Height;
     }
 

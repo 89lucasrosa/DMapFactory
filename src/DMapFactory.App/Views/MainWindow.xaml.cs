@@ -1091,7 +1091,7 @@ public partial class MainWindow : Window
             return;
 
         var rows = _vm.SpreadsheetRows;
-        var plottedTags = _vm.MonitoredTags.Where(t => t.IsPlotted).ToList();
+        var plottedTags = _vm.MonitoredTags.Where(t => t.IsPlotted && t.CanPlotOnChart).ToList();
 
         if (plottedTags.Count == 0)
         {
@@ -1135,7 +1135,8 @@ public partial class MainWindow : Window
         {
             _frozenChartMaxUtc = null;
             minWindowUtc = earliestDataUtc;
-            maxWindowUtc = latestDataUtc > earliestDataUtc ? latestDataUtc : earliestDataUtc.AddSeconds(5);
+            double spanSec = (latestDataUtc - earliestDataUtc).TotalSeconds;
+            maxWindowUtc = spanSec >= 1.0 ? latestDataUtc : earliestDataUtc.AddSeconds(1.0);
         }
         else if (_vm.AutoFollowChart)
         {
@@ -1148,8 +1149,10 @@ public partial class MainWindow : Window
             double winSec = Math.Max(1, _vm.ChartWindowSeconds);
             _frozenChartMaxUtc ??= latestDataUtc;
             maxWindowUtc = _frozenChartMaxUtc.Value.AddSeconds(-_vm.ChartTimeOffsetSeconds);
-            if (maxWindowUtc < earliestDataUtc.AddSeconds(winSec * 0.5))
-                maxWindowUtc = earliestDataUtc.AddSeconds(winSec * 0.5);
+            if (maxWindowUtc < earliestDataUtc.AddSeconds(Math.Min(winSec, 5.0)))
+                maxWindowUtc = earliestDataUtc.AddSeconds(Math.Min(winSec, 5.0));
+            if (_vm.ChartTimeOffsetSeconds <= 0 && maxWindowUtc > latestDataUtc)
+                maxWindowUtc = latestDataUtc;
             minWindowUtc = maxWindowUtc.AddSeconds(-winSec);
         }
 
@@ -1217,18 +1220,14 @@ public partial class MainWindow : Window
                 }
                 else
                 {
-                    hasVal = false;
-                    if (r.TimestampUtc >= minWindowUtc)
-                    {
-                        points.Add(new ChartSeriesPoint(r.TimestampUtc, double.NaN));
-                    }
+                    // A tag não estava presente nesta linha (ainda não iniciou ou valor mantido).
                 }
 
                 if (r.TimestampUtc >= minWindowUtc && hasVal)
                 {
-                    if (points.Count == 0 && r.TimestampUtc > minWindowUtc)
+                    if (points.Count == 0 && r.TimestampUtc > minWindowUtc && startIdx > 0)
                     {
-                        // Propaga o valor anterior no início da janela (Sample-and-Hold)
+                        // Propaga o valor anterior no início da janela (Sample-and-Hold) apenas se veio de antes da janela
                         points.Add(new ChartSeriesPoint(minWindowUtc, lastVal));
                     }
 
@@ -1254,7 +1253,7 @@ public partial class MainWindow : Window
                 points.Add(new ChartSeriesPoint(holdUntilUtc, lastVal));
             }
 
-            if (points.Count > 0)
+            if (points.Count > 0 && minVal <= maxVal)
             {
                 tagVm.MinValueText = isBoolTag ? (minVal != 0 ? "1" : "0") : minVal.ToString("G5", CultureInfo.InvariantCulture);
                 tagVm.MaxValueText = isBoolTag ? (maxVal != 0 ? "1" : "0") : maxVal.ToString("G5", CultureInfo.InvariantCulture);
@@ -1266,7 +1265,7 @@ public partial class MainWindow : Window
             }
 
             // PF-01: Reduz densidade excessiva para manter o DrawingContext suave em janelas longas
-            var renderedPoints = DownsampleSeries(points, 3000);
+            var renderedPoints = DownsampleSeries(points, 5000, isBoolTag);
             seriesList.Add(new ChartSeriesData(tagId, tagVm.Alias, isBoolTag, tagVm.PenColor, renderedPoints));
         }
 
@@ -1296,9 +1295,9 @@ public partial class MainWindow : Window
         return result;
     }
 
-    private static IReadOnlyList<ChartSeriesPoint> DownsampleSeries(List<ChartSeriesPoint> points, int targetMaxPoints)
+    private static IReadOnlyList<ChartSeriesPoint> DownsampleSeries(List<ChartSeriesPoint> points, int targetMaxPoints, bool isBoolean)
     {
-        if (points.Count <= targetMaxPoints)
+        if (points.Count <= targetMaxPoints || isBoolean)
             return points;
 
         var result = new List<ChartSeriesPoint>(targetMaxPoints + 2)
@@ -1310,23 +1309,31 @@ public partial class MainWindow : Window
         for (int i = 1; i < points.Count - 1; i += step)
         {
             int end = Math.Min(i + step, points.Count - 1);
-            int minIdx = i;
-            int maxIdx = i;
+            int minIdx = -1;
+            int maxIdx = -1;
             for (int k = i; k < end; k++)
             {
-                if (points[k].Value < points[minIdx].Value) minIdx = k;
-                if (points[k].Value > points[maxIdx].Value) maxIdx = k;
+                if (double.IsNaN(points[k].Value)) continue;
+                if (minIdx < 0 || points[k].Value < points[minIdx].Value) minIdx = k;
+                if (maxIdx < 0 || points[k].Value > points[maxIdx].Value) maxIdx = k;
             }
 
-            if (minIdx <= maxIdx)
+            if (minIdx >= 0 && maxIdx >= 0)
             {
-                result.Add(points[minIdx]);
-                if (minIdx != maxIdx) result.Add(points[maxIdx]);
+                if (minIdx <= maxIdx)
+                {
+                    result.Add(points[minIdx]);
+                    if (minIdx != maxIdx) result.Add(points[maxIdx]);
+                }
+                else
+                {
+                    result.Add(points[maxIdx]);
+                    result.Add(points[minIdx]);
+                }
             }
             else
             {
-                result.Add(points[maxIdx]);
-                result.Add(points[minIdx]);
+                result.Add(points[i]);
             }
         }
 

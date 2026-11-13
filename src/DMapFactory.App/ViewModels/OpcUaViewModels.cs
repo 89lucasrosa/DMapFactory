@@ -186,6 +186,7 @@ public sealed partial class MonitoredTagViewModel : ObservableObject
         var brush = new SolidColorBrush(_penColor);
         brush.Freeze();
         _penBrush = brush;
+        _isPlotted = CanPlotOnChart;
     }
 
     public TagConfig Config { get; }
@@ -195,6 +196,9 @@ public sealed partial class MonitoredTagViewModel : ObservableObject
     [ObservableProperty] private string _alias;
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsBoolean))]
+    [NotifyPropertyChangedFor(nameof(IsString))]
+    [NotifyPropertyChangedFor(nameof(CanPlotOnChart))]
+    [NotifyPropertyChangedFor(nameof(PlotToolTip))]
     private string _dataType;
     [ObservableProperty] private string _valueText = "—";
     [ObservableProperty] private QualityClass _quality = QualityClass.Good;
@@ -210,6 +214,37 @@ public sealed partial class MonitoredTagViewModel : ObservableObject
         string.Equals(DataType, "Boolean", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(DataType, "Bool", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(DataType, "Bit", StringComparison.OrdinalIgnoreCase);
+
+    public bool IsString =>
+        string.Equals(DataType, "String", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(DataType, "ByteString", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(DataType, "Char", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(DataType, "LocalizedText", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(DataType, "QualifiedName", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(DataType, "XmlElement", StringComparison.OrdinalIgnoreCase);
+
+    public bool CanPlotOnChart => !IsString;
+
+    public string PlotToolTip => CanPlotOnChart
+        ? "Exibir ou ocultar esta pena no gráfico de tendências"
+        : "Variáveis do tipo texto (String) não podem ser plotadas no gráfico de tendências";
+
+    partial void OnDataTypeChanged(string value)
+    {
+        if (!CanPlotOnChart && IsPlotted)
+        {
+            IsPlotted = false;
+        }
+    }
+
+    partial void OnIsPlottedChanged(bool value)
+    {
+        if (value && !CanPlotOnChart)
+        {
+            _isPlotted = false;
+            OnPropertyChanged(nameof(IsPlotted));
+        }
+    }
 
     partial void OnAliasChanged(string value) => Config.Alias = value;
 

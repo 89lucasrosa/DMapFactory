@@ -1278,7 +1278,12 @@ public sealed partial class MainViewModel : ObservableObject
     private void SelectAllChartPens()
     {
         foreach (var tag in MonitoredTags)
-            tag.IsPlotted = true;
+        {
+            if (tag.CanPlotOnChart)
+                tag.IsPlotted = true;
+            else
+                tag.IsPlotted = false;
+        }
     }
 
     [RelayCommand]
@@ -1869,6 +1874,10 @@ public sealed partial class MainViewModel : ObservableObject
         {
             IsPlotted = true
         };
+        if (!vm.CanPlotOnChart)
+        {
+            vm.IsPlotted = false;
+        }
         MonitoredTags.Add(vm);
         return vm;
     }

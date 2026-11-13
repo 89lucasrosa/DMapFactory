@@ -810,7 +810,7 @@
                                                                           Click="RemovePenMenuItem_Click" />
                                                                 <Separator />
                                                                 <MenuItem Header="Alternar visibilidade no gráfico (Plot)"
-                                                                          IsCheckable="True" IsChecked="{Binding IsPlotted}" />
+                                                                          IsCheckable="True" IsChecked="{Binding IsPlotted}" IsEnabled="{Binding CanPlotOnChart}" />
                                                                 <MenuItem Header="🏷 Definir como Gatilho de Ciclo"
                                                                           Click="SetPenAsCycleTriggerMenuItem_Click" />
                                                                 <MenuItem Header="📋 Copiar Endereço / NodeId"
@@ -820,6 +820,8 @@
                                                         <StackPanel>
                                                             <DockPanel>
                                                                 <CheckBox IsChecked="{Binding IsPlotted, UpdateSourceTrigger=PropertyChanged}"
+                                                                          IsEnabled="{Binding CanPlotOnChart}"
+                                                                          ToolTip="{Binding PlotToolTip}"
                                                                           VerticalAlignment="Center" Margin="0,0,5,0" />
                                                                 <Rectangle Width="10" Height="10" RadiusX="2" RadiusY="2"
                                                                            Fill="{Binding PenBrush}" VerticalAlignment="Center" Margin="0,0,6,0" />
