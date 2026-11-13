@@ -614,31 +614,26 @@ public sealed class OpcUaDriver : IDriver
 
     private async Task RunPollingLoopAsync(AcquisitionGroup group, ISampleSink sink, CancellationToken ct)
     {
-        var lastValues = new Dictionary<int, (object? Value, uint Status)>();
         var interval = TimeSpan.FromMilliseconds(Math.Max(10, group.SamplingIntervalMs));
         using var timer = new PeriodicTimer(interval);
 
+        _logger.LogInformation("Aquisição periódica '{Group}' iniciada em '{Conn}' com taxa fixa de {Interval} ms ({Total} tags).",
+            group.Name, Connection.Name, group.SamplingIntervalMs, group.Tags.Count);
+
         try
         {
-            do
+            while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false))
             {
                 if (_session is not { Connected: true }) continue;
 
+                DateTime cycleUtc = DateTime.UtcNow;
                 var samples = await ReadAsync(group.Tags, ct).ConfigureAwait(false);
                 foreach (var s in samples)
                 {
-                    if (lastValues.TryGetValue(s.TagId, out var prev) &&
-                        prev.Status == s.StatusCode &&
-                        Equals(prev.Value, s.Value))
-                    {
-                        continue;
-                    }
-
-                    lastValues[s.TagId] = (s.Value, s.StatusCode);
-                    sink.TryPublish(in s);
+                    var periodicSample = s with { TimestampUtc = cycleUtc };
+                    sink.TryPublish(in periodicSample);
                 }
             }
-            while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false));
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)

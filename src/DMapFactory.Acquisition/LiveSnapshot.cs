@@ -81,6 +81,7 @@ public sealed class LiveSnapshot
             foreach (var s in samples)
             {
                 object? displayValue = s.Value ?? (s.Quality != QualityClass.Good ? $"[{s.Quality}]" : null);
+                bool valueChanged = !_workingState.TryGetValue(s.TagId, out var prevVal) || !Equals(prevVal, displayValue);
                 _latestByTag[s.TagId] = s;
                 _workingState[s.TagId] = displayValue;
 
@@ -94,7 +95,8 @@ public sealed class LiveSnapshot
                     _pendingChangedTags is not null)
                 {
                     _pendingSnapshot[s.TagId] = displayValue;
-                    _pendingChangedTags.Add(s.TagId);
+                    if (valueChanged)
+                        _pendingChangedTags.Add(s.TagId);
                     if (isCycleStart) _pendingIsCycleStart = true;
                     _pendingCycleNumber = activeCycle;
                 }
@@ -103,7 +105,7 @@ public sealed class LiveSnapshot
                     CommitPendingLocked(committed);
                     _pendingTimestampUtc = s.TimestampUtc;
                     _pendingSnapshot = new Dictionary<int, object?>(_workingState);
-                    _pendingChangedTags = [s.TagId];
+                    _pendingChangedTags = valueChanged ? [s.TagId] : [];
                     _pendingCycleNumber = activeCycle;
                     _pendingIsCycleStart = isCycleStart;
 

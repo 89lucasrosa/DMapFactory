@@ -260,12 +260,13 @@
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="Taxa:" Style="{StaticResource SecondaryText}" VerticalAlignment="Center" Margin="0,0,4,0" FontSize="11" />
                         <ComboBox ItemsSource="{Binding SamplingIntervalOptions}" SelectedItem="{Binding SelectedSamplingIntervalMs}"
-                                  Width="70" VerticalAlignment="Center" ToolTip="Taxa de amostragem/publicação OPC UA (ms)" />
+                                  IsEnabled="{Binding IsSamplingIntervalEnabled}"
+                                  Width="70" VerticalAlignment="Center" ToolTip="Taxa de amostragem periódica (ms) — ativa somente no modo 'Por Taxa de Amostragem (ms)'" />
                         <TextBlock Text="ms" Style="{StaticResource SecondaryText}" VerticalAlignment="Center" Margin="3,0,8,0" FontSize="11" />
 
                         <TextBlock Text="Modo:" Style="{StaticResource SecondaryText}" VerticalAlignment="Center" Margin="0,0,4,0" FontSize="11" />
                         <ComboBox ItemsSource="{Binding AcquisitionModeOptions}" SelectedIndex="{Binding SelectedAcquisitionModeIndex}"
-                                  Width="155" VerticalAlignment="Center" ToolTip="Modo de coleta: Assinatura orientada a eventos ou Polling periódico" />
+                                  Width="195" VerticalAlignment="Center" ToolTip="Modo de aquisição: 'Upon Change (Mudança de valor)' ou 'Por Taxa de Amostragem (ms)'" />
 
                         <!-- Indicador de Gatilho de Ciclo Ativo -->
                         <Border Margin="8,0,0,0" Padding="6,2" CornerRadius="3" Background="{StaticResource SurfaceBrush}"
@@ -541,9 +542,6 @@
                                         <CheckBox Content="Auto-scroll" IsChecked="{Binding AutoScrollSpreadsheet}"
                                                   VerticalAlignment="Center" Margin="0,2,12,2"
                                                   ToolTip="Rolagem automática para acompanhar as linhas mais recentes da planilha (Espaço)" />
-                                        <CheckBox Content="Coleta contínua (1 s)" IsChecked="{Binding PeriodicSpreadsheetSampling}"
-                                                  VerticalAlignment="Center" Margin="0,2,12,2"
-                                                  ToolTip="Registra os valores atuais a cada 1 segundo na planilha (além de transições rápidas por exceção)" />
                                         <CheckBox Content="Agrupar mesmo timestamp (P3)" IsChecked="{Binding GroupSameTimestamp}"
                                                   VerticalAlignment="Center" Margin="0,2,12,2" />
                                         <CheckBox Content="{Binding [Grid_VerticalHeaders], Source={x:Static loc:Loc.Instance}}"

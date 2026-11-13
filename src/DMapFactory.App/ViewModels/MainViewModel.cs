@@ -176,10 +176,48 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty] private bool _showMarkerColumn = true;
 
     // FN-01: Taxa de amostragem e modo configuráveis
-    public IReadOnlyList<int> SamplingIntervalOptions { get; } = [10, 20, 50, 100, 250, 500, 1000];
+    public IReadOnlyList<int> SamplingIntervalOptions { get; } = [10, 20, 50, 100, 250, 500, 1000, 2000, 5000];
     [ObservableProperty] private int _selectedSamplingIntervalMs = 100;
-    public IReadOnlyList<string> AcquisitionModeOptions { get; } = ["Assinatura (Subscription)", "Polling Periódico"];
-    [ObservableProperty] private int _selectedAcquisitionModeIndex = 0;
+    public IReadOnlyList<string> AcquisitionModeOptions { get; } = ["Upon Change (Mudança de valor)", "Por Taxa de Amostragem (ms)"];
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsSamplingIntervalEnabled))]
+    private int _selectedAcquisitionModeIndex = 0;
+
+    public bool IsSamplingIntervalEnabled => SelectedAcquisitionModeIndex == 1;
+
+    partial void OnSelectedSamplingIntervalMsChanged(int value)
+    {
+        if (IsOnline && SelectedAcquisitionModeIndex == 1)
+        {
+            _ = ReconfigureActiveAcquisitionAsync();
+        }
+    }
+
+    partial void OnSelectedAcquisitionModeIndexChanged(int value)
+    {
+        if (IsOnline)
+        {
+            _ = ReconfigureActiveAcquisitionAsync();
+        }
+    }
+
+    private async Task ReconfigureActiveAcquisitionAsync()
+    {
+        try
+        {
+            BuildProjectFromViewModels();
+            var drivers = Connections.Select(c => (IDriver)c.Driver).ToList();
+            await _sessionManager.UpdateGroupsAsync(_project, drivers);
+            string modeDesc = SelectedAcquisitionModeIndex == 1
+                ? $"Por Taxa de Amostragem ({SelectedSamplingIntervalMs} ms)"
+                : "Upon Change (Mudança de valor)";
+            _logger.LogInformation("Modo de aquisição atualizado para: {Mode}.", modeDesc);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Falha ao atualizar parâmetros de aquisição em tempo real");
+        }
+    }
 
     // FN-02: Gatilho de ciclo de máquina configurável
     [ObservableProperty] private string? _cycleTriggerTagAlias;
@@ -1376,14 +1414,17 @@ public sealed partial class MainViewModel : ObservableObject
         _project.Groups.Clear();
 
         var chosenMode = SelectedAcquisitionModeIndex == 1 ? AcquisitionMode.Polling : AcquisitionMode.Subscription;
+        double effectiveInterval = chosenMode == AcquisitionMode.Polling
+            ? (SelectedSamplingIntervalMs > 0 ? SelectedSamplingIntervalMs : 100)
+            : 50;
 
         foreach (var byConn in MonitoredTags.GroupBy(t => t.Config.ConnectionId))
         {
             if (existingGroups.TryGetValue(byConn.Key, out var existing))
             {
                 existing.Tags = byConn.Select(vm => vm.Config).ToList();
-                existing.SamplingIntervalMs = SelectedSamplingIntervalMs > 0 ? SelectedSamplingIntervalMs : existing.SamplingIntervalMs;
-                existing.PublishingIntervalMs = existing.SamplingIntervalMs;
+                existing.SamplingIntervalMs = effectiveInterval;
+                existing.PublishingIntervalMs = effectiveInterval;
                 existing.Mode = chosenMode;
                 _project.Groups.Add(existing);
             }
@@ -1394,8 +1435,8 @@ public sealed partial class MainViewModel : ObservableObject
                     Name = $"Group_Conn{byConn.Key}",
                     ConnectionId = byConn.Key,
                     Mode = chosenMode,
-                    SamplingIntervalMs = SelectedSamplingIntervalMs > 0 ? SelectedSamplingIntervalMs : 100,
-                    PublishingIntervalMs = SelectedSamplingIntervalMs > 0 ? SelectedSamplingIntervalMs : 100,
+                    SamplingIntervalMs = effectiveInterval,
+                    PublishingIntervalMs = effectiveInterval,
                     QueueSize = 10,
                     Tags = byConn.Select(vm => vm.Config).ToList()
                 });
@@ -1410,6 +1451,16 @@ public sealed partial class MainViewModel : ObservableObject
         _project = await ProjectFileStore.LoadAsync(filePath);
         _currentProjectPath = filePath;
 
+        var firstGroup = _project.Groups.FirstOrDefault();
+        if (firstGroup != null)
+        {
+            SelectedAcquisitionModeIndex = firstGroup.Mode == AcquisitionMode.Polling ? 1 : 0;
+            if (firstGroup.Mode == AcquisitionMode.Polling && firstGroup.SamplingIntervalMs > 0)
+            {
+                SelectedSamplingIntervalMs = (int)firstGroup.SamplingIntervalMs;
+            }
+        }
+
         foreach (var connCfg in _project.Connections)
         {
             _nextConnectionId = Math.Max(_nextConnectionId, connCfg.Id + 1);
@@ -1420,10 +1471,9 @@ public sealed partial class MainViewModel : ObservableObject
         {
             _nextTagId = Math.Max(_nextTagId, tagCfg.Id + 1);
             string connName = Connections.FirstOrDefault(c => c.Config.Id == tagCfg.ConnectionId)?.Name ?? $"#{tagCfg.ConnectionId}";
-            MonitoredTags.Add(new MonitoredTagViewModel(tagCfg, connName)
-            {
-                IsPlotted = true
-            });
+            var vm = new MonitoredTagViewModel(tagCfg, connName);
+            vm.IsPlotted = vm.CanPlotOnChart;
+            MonitoredTags.Add(vm);
         }
 
         _logger.LogInformation("Projeto '{Name}' carregado ({ConnCount} conexões, {TagCount} tags).",

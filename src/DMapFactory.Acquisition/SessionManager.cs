@@ -380,8 +380,8 @@ public sealed class SessionManager : ISampleSink, IAsyncDisposable
         {
             while (await reader.WaitToReadAsync(ct).ConfigureAwait(false))
             {
-                // Agrupa amostras por até ~200 ms ou 5.000 itens para escrita eficiente em lote
-                var deadline = DateTime.UtcNow.AddMilliseconds(200);
+                // Agrupa amostras por até ~40 ms ou 5.000 itens para escrita eficiente em lote sem atrasar taxas rápidas
+                var deadline = DateTime.UtcNow.AddMilliseconds(40);
                 while (batch.Count < 5_000)
                 {
                     if (reader.TryRead(out var item))
@@ -391,7 +391,7 @@ public sealed class SessionManager : ISampleSink, IAsyncDisposable
                     }
                     else if (DateTime.UtcNow < deadline && !reader.Completion.IsCompleted)
                     {
-                        await Task.Delay(25, ct).ConfigureAwait(false);
+                        await Task.Delay(10, ct).ConfigureAwait(false);
                     }
                     else
                     {
