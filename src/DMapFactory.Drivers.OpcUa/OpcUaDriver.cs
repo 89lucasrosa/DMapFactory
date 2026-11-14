@@ -4,6 +4,7 @@ using System.Text;
 using DMapFactory.Core.Abstractions;
 using DMapFactory.Core.Models;
 using DMapFactory.Core.Security;
+using DMapFactory.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Opc.Ua;
@@ -147,15 +148,9 @@ public sealed class OpcUaDriver : IDriver
 
             _session = session;
             SetState(ConnectionState.Connected, "OK");
-            _logger.LogInformation("Conectado a {Name} ({Endpoint}) [{Policy}/{Mode}] — Namespaces: {Namespaces}",
-                Connection.Name, Connection.EndpointUrl,
-                OpcUaSecurityManager.GetPolicyShortName(endpointDescription.SecurityPolicyUri),
-                endpointDescription.SecurityMode,
-                session.NamespaceUris.Count);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Falha ao conectar a {Name} ({Endpoint})", Connection.Name, Connection.EndpointUrl);
             SetState(ConnectionState.Faulted, ex.Message);
             throw;
         }
@@ -761,8 +756,9 @@ public sealed class OpcUaDriver : IDriver
         using var serverCert = GetCurrentServerCertificate();
         if (serverCert is not null && DateTime.UtcNow > serverCert.NotAfter)
         {
-            string expiredMsg = $"O certificado do servidor expirou em {serverCert.NotAfter:yyyy-MM-dd HH:mm:ss} UTC.";
-            _logger.LogError("Sessão {Name} encerrada: {Reason}", Connection.Name, expiredMsg);
+            string expiredAt = $"{serverCert.NotAfter:yyyy-MM-dd HH:mm:ss} UTC";
+            string expiredMsg = Loc.Instance.Format("Log_CertExpiredActiveDisconnect", Connection.Name, serverCert.Subject, expiredAt);
+            _logger.LogError("{Message}", expiredMsg);
             SetState(ConnectionState.Faulted, expiredMsg);
             _ = Task.Run(async () =>
             {
@@ -782,8 +778,7 @@ public sealed class OpcUaDriver : IDriver
         if (_reconnectHandler is not null) return;
 
         string statusText = e.Status?.ToString() ?? "Bad";
-        _logger.LogWarning("KeepAlive falhou em {Name}: {Status}. Iniciando reconexão...",
-            Connection.Name, statusText);
+        _logger.LogWarning("{Message}", Loc.Instance.Format("Log_ConnKeepAliveFailed", Connection.Name, Connection.EndpointUrl, statusText));
         SetState(ConnectionState.Reconnecting, statusText);
 
 #pragma warning disable CS0618
@@ -804,8 +799,8 @@ public sealed class OpcUaDriver : IDriver
         _reconnectHandler?.Dispose();
         _reconnectHandler = null;
 
-        SetState(ConnectionState.Connected, "Reconectado");
-        _logger.LogInformation("Sessão OPC UA {Name} reconectada.", Connection.Name);
+        SetState(ConnectionState.Connected, "Reconnected");
+        _logger.LogInformation("{Message}", Loc.Instance.Format("Log_ConnReconnectedSuccess", Connection.Name, Connection.EndpointUrl));
     }
 
     private static async Task<EndpointDescription> SelectEndpointAsync(ConnectionConfig conn, CancellationToken ct)
@@ -888,23 +883,28 @@ public sealed class OpcUaDriver : IDriver
     private void SetState(ConnectionState state, string? reason)
     {
         _state = state;
-        StateChanged?.Invoke(this, new ConnectionStateChangedEventArgs(state, reason));
+        var handler = StateChanged;
+        if (handler is not null)
+        {
+            handler.Invoke(this, new ConnectionStateChangedEventArgs(state, reason));
+            return;
+        }
 
         if (state == ConnectionState.Faulted)
         {
-            _logger.LogError("Conexão '{Name}' falhou (Faulted). Motivo: {Reason}", Connection.Name, reason ?? "Desconhecido");
+            _logger.LogError("{Message}", Loc.Instance.Format("Log_ConnFaulted", Connection.Name, Connection.EndpointUrl, reason ?? "Faulted"));
         }
         else if (state == ConnectionState.Reconnecting)
         {
-            _logger.LogWarning("Conexão '{Name}' reconectando. Motivo: {Reason}", Connection.Name, reason ?? "KeepAlive");
+            _logger.LogWarning("{Message}", Loc.Instance.Format("Log_ConnReconnecting", Connection.Name, Connection.EndpointUrl, reason ?? "KeepAlive"));
         }
         else if (state == ConnectionState.Disconnected)
         {
-            _logger.LogInformation("Conexão '{Name}' desconectada. Detalhe: {Reason}", Connection.Name, reason ?? "Nenhum");
+            _logger.LogInformation("{Message}", Loc.Instance.Format("Log_ConnDisconnected", Connection.Name, Connection.EndpointUrl, reason ?? "Disconnected"));
         }
         else if (state == ConnectionState.Connected)
         {
-            _logger.LogInformation("Conexão '{Name}' estabelecida com sucesso.", Connection.Name);
+            _logger.LogInformation("{Message}", Loc.Instance.Format("Log_ConnConnected", Connection.Name, Connection.EndpointUrl, reason ?? "OK"));
         }
     }
 

@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using DMapFactory.App.ViewModels;
 using DMapFactory.Core.Models;
+using DMapFactory.Localization;
 
 namespace DMapFactory.App.Views;
 
@@ -28,6 +29,8 @@ public partial class FindMarkerDialog : Window
         _mainWindow = mainWindow ?? throw new ArgumentNullException(nameof(mainWindow));
         _vm = vm ?? throw new ArgumentNullException(nameof(vm));
 
+        ColTimestamp.Header = Loc.Instance["FindMarker_Col_Timestamp"];
+        ColComment.Header = Loc.Instance["FindMarker_Col_Comment"];
         MarkersGrid.ItemsSource = _filteredMarkers;
 
         Loaded += (_, _) =>
@@ -74,7 +77,7 @@ public partial class FindMarkerDialog : Window
             _filteredMarkers.Add(new MarkerListItem(m, rowNum));
         }
 
-        StatusTextBlock.Text = $"{_filteredMarkers.Count} marcador(es) listado(s) de um total de {_vm.SessionMarkers.Count}.";
+        StatusTextBlock.Text = Loc.Instance.Format("FindMarker_StatusFormat", _filteredMarkers.Count, _vm.SessionMarkers.Count);
 
         if (selectedItem is not null)
         {
@@ -158,8 +161,8 @@ public partial class FindMarkerDialog : Window
         {
             var res = MessageBox.Show(
                 this,
-                $"Deseja realmente excluir o marcador '{item.Text}' ({item.TimestampDisplay})?",
-                "Confirmar Exclusão de Marcador",
+                Loc.Instance.Format("FindMarker_DeleteConfirmMsg", item.Text, item.TimestampDisplay),
+                Loc.Instance["FindMarker_DeleteConfirmTitle"],
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
 

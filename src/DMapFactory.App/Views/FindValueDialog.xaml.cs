@@ -4,6 +4,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using DMapFactory.App.ViewModels;
 using DMapFactory.Core.Models;
+using DMapFactory.Localization;
 
 namespace DMapFactory.App.Views;
 
@@ -90,13 +91,11 @@ public partial class FindValueDialog : Window
     {
         if (_mainWindow.GetActiveTabIndex() == 1)
         {
-            ViewSwitchButton.Content = "📋 Ver na Planilha";
-            ViewSwitchButton.ToolTip = "Alterna a visualização para a Planilha";
+            ViewSwitchButton.Content = Loc.Instance["FindVal_SwitchToGrid"];
         }
         else
         {
-            ViewSwitchButton.Content = "📈 Ver no Gráfico";
-            ViewSwitchButton.ToolTip = "Alterna a visualização para o Gráfico de Tendências";
+            ViewSwitchButton.Content = Loc.Instance["FindVal_SwitchToChart"];
         }
     }
 
@@ -123,20 +122,20 @@ public partial class FindValueDialog : Window
         var rows = _vm.SpreadsheetRows;
         if (rows.Count == 0)
         {
-            SetStatus("Nenhum registro na planilha para pesquisar.", StatusWarningBrush);
+            SetStatus(Loc.Instance["FindVal_NoRows"], StatusWarningBrush);
             return;
         }
 
         if (TagComboBox.SelectedItem is not MonitoredTagViewModel selectedTag)
         {
-            SetStatus("Selecione uma tag no menu suspenso para pesquisar.", StatusWarningBrush);
+            SetStatus(Loc.Instance["FindVal_SelectTag"], StatusWarningBrush);
             return;
         }
 
         string searchText = SearchValueTextBox.Text.Trim();
         if (string.IsNullOrEmpty(searchText))
         {
-            SetStatus("Digite o valor a ser localizado.", StatusWarningBrush);
+            SetStatus(Loc.Instance["FindVal_EnterValue"], StatusWarningBrush);
             return;
         }
 
@@ -224,21 +223,20 @@ public partial class FindValueDialog : Window
 
             if (wrapped && foundIdx == currentIdx)
             {
-                SetStatus($"✓ Única ocorrência encontrada na linha #{matchingRow.RowNumber} ({timeStr}) com valor '{valStr}'", StatusSuccessBrush);
+                SetStatus(Loc.Instance.Format("FindVal_FoundSingle", matchingRow.RowNumber, timeStr, valStr), StatusSuccessBrush);
             }
             else if (wrapped)
             {
-                string edge = direction == SearchDirection.Next ? "Fim alcançado (reiniciado do início)" : "Início alcançado (reiniciado do fim)";
-                SetStatus($"✓ {edge}: linha #{matchingRow.RowNumber} ({timeStr}) com valor '{valStr}'", StatusSuccessBrush);
+                SetStatus(Loc.Instance.Format("FindVal_FoundWrapped", matchingRow.RowNumber, timeStr, valStr), StatusSuccessBrush);
             }
             else
             {
-                SetStatus($"✓ Encontrado na linha #{matchingRow.RowNumber} ({timeStr}) com valor '{valStr}'", StatusSuccessBrush);
+                SetStatus(Loc.Instance.Format("FindVal_Found", matchingRow.RowNumber, timeStr, valStr), StatusSuccessBrush);
             }
         }
         else
         {
-            SetStatus($"⚠ Valor '{searchText}' não encontrado para '{selectedTag.Alias}'.", StatusWarningBrush);
+            SetStatus(Loc.Instance.Format("FindVal_NotFound", searchText, selectedTag.Alias), StatusWarningBrush);
         }
     }
 

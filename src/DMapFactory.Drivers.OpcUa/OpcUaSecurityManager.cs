@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using DMapFactory.Core.Models;
+using DMapFactory.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Opc.Ua;
@@ -819,6 +820,7 @@ public sealed class OpcUaSecurityManager
         if (AutoAcceptUntrustedServerCertificates)
         {
             await TrustServerCertificateAsync(serverCertificateDer, ct).ConfigureAwait(false);
+            _logger.LogWarning("{Message}", Loc.Instance.Format("Log_CertUntrustedAutoAcceptedWarn", cert.Subject, thumbprint));
             return true;
         }
 
@@ -829,15 +831,18 @@ public sealed class OpcUaSecurityManager
             if (accepted)
             {
                 await TrustServerCertificateAsync(serverCertificateDer, ct).ConfigureAwait(false);
+                _logger.LogInformation("{Message}", Loc.Instance.Format("Log_CertUntrustedAcceptedByUser", cert.Subject, thumbprint));
                 return true;
             }
 
             _recentRejections[thumbprint] = DateTime.UtcNow;
             await RejectServerCertificateAsync(serverCertificateDer, ct).ConfigureAwait(false);
+            _logger.LogWarning("{Message}", Loc.Instance.Format("Log_CertUntrustedRejectedByUser", cert.Subject, thumbprint, "BadCertificateUntrusted"));
             return false;
         }
 
         await RejectServerCertificateAsync(serverCertificateDer, ct).ConfigureAwait(false);
+        _logger.LogWarning("{Message}", Loc.Instance.Format("Log_CertUntrustedRejectedByUser", cert.Subject, thumbprint, "BadCertificateUntrusted"));
         return false;
     }
 
@@ -861,7 +866,7 @@ public sealed class OpcUaSecurityManager
             e.Accept = true;
             SaveCertificateToStoreSafe(_config?.SecurityConfiguration.TrustedPeerCertificates, e.Certificate);
             DeleteCertificateFilesByThumbprint(RejectedPeersDirectory, thumbprint);
-            _logger.LogInformation("Certificado de servidor aceito automaticamente (AutoAccept): {Subject} [{Thumbprint}]", e.Certificate.Subject, thumbprint);
+            _logger.LogWarning("{Message}", Loc.Instance.Format("Log_CertUntrustedAutoAcceptedWarn", e.Certificate.Subject, thumbprint));
             return;
         }
 
@@ -871,7 +876,6 @@ public sealed class OpcUaSecurityManager
         {
             e.Accept = false;
             SaveCertificateToStoreSafe(_config?.SecurityConfiguration.RejectedCertificateStore, e.Certificate);
-            _logger.LogWarning("Certificado de servidor rejeitado recentemente suprimido: {Subject} [{Thumbprint}]", e.Certificate.Subject, thumbprint);
             return;
         }
 
@@ -887,13 +891,13 @@ public sealed class OpcUaSecurityManager
                 _recentRejections.TryRemove(thumbprint, out _);
                 SaveCertificateToStoreSafe(_config?.SecurityConfiguration.TrustedPeerCertificates, e.Certificate);
                 DeleteCertificateFilesByThumbprint(RejectedPeersDirectory, thumbprint);
-                _logger.LogInformation("Certificado de servidor aprovado pelo usuário no prompt: {Subject} [{Thumbprint}]", e.Certificate.Subject, thumbprint);
+                _logger.LogInformation("{Message}", Loc.Instance.Format("Log_CertUntrustedAcceptedByUser", e.Certificate.Subject, thumbprint));
             }
             else
             {
                 _recentRejections[thumbprint] = DateTime.UtcNow;
                 SaveCertificateToStoreSafe(_config?.SecurityConfiguration.RejectedCertificateStore, e.Certificate);
-                _logger.LogWarning("Certificado de servidor rejeitado pelo usuário no prompt: {Subject} [{Thumbprint}]", e.Certificate.Subject, thumbprint);
+                _logger.LogWarning("{Message}", Loc.Instance.Format("Log_CertUntrustedRejectedByUser", e.Certificate.Subject, thumbprint, e.Error.StatusCode));
             }
             return;
         }
@@ -901,7 +905,7 @@ public sealed class OpcUaSecurityManager
         // 5. Sem auto-accept e sem prompt (ou rejeitado): rejeita e garante persistência na pasta Rejected
         e.Accept = false;
         SaveCertificateToStoreSafe(_config?.SecurityConfiguration.RejectedCertificateStore, e.Certificate);
-        _logger.LogWarning("Certificado de servidor não confiável rejeitado: {Subject} [{Thumbprint}] (Motivo: {Status})", e.Certificate.Subject, thumbprint, e.Error.StatusCode);
+        _logger.LogWarning("{Message}", Loc.Instance.Format("Log_CertUntrustedRejectedByUser", e.Certificate.Subject, thumbprint, e.Error.StatusCode));
     }
 
     private static void SaveCertificateToStoreSafe(CertificateStoreIdentifier? trustList, X509Certificate2 cert)

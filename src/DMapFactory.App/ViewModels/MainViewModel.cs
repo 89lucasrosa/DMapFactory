@@ -121,21 +121,21 @@ public sealed partial class MainViewModel : ObservableObject
 
     public string MarkerButtonToolTip =>
         IsPlacingMarker
-            ? "Modo de inserção de marcador ativo: clique na planilha ou no gráfico onde deseja inserir (Esc para cancelar)"
-            : "Inserir marcador de evento na sessão (Ctrl+M)";
+            ? Loc.Instance["Toolbar_MarkerActive_Tip"]
+            : Loc.Instance["Toolbar_MarkerIdle_Tip"];
 
     public bool IsSelectedConnectionConnected =>
         (SelectedConnection ?? Connections.FirstOrDefault())?.IsConnected == true;
 
     public string ConnectButtonText =>
-        IsSelectedConnectionConnected ? "Desconectar" : "Conectar";
+        IsSelectedConnectionConnected ? Loc.Instance["Conn_Disconnect"] : Loc.Instance["Conn_Connect"];
 
     public string ConnectButtonToolTip =>
         IsSelectedConnectionConnected
-            ? $"Desconectar do servidor OPC UA '{(SelectedConnection ?? Connections.FirstOrDefault())?.Name}'"
+            ? Loc.Instance.Format("Conn_Disconnect_Tip", (SelectedConnection ?? Connections.FirstOrDefault())?.Name ?? "")
             : Connections.Count == 0
-                ? "Criar uma nova conexão e conectar ao servidor OPC UA"
-                : $"Conectar ao servidor OPC UA '{(SelectedConnection ?? Connections.FirstOrDefault())?.Name}'";
+                ? Loc.Instance["Conn_CreateAndConnect_Tip"]
+                : Loc.Instance.Format("Conn_Connect_Tip", (SelectedConnection ?? Connections.FirstOrDefault())?.Name ?? "");
 
     public string ConnectButtonIcon =>
         IsSelectedConnectionConnected ? "🔌❌" : "🔌";
@@ -180,7 +180,11 @@ public sealed partial class MainViewModel : ObservableObject
     // FN-01: Taxa de amostragem e modo configuráveis
     public IReadOnlyList<int> SamplingIntervalOptions { get; } = [10, 20, 50, 100, 250, 500, 1000, 2000, 5000];
     [ObservableProperty] private int _selectedSamplingIntervalMs = 100;
-    public IReadOnlyList<string> AcquisitionModeOptions { get; } = ["Upon Change (Mudança de valor)", "Por Taxa de Amostragem (ms)"];
+    public IReadOnlyList<string> AcquisitionModeOptions =>
+    [
+        Loc.Instance["AcqMode_UponChange"],
+        Loc.Instance["AcqMode_SamplingRate"]
+    ];
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsSamplingIntervalEnabled))]
     private int _selectedAcquisitionModeIndex = 0;
@@ -211,13 +215,13 @@ public sealed partial class MainViewModel : ObservableObject
             var drivers = Connections.Select(c => (IDriver)c.Driver).ToList();
             await _sessionManager.UpdateGroupsAsync(_project, drivers);
             string modeDesc = SelectedAcquisitionModeIndex == 1
-                ? $"Por Taxa de Amostragem ({SelectedSamplingIntervalMs} ms)"
-                : "Upon Change (Mudança de valor)";
-            _logger.LogInformation("Modo de aquisição atualizado para: {Mode}.", modeDesc);
+                ? $"{Loc.Instance["AcqMode_SamplingRate"]} ({SelectedSamplingIntervalMs} ms)"
+                : Loc.Instance["AcqMode_UponChange"];
+            _logger.LogInformation("{Message}", Loc.Instance.Format("Log_AcqModeChanged", modeDesc));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Falha ao atualizar parâmetros de aquisição em tempo real");
+            _logger.LogError(ex, "{Message}", Loc.Instance.Format("Log_OnlineTransitionError", ex.Message));
         }
     }
 
@@ -246,12 +250,12 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty] private bool _hasSelectedMarker;
     [ObservableProperty] private SessionMarker? _selectedMarker;
 
-    public IReadOnlyList<string> TimestampSourceOptions { get; } =
+    public IReadOnlyList<string> TimestampSourceOptions =>
     [
-        "Automático (Fonte ➔ Servidor ➔ Local)",
-        "Fonte / CLP (SourceTimestamp)",
-        "Servidor OPC UA (ServerTimestamp)",
-        "Sistema Operacional / Local (PC)"
+        Loc.Instance["TsOption_Auto"],
+        Loc.Instance["TsOption_Source"],
+        Loc.Instance["TsOption_Server"],
+        Loc.Instance["TsOption_Local"]
     ];
 
     [ObservableProperty]
@@ -280,10 +284,10 @@ public sealed partial class MainViewModel : ObservableObject
 
     public string TimestampColumnHeaderText => TimestampSource switch
     {
-        TimestampSourceMode.Source => "Timestamp (Fonte / CLP)",
-        TimestampSourceMode.Server => "Timestamp (Servidor OPC)",
-        TimestampSourceMode.Local => "Timestamp (Sistema / PC)",
-        _ => "Timestamp (Auto)"
+        TimestampSourceMode.Source => Loc.Instance["Grid_Col_TsSource"],
+        TimestampSourceMode.Server => Loc.Instance["Grid_Col_TsServer"],
+        TimestampSourceMode.Local => Loc.Instance["Grid_Col_TsLocal"],
+        _ => Loc.Instance["Grid_Col_TsAuto"]
     };
 
     partial void OnTimestampSourceChanged(TimestampSourceMode value)
@@ -312,12 +316,12 @@ public sealed partial class MainViewModel : ObservableObject
 
         string sourceLabel = value switch
         {
-            TimestampSourceMode.Source => "Fonte / CLP (SourceTimestamp)",
-            TimestampSourceMode.Server => "Servidor OPC UA (ServerTimestamp)",
-            TimestampSourceMode.Local => "Sistema Operacional / Local (PC)",
-            _ => "Automático (Fonte ➔ Servidor ➔ Local)"
+            TimestampSourceMode.Source => Loc.Instance["TsOption_Source"],
+            TimestampSourceMode.Server => Loc.Instance["TsOption_Server"],
+            TimestampSourceMode.Local => Loc.Instance["TsOption_Local"],
+            _ => Loc.Instance["TsOption_Auto"]
         };
-        _logger.LogInformation("Fonte do Timestamp alterada para: {Mode}.", sourceLabel);
+        _logger.LogInformation("{Message}", Loc.Instance.Format("Log_TimestampSourceChanged", sourceLabel));
     }
 
     private async Task RefreshTagsWithCurrentTimestampSourceAsync()
@@ -346,20 +350,22 @@ public sealed partial class MainViewModel : ObservableObject
     public IReadOnlyList<int> ChartWindowOptions { get; } = [5, 10, 15, 30, 60, 120, 300, 600, 1800, 3600];
 
     public string SpreadsheetHeaderHeightText =>
-        SpreadsheetHeaderHeight <= 0 ? "Auto" : $"{SpreadsheetHeaderHeight:F0} px";
+        SpreadsheetHeaderHeight <= 0 ? Loc.Instance["Toolbar_HeaderHeightAuto"] : $"{SpreadsheetHeaderHeight:F0} px";
 
     public string AddSelectedBrowserButtonText =>
-        SelectedBrowseNodes.Count > 1 ? $"+ Planilha ({SelectedBrowseNodes.Count})" : "+ Planilha";
+        SelectedBrowseNodes.Count > 1
+            ? Loc.Instance.Format("Browser_AddButton_Multi", SelectedBrowseNodes.Count)
+            : Loc.Instance["Browser_AddButton_Single"];
 
     public string RemoveTagButtonText =>
         SelectedMonitoredTag is not null
-            ? $"Excluir tag ({SelectedMonitoredTag.Alias})"
-            : "Excluir tag";
+            ? $"{Loc.Instance["Toolbar_DeleteTag"]} ({SelectedMonitoredTag.Alias})"
+            : Loc.Instance["Toolbar_DeleteTag"];
 
     public string RemoveTagToolTip =>
         SelectedMonitoredTag is not null
-            ? $"Excluir a tag selecionada '{SelectedMonitoredTag.Alias}' ({SelectedMonitoredTag.Address}) da coleta (Delete)"
-            : "Excluir a tag selecionada (Delete) ou a última coluna adicionada à planilha";
+            ? $"{Loc.Instance["Toolbar_DeleteTag"]}: '{SelectedMonitoredTag.Alias}' ({SelectedMonitoredTag.Address}) (Delete)"
+            : Loc.Instance["Toolbar_DeleteTag_Tip"];
 
     public bool GroupSameTimestamp
     {
@@ -375,7 +381,7 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     public string OnlineButtonText => Loc.Instance[IsOnline ? "Toolbar_GoOffline" : "Toolbar_GoOnline"];
-    public string OnlineButtonToolTip => $"{OnlineButtonText} (F5)";
+    public string OnlineButtonToolTip => IsOnline ? Loc.Instance["Toolbar_GoOffline_Tip"] : Loc.Instance["Toolbar_GoOnline_Tip"];
     public string OnlineStateText => Loc.Instance[IsOnline ? "Status_Online" : "Status_Offline"];
 
     partial void OnSelectedLanguageChanged(LanguageOption value)
@@ -474,7 +480,7 @@ public sealed partial class MainViewModel : ObservableObject
         if (target is null) return;
         _sessionManager.Snapshot.CycleTriggerTagId = target.Config.Id;
         CycleTriggerTagAlias = target.Alias;
-        _logger.LogInformation("Tag '{Alias}' definida como gatilho de ciclo de máquina.", target.Alias);
+        _logger.LogInformation("{Message}", Loc.Instance.Format("Log_CycleTriggerSet", target.Alias, target.Address));
     }
 
     [RelayCommand]
@@ -482,7 +488,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         _sessionManager.Snapshot.CycleTriggerTagId = null;
         CycleTriggerTagAlias = null;
-        _logger.LogInformation("Gatilho de ciclo de máquina desativado.");
+        _logger.LogInformation("{Message}", Loc.Instance["Log_CycleTriggerCleared"]);
     }
 
     [RelayCommand]
@@ -492,7 +498,7 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private static void OpenLogsFolder()
+    private void OpenLogsFolder()
     {
         try
         {
@@ -503,7 +509,10 @@ public sealed partial class MainViewModel : ObservableObject
                 UseShellExecute = true
             });
         }
-        catch { }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "{Message}", Loc.Instance.Format("Log_LogsFolderError", ex.Message));
+        }
     }
 
     [RelayCommand]
@@ -519,11 +528,12 @@ public sealed partial class MainViewModel : ObservableObject
         BrowserRoots.Clear();
         MonitoredTags.Clear();
         SpreadsheetRows.Clear();
+        SessionMarkers.Clear();
         _project = new ProjectConfig();
         _currentProjectPath = null;
         _nextConnectionId = 1;
         _nextTagId = 1;
-        _logger.LogInformation("Novo projeto iniciado.");
+        _logger.LogInformation("{Message}", Loc.Instance["Log_NewProject"]);
     }
 
     [RelayCommand]
@@ -556,12 +566,19 @@ public sealed partial class MainViewModel : ObservableObject
             _project.Name = Path.GetFileNameWithoutExtension(path);
         }
 
-        BuildProjectFromViewModels();
-        await ProjectFileStore.SaveAsync(_project, path);
-        _currentProjectPath = path;
-        _settings.Current.LastProjectPath = path;
-        _settings.Save();
-        _logger.LogInformation("Projeto salvo em {Path}", path);
+        try
+        {
+            BuildProjectFromViewModels();
+            await ProjectFileStore.SaveAsync(_project, path);
+            _currentProjectPath = path;
+            _settings.Current.LastProjectPath = path;
+            _settings.Save();
+            _logger.LogInformation("{Message}", Loc.Instance.Format("Log_ProjectSaved", path));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "{Message}", Loc.Instance.Format("Log_ProjectSaveError", path, ex.Message));
+        }
     }
 
     public string GetEffectiveSessionsFolder()
@@ -585,7 +602,7 @@ public sealed partial class MainViewModel : ObservableObject
 
         var dlg = new OpenFolderDialog
         {
-            Title = "Selecionar pasta para salvar arquivos de sessão (CSV/Excel e JSON)",
+            Title = Loc.Instance["Menu_ConfigSessionsFolder"],
             InitialDirectory = Directory.Exists(currentFolder)
                 ? currentFolder
                 : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
@@ -601,7 +618,7 @@ public sealed partial class MainViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Não foi possível criar/acessar a pasta selecionada '{Folder}'", chosenFolder);
+            _logger.LogError(ex, "{Message}", Loc.Instance.Format("Log_SessionsFolderError", chosenFolder, ex.Message));
             return;
         }
 
@@ -609,15 +626,15 @@ public sealed partial class MainViewModel : ObservableObject
         _settings.Save();
         _project.SessionsFolder = chosenFolder;
 
-        _logger.LogInformation("Local de salvamento dos arquivos de sessão (On-line/Off-line) configurado para: {Folder}", chosenFolder);
+        _logger.LogInformation("{Message}", Loc.Instance.Format("Log_SessionsFolderChanged", chosenFolder));
     }
 
     [RelayCommand]
     private void OpenSessionsFolder()
     {
+        string folder = GetEffectiveSessionsFolder();
         try
         {
-            string folder = GetEffectiveSessionsFolder();
             Directory.CreateDirectory(folder);
             Process.Start(new ProcessStartInfo
             {
@@ -627,7 +644,7 @@ public sealed partial class MainViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Não foi possível abrir a pasta de sessões");
+            _logger.LogError(ex, "{Message}", Loc.Instance.Format("Log_SessionsFolderError", folder, ex.Message));
         }
     }
 
@@ -638,7 +655,7 @@ public sealed partial class MainViewModel : ObservableObject
         var ofd = new OpenFileDialog
         {
             Title = Loc.Instance["Menu_OpenSession"],
-            Filter = "Sessão DMapFactory (*.csv;*.session.json)|*.csv;*.session.json",
+            Filter = "DMapFactory Session (*.csv;*.session.json)|*.csv;*.session.json",
             InitialDirectory = Directory.Exists(sessionsDir)
                 ? sessionsDir
                 : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
@@ -691,8 +708,14 @@ public sealed partial class MainViewModel : ObservableObject
                 };
                 var vm = new MonitoredTagViewModel(cfg, $"Conn#{t.ConnectionId}")
                 {
-                    IsPlotted = MonitoredTags.Count < 8
+                    IsPlotted = MonitoredTags.Count < 8,
+                    AliasRenamedCallback = (oldAlias, newAlias) =>
+                        _logger.LogInformation("{Message}", Loc.Instance.Format("Log_TagRenamed", cfg.Address, oldAlias, newAlias))
                 };
+                if (!vm.CanPlotOnChart)
+                {
+                    vm.IsPlotted = false;
+                }
                 if (latest.TryGetValue(t.Id, out var s))
                     vm.UpdateFromSample(in s);
                 MonitoredTags.Add(vm);
@@ -702,26 +725,26 @@ public sealed partial class MainViewModel : ObservableObject
             foreach (var r in rows)
                 SpreadsheetRows.Add(r);
 
-            _logger.LogInformation("Sessão '{File}' aberta: {Samples:N0} amostras, {Rows:N0} linhas, {Markers} marcadores.",
-                Path.GetFileName(loaded.CsvFilePath), loaded.Samples.Count, rows.Count, SessionMarkers.Count);
+            _logger.LogInformation("{Message}",
+                Loc.Instance.Format("Log_SessionLoaded", Path.GetFileName(loaded.CsvFilePath), loaded.Samples.Count, rows.Count, SessionMarkers.Count));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Falha ao abrir sessão gravada");
+            _logger.LogError(ex, "{Message}", Loc.Instance.Format("Log_SessionLoadError", ofd.FileName, ex.Message));
         }
     }
 
     [RelayCommand]
     private async Task AddConnectionAsync()
     {
-        var dlgVm = new ConnectionDialogViewModel(_securityManager);
+        var dlgVm = new ConnectionDialogViewModel(_securityManager, logger: _logger);
         var dlg = new ConnectionDialog(dlgVm) { Owner = Application.Current.MainWindow };
         if (dlg.ShowDialog() != true) return;
 
         var cfg = dlgVm.BuildConfig(_nextConnectionId++);
         var itemVm = RegisterConnectionViewModel(cfg);
         SelectedConnection = itemVm;
-        _logger.LogInformation("Conexão '{Name}' ({Endpoint}) adicionada.", cfg.Name, cfg.EndpointUrl);
+        _logger.LogInformation("{Message}", Loc.Instance.Format("Log_ConnAdded", cfg.Name, cfg.EndpointUrl));
         RefreshStatusAndValues();
 
         await ConnectOrDisconnectSelectedAsync();
@@ -733,7 +756,7 @@ public sealed partial class MainViewModel : ObservableObject
         var target = connVm ?? SelectedConnection;
         if (target is null) return;
 
-        var dlgVm = new ConnectionDialogViewModel(_securityManager, target.Config);
+        var dlgVm = new ConnectionDialogViewModel(_securityManager, target.Config, _logger);
         var dlg = new ConnectionDialog(dlgVm) { Owner = Application.Current.MainWindow };
         if (dlg.ShowDialog() != true) return;
 
@@ -744,34 +767,24 @@ public sealed partial class MainViewModel : ObservableObject
         {
             if (wasConnected)
             {
-                await target.Driver.DisconnectAsync();
+                await target.Driver.DisconnectAsync(isUserRequested: true);
             }
             await target.Driver.DisposeAsync();
         }
         catch (Exception ex)
         {
-            _logger.LogWarning("Aviso ao encerrar driver anterior da conexão '{Name}': {Message}", target.Name, ex.Message);
+            _logger.LogWarning(ex, "{Message}", Loc.Instance.Format("Log_ConnDisconnected", target.Name, target.EndpointUrl, ex.Message));
         }
 
         var newDriver = new OpcUaDriver(updatedConfig, _securityManager, _driverLogger)
         {
             PreferredTimestampSource = TimestampSource
         };
-        newDriver.StateChanged += (_, args) => Application.Current?.Dispatcher.InvokeAsync(() =>
-        {
-            target.State = args.State;
-            target.StatusMessage = args.Reason;
-            if (args.State != ConnectionState.Connected)
-            {
-                HandleConnectionDisconnectedWhileOnline(target, args.Reason);
-            }
-            RefreshStatusAndValues();
-            NotifyConnectionStateChanged();
-        });
+        AttachDriverStateChanged(target, newDriver);
 
         target.Update(updatedConfig, newDriver);
 
-        _logger.LogInformation("Conexão '{Name}' ({Endpoint}) atualizada.", updatedConfig.Name, updatedConfig.EndpointUrl);
+        _logger.LogInformation("{Message}", Loc.Instance.Format("Log_ConnUpdated", updatedConfig.Name, updatedConfig.EndpointUrl));
 
         if (wasConnected)
         {
@@ -786,7 +799,7 @@ public sealed partial class MainViewModel : ObservableObject
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao reconectar '{Name}' após edição", target.Name);
+                _logger.LogError(ex, "{Message}", Loc.Instance.Format("Log_ConnConnectError", target.Name, target.EndpointUrl, ex.Message));
             }
         }
 
@@ -813,7 +826,7 @@ public sealed partial class MainViewModel : ObservableObject
         {
             if (item.IsConnected)
             {
-                await item.Driver.DisconnectAsync();
+                await item.Driver.DisconnectAsync(isUserRequested: true);
                 item.State = item.Driver.State;
                 if (ReferenceEquals(SelectedConnection, item))
                 {
@@ -823,7 +836,6 @@ public sealed partial class MainViewModel : ObservableObject
 
                 if (IsOnline)
                 {
-                    HandleConnectionDisconnectedWhileOnline(item, "Desconectado pelo usuário");
                     var remainingConnected = Connections.Where(c => c.IsConnected).ToList();
                     if (remainingConnected.Count == 0)
                     {
@@ -836,8 +848,6 @@ public sealed partial class MainViewModel : ObservableObject
                         await _sessionManager.UpdateGroupsAsync(_project, drivers);
                     }
                 }
-
-                _logger.LogInformation("Conexão '{Name}' ({Endpoint}) desconectada pelo usuário.", item.Name, item.EndpointUrl);
             }
             else
             {
@@ -865,7 +875,7 @@ public sealed partial class MainViewModel : ObservableObject
         {
             item.State = item.Driver.State;
             item.StatusMessage = ex.Message;
-            _logger.LogError(ex, "Erro ao alternar conexão '{Name}'", item.Name);
+            _logger.LogError(ex, "{Message}", Loc.Instance.Format("Log_ConnConnectError", item.Name, item.EndpointUrl, ex.Message));
         }
         finally
         {
@@ -915,12 +925,11 @@ public sealed partial class MainViewModel : ObservableObject
                 }
             }
 
-            _logger.LogInformation("Conexão '{Name}' excluída ({TagsCount} tag(s) associada(s) removida(s)).",
-                target.Name, tagsToRemove.Count);
+            _logger.LogInformation("{Message}", Loc.Instance.Format("Log_ConnRemoved", target.Name, tagsToRemove.Count));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao excluir conexão '{Name}'", target.Name);
+            _logger.LogError(ex, "{Message}", Loc.Instance.Format("Log_ConnConnectError", target.Name, target.EndpointUrl, ex.Message));
         }
         finally
         {
@@ -1001,7 +1010,7 @@ public sealed partial class MainViewModel : ObservableObject
         if (vm is not null)
         {
             ManualTagAddress = "";
-            _logger.LogInformation("Tag manual '{Alias}' ({Address}) adicionada.", vm.Alias, vm.Address);
+            _logger.LogInformation("{Message}", Loc.Instance.Format("Log_TagAddedManual", vm.Alias, vm.Address));
             await ActivateOrRefreshOnlineAfterAddingTagsAsync(conn, [vm]);
         }
     }
@@ -1016,7 +1025,7 @@ public sealed partial class MainViewModel : ObservableObject
         if (ReferenceEquals(SelectedMonitoredTag, target))
             SelectedMonitoredTag = null;
 
-        _logger.LogInformation("Tag '{Alias}' ({Address}) removida da planilha e do gráfico.", target.Alias, target.Address);
+        _logger.LogInformation("{Message}", Loc.Instance.Format("Log_TagRemoved", target.Alias, target.Address));
 
         if (IsOnline)
         {
@@ -1049,7 +1058,7 @@ public sealed partial class MainViewModel : ObservableObject
         MonitoredTags.Clear();
         _sessionManager.Snapshot.Reset();
         SpreadsheetRows.Clear();
-        _logger.LogInformation("Todas as tags e linhas da planilha foram limpas.");
+        _logger.LogInformation("{Message}", Loc.Instance["Log_TagsClearedAll"]);
     }
 
     [RelayCommand]
@@ -1059,7 +1068,7 @@ public sealed partial class MainViewModel : ObservableObject
         SpreadsheetRows.Clear();
         SessionMarkers.Clear();
         _markerCounter = 1;
-        _logger.LogInformation("Linhas da planilha limpas.");
+        _logger.LogInformation("{Message}", Loc.Instance["Log_RowsCleared"]);
     }
 
     public Action? RequestOpenFindDialog { get; set; }
@@ -1113,11 +1122,11 @@ public sealed partial class MainViewModel : ObservableObject
         try
         {
             await _securityManager.ExportApplicationCertificateDerAsync(sfd.FileName);
-            _logger.LogInformation("Certificado da aplicação exportado para {File}", sfd.FileName);
+            _logger.LogInformation("{Message}", Loc.Instance.Format("Log_CertClientExportedDer", sfd.FileName));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Falha ao exportar certificado");
+            _logger.LogError(ex, "{Message}", Loc.Instance.Format("Log_CertOperationError", ex.Message));
         }
     }
 
@@ -1130,11 +1139,11 @@ public sealed partial class MainViewModel : ObservableObject
         IsPlacingMarker = !IsPlacingMarker;
         if (IsPlacingMarker)
         {
-            _logger.LogInformation("Modo de inserção de marcador ativado. Clique em um ponto do gráfico ou linha da planilha para posicionar.");
+            _logger.LogInformation("{Message}", Loc.Instance["Log_MarkerPlaceModeOn"]);
         }
         else
         {
-            _logger.LogInformation("Modo de inserção de marcador desativado.");
+            _logger.LogInformation("{Message}", Loc.Instance["Log_MarkerPlaceModeOff"]);
         }
     }
 
@@ -1170,8 +1179,8 @@ public sealed partial class MainViewModel : ObservableObject
             SessionMarkers.Add(marker);
         }
 
-        _logger.LogInformation("Marcador '{Marker}' atribuído à linha #{Row} ({Timestamp:HH:mm:ss.fff}).",
-            markerText, row.RowNumber, row.TimestampUtc.ToLocalTime());
+        _logger.LogInformation("{Message}",
+            Loc.Instance.Format("Log_MarkerAddedRow", markerText, row.RowNumber, row.TimestampUtc.ToLocalTime().ToString("HH:mm:ss.fff")));
     }
 
     public async Task EditMarkerAtRowAsync(WideSpreadsheetRow row)
@@ -1213,8 +1222,8 @@ public sealed partial class MainViewModel : ObservableObject
 
         await _sessionManager.UpdateMarkerAsync(row.TimestampUtc, oldText, newText);
 
-        _logger.LogInformation("Marcador da linha #{Row} atualizado para '{NewText}' ({Timestamp:HH:mm:ss.fff}).",
-            row.RowNumber, newText, row.TimestampUtc.ToLocalTime());
+        _logger.LogInformation("{Message}",
+            Loc.Instance.Format("Log_MarkerRenamedRow", row.RowNumber, row.TimestampUtc.ToLocalTime().ToString("HH:mm:ss.fff"), oldText, newText));
     }
 
     public async Task RemoveMarkerAtRowAsync(WideSpreadsheetRow row)
@@ -1246,8 +1255,8 @@ public sealed partial class MainViewModel : ObservableObject
 
         await _sessionManager.RemoveMarkerAsync(ts, oldText);
 
-        _logger.LogInformation("Marcador '{OldText}' removido da linha #{Row} ({Timestamp:HH:mm:ss.fff}).",
-            oldText, rowNumber, ts.ToLocalTime());
+        _logger.LogInformation("{Message}",
+            Loc.Instance.Format("Log_MarkerRemovedRow", oldText ?? string.Empty, rowNumber, ts.ToLocalTime().ToString("HH:mm:ss.fff")));
     }
 
     public async Task EditSessionMarkerAsync(SessionMarker marker)
@@ -1284,8 +1293,8 @@ public sealed partial class MainViewModel : ObservableObject
 
         await _sessionManager.UpdateMarkerAsync(marker.TimestampUtc, marker.Text, newText);
 
-        _logger.LogInformation("Marcador '{OldText}' atualizado para '{NewText}' ({Timestamp:HH:mm:ss.fff}).",
-            marker.Text, newText, marker.TimestampUtc.ToLocalTime());
+        _logger.LogInformation("{Message}",
+            Loc.Instance.Format("Log_MarkerRenamedSession", marker.TimestampUtc.ToLocalTime().ToString("HH:mm:ss.fff"), marker.Text, newText));
     }
 
     public async Task RemoveSessionMarkerAsync(SessionMarker marker)
@@ -1305,8 +1314,8 @@ public sealed partial class MainViewModel : ObservableObject
         SessionMarkers.Remove(marker);
         await _sessionManager.RemoveMarkerAsync(marker.TimestampUtc, marker.Text);
 
-        _logger.LogInformation("Marcador '{Text}' excluído ({Timestamp:HH:mm:ss.fff}).",
-            marker.Text, marker.TimestampUtc.ToLocalTime());
+        _logger.LogInformation("{Message}",
+            Loc.Instance.Format("Log_MarkerRemovedSession", marker.Text, marker.TimestampUtc.ToLocalTime().ToString("HH:mm:ss.fff")));
     }
 
     public async Task CommitMarkerAtAsync(DateTime timestampUtc, string? defaultComment = null)
@@ -1350,8 +1359,8 @@ public sealed partial class MainViewModel : ObservableObject
                 SpreadsheetRows.Insert(insertIdx, markerRow);
         }
 
-        _logger.LogInformation("Marcador '{Marker}' inserido em {Timestamp:HH:mm:ss.fff}.",
-            markerText, timestampUtc.ToLocalTime());
+        _logger.LogInformation("{Message}",
+            Loc.Instance.Format("Log_MarkerAddedChart", markerText, timestampUtc.ToLocalTime().ToString("HH:mm:ss.fff")));
     }
 
     [RelayCommand]
@@ -1359,7 +1368,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (SpreadsheetRows.Count == 0 || MonitoredTags.Count == 0)
         {
-            _logger.LogWarning("Não há linhas ou tags na planilha para exportar.");
+            _logger.LogWarning("{Message}", Loc.Instance["Log_SpreadsheetExportEmptyWarn"]);
             return;
         }
 
@@ -1392,13 +1401,25 @@ public sealed partial class MainViewModel : ObservableObject
                     break;
             }
 
-            _logger.LogInformation("Planilha exportada ({Rows:N0} linhas) para {Path}", rows.Count, sfd.FileName);
+            _logger.LogInformation("{Message}", Loc.Instance.Format("Log_SpreadsheetExported", rows.Count, sfd.FileName));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Falha ao exportar planilha");
+            _logger.LogError(ex, "{Message}", Loc.Instance.Format("Log_SpreadsheetExportError", sfd.FileName, ex.Message));
         }
     }
+
+    public void LogSpreadsheetPngSaved(string path, int width, int height) =>
+        _logger.LogInformation("{Message}", Loc.Instance.Format("Log_SpreadsheetPngSaved", path, width, height));
+
+    public void LogSpreadsheetPngError(string path, Exception ex) =>
+        _logger.LogError(ex, "{Message}", Loc.Instance.Format("Log_SpreadsheetPngError", path, ex.Message));
+
+    public void LogChartPngSaved(string path, int width, int height) =>
+        _logger.LogInformation("{Message}", Loc.Instance.Format("Log_ChartPngSaved", path, width, height));
+
+    public void LogChartPngError(string path, Exception ex) =>
+        _logger.LogError(ex, "{Message}", Loc.Instance.Format("Log_ChartPngError", path, ex.Message));
 
     [RelayCommand]
     private void ChartZoomIn()
@@ -1488,7 +1509,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     [RelayCommand]
     private void ShowAbout() =>
-        MessageBox.Show(Loc.Instance.Format("About_Text", AppVersion), Loc.Instance["Menu_About"],
+        MessageBox.Show(Loc.Instance.Format("About_Body", AppVersion), Loc.Instance["Menu_About"],
             MessageBoxButton.OK, MessageBoxImage.Information);
 
     [RelayCommand]
@@ -1515,8 +1536,19 @@ public sealed partial class MainViewModel : ObservableObject
                     catch (Exception ex)
                     {
                         conn.State = conn.Driver.State;
-                        _logger.LogWarning(ex, "Não foi possível conectar '{Name}' ao entrar On-line", conn.Name);
+                        _logger.LogWarning(ex, "{Message}", Loc.Instance.Format("Log_OnlineAutoConnectWarn", conn.Name, ex.Message));
                     }
+                }
+
+                int activeConns = Connections.Count(c => c.IsConnected);
+                if (Connections.Count == 0 || activeConns == 0)
+                {
+                    _logger.LogWarning("{Message}", Loc.Instance["Log_OnlineStartNoConnectionsWarn"]);
+                }
+
+                if (MonitoredTags.Count == 0)
+                {
+                    _logger.LogWarning("{Message}", Loc.Instance["Log_OnlineStartNoTagsWarn"]);
                 }
 
                 BuildProjectFromViewModels();
@@ -1529,14 +1561,24 @@ public sealed partial class MainViewModel : ObservableObject
 
                 await _sessionManager.StartSessionAsync(_project, drivers, folder, AppVersion, resetSnapshot: false);
                 _sessionClock.Restart();
-                _logger.LogInformation("Sessão ON-LINE iniciada: {CsvFile}", _sessionManager.CurrentCsvPath);
+
+                string acqModeName = SelectedAcquisitionModeIndex == 1
+                    ? $"{Loc.Instance["AcqMode_SamplingRate"]} ({SelectedSamplingIntervalMs} ms)"
+                    : Loc.Instance["AcqMode_UponChange"];
+                _logger.LogInformation("{Message}",
+                    Loc.Instance.Format("Log_OnlineStarted", activeConns, MonitoredTags.Count, acqModeName, _sessionManager.CurrentCsvPath ?? folder));
             }
             else
             {
                 string? csvFile = _sessionManager.CurrentCsvPath;
                 await _sessionManager.StopSessionAsync();
                 _sessionClock.Stop();
-                _logger.LogInformation("Sessão OFF-LINE finalizada: {CsvFile}", csvFile);
+                _logger.LogInformation("{Message}",
+                    Loc.Instance.Format("Log_OfflineStopped",
+                        _sessionClock.Elapsed.ToString(@"hh\:mm\:ss"),
+                        SpreadsheetRows.Count,
+                        SessionMarkers.Count,
+                        csvFile ?? "—"));
             }
 
             SetOnlinePropertySilently(goOnline);
@@ -1545,7 +1587,7 @@ public sealed partial class MainViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao alternar estado On-line/Off-line");
+            _logger.LogError(ex, "{Message}", Loc.Instance.Format("Log_OnlineTransitionError", ex.Message));
             SetOnlinePropertySilently(_sessionManager.IsOnline);
             NotifyConnectionStateChanged();
         }
@@ -1597,38 +1639,49 @@ public sealed partial class MainViewModel : ObservableObject
 
     public async Task LoadProjectFromFileAsync(string filePath)
     {
-        await NewProjectAsync();
-
-        _project = await ProjectFileStore.LoadAsync(filePath);
-        _currentProjectPath = filePath;
-
-        var firstGroup = _project.Groups.FirstOrDefault();
-        if (firstGroup != null)
+        try
         {
-            SelectedAcquisitionModeIndex = firstGroup.Mode == AcquisitionMode.Polling ? 1 : 0;
-            if (firstGroup.Mode == AcquisitionMode.Polling && firstGroup.SamplingIntervalMs > 0)
+            await NewProjectAsync();
+
+            _project = await ProjectFileStore.LoadAsync(filePath);
+            _currentProjectPath = filePath;
+
+            var firstGroup = _project.Groups.FirstOrDefault();
+            if (firstGroup != null)
             {
-                SelectedSamplingIntervalMs = (int)firstGroup.SamplingIntervalMs;
+                SelectedAcquisitionModeIndex = firstGroup.Mode == AcquisitionMode.Polling ? 1 : 0;
+                if (firstGroup.Mode == AcquisitionMode.Polling && firstGroup.SamplingIntervalMs > 0)
+                {
+                    SelectedSamplingIntervalMs = (int)firstGroup.SamplingIntervalMs;
+                }
             }
-        }
 
-        foreach (var connCfg in _project.Connections)
+            foreach (var connCfg in _project.Connections)
+            {
+                _nextConnectionId = Math.Max(_nextConnectionId, connCfg.Id + 1);
+                RegisterConnectionViewModel(connCfg);
+            }
+
+            foreach (var tagCfg in _project.AllTags)
+            {
+                _nextTagId = Math.Max(_nextTagId, tagCfg.Id + 1);
+                string connName = Connections.FirstOrDefault(c => c.Config.Id == tagCfg.ConnectionId)?.Name ?? $"#{tagCfg.ConnectionId}";
+                var vm = new MonitoredTagViewModel(tagCfg, connName)
+                {
+                    AliasRenamedCallback = (oldAlias, newAlias) =>
+                        _logger.LogInformation("{Message}", Loc.Instance.Format("Log_TagRenamed", tagCfg.Address, oldAlias, newAlias))
+                };
+                vm.IsPlotted = vm.CanPlotOnChart;
+                MonitoredTags.Add(vm);
+            }
+
+            _logger.LogInformation("{Message}",
+                Loc.Instance.Format("Log_ProjectLoaded", _project.Name, Connections.Count, MonitoredTags.Count));
+        }
+        catch (Exception ex)
         {
-            _nextConnectionId = Math.Max(_nextConnectionId, connCfg.Id + 1);
-            RegisterConnectionViewModel(connCfg);
+            _logger.LogError(ex, "{Message}", Loc.Instance.Format("Log_ProjectLoadError", filePath, ex.Message));
         }
-
-        foreach (var tagCfg in _project.AllTags)
-        {
-            _nextTagId = Math.Max(_nextTagId, tagCfg.Id + 1);
-            string connName = Connections.FirstOrDefault(c => c.Config.Id == tagCfg.ConnectionId)?.Name ?? $"#{tagCfg.ConnectionId}";
-            var vm = new MonitoredTagViewModel(tagCfg, connName);
-            vm.IsPlotted = vm.CanPlotOnChart;
-            MonitoredTags.Add(vm);
-        }
-
-        _logger.LogInformation("Projeto '{Name}' carregado ({ConnCount} conexões, {TagCount} tags).",
-            _project.Name, Connections.Count, MonitoredTags.Count);
     }
 
     private ConnectionItemViewModel RegisterConnectionViewModel(ConnectionConfig cfg)
@@ -1638,18 +1691,7 @@ public sealed partial class MainViewModel : ObservableObject
             PreferredTimestampSource = TimestampSource
         };
         var itemVm = new ConnectionItemViewModel(cfg, driver);
-
-        driver.StateChanged += (_, args) => Application.Current?.Dispatcher.InvokeAsync(() =>
-        {
-            itemVm.State = args.State;
-            itemVm.StatusMessage = args.Reason;
-            if (args.State != ConnectionState.Connected)
-            {
-                HandleConnectionDisconnectedWhileOnline(itemVm, args.Reason);
-            }
-            RefreshStatusAndValues();
-            NotifyConnectionStateChanged();
-        });
+        AttachDriverStateChanged(itemVm, driver);
 
         Connections.Add(itemVm);
         SelectedConnection ??= itemVm;
@@ -1657,11 +1699,59 @@ public sealed partial class MainViewModel : ObservableObject
         return itemVm;
     }
 
+    private void AttachDriverStateChanged(ConnectionItemViewModel itemVm, OpcUaDriver driver)
+    {
+        driver.StateChanged += (_, args) => Application.Current?.Dispatcher.InvokeAsync(() =>
+        {
+            var prevState = itemVm.State;
+            itemVm.State = args.State;
+            itemVm.StatusMessage = args.Reason;
+
+            if (prevState != args.State)
+            {
+                switch (args.State)
+                {
+                    case ConnectionState.Connected:
+                        _logger.LogInformation("{Message}",
+                            Loc.Instance.Format("Log_ConnConnected", itemVm.Name, itemVm.EndpointUrl));
+                        break;
+                    case ConnectionState.Disconnected:
+                        if (string.Equals(args.Reason, "Desconectado pelo usuário", StringComparison.OrdinalIgnoreCase))
+                        {
+                            _logger.LogInformation("{Message}",
+                                Loc.Instance.Format("Log_ConnDisconnectedByUser", itemVm.Name, itemVm.EndpointUrl));
+                        }
+                        else if (prevState is ConnectionState.Connected or ConnectionState.Reconnecting)
+                        {
+                            _logger.LogWarning("{Message}",
+                                Loc.Instance.Format("Log_ConnDisconnected", itemVm.Name, itemVm.EndpointUrl, args.Reason ?? "—"));
+                        }
+                        break;
+                    case ConnectionState.Reconnecting:
+                        _logger.LogWarning("{Message}",
+                            Loc.Instance.Format("Log_ConnReconnecting", itemVm.Name, itemVm.EndpointUrl, args.Reason ?? "—"));
+                        break;
+                    case ConnectionState.Faulted:
+                        _logger.LogError("{Message}",
+                            Loc.Instance.Format("Log_ConnFaulted", itemVm.Name, itemVm.EndpointUrl, args.Reason ?? "—"));
+                        break;
+                }
+            }
+
+            if (args.State != ConnectionState.Connected)
+            {
+                HandleConnectionDisconnectedWhileOnline(itemVm, args.Reason);
+            }
+            RefreshStatusAndValues();
+            NotifyConnectionStateChanged();
+        });
+    }
+
     private void HandleConnectionDisconnectedWhileOnline(ConnectionItemViewModel itemVm, string? reason)
     {
         if (!IsOnline) return;
 
-        var tagsToMarkBad = MonitoredTags.Where(t => t.Config.ConnectionId == itemVm.Config.Id).ToList();
+        var tagsToMarkBad = MonitoredTags.Where(t => t.Config.ConnectionId == itemVm.Config.Id && t.Quality != QualityClass.Bad).ToList();
         if (tagsToMarkBad.Count == 0) return;
 
         var badSamples = new List<Sample>(tagsToMarkBad.Count);
@@ -1688,6 +1778,9 @@ public sealed partial class MainViewModel : ObservableObject
                 OnSessionBatchProcessed(newRows);
             }
         }
+
+        _logger.LogWarning("{Message}",
+            Loc.Instance.Format("Log_ConnDisconnectedTagsBad", tagsToMarkBad.Count, itemVm.Name));
     }
 
     private void OnCertificateTrustChanged(string thumbprint, CertificateTrustStatus status)
@@ -1698,8 +1791,9 @@ public sealed partial class MainViewModel : ObservableObject
             {
                 if (conn.Driver is OpcUaDriver opcDriver && opcDriver.IsUsingServerCertificate(thumbprint))
                 {
-                    _logger.LogWarning("Desconectando conexão '{Name}' porque o certificado do servidor ({Thumbprint}) foi {Action}.",
-                        conn.Config.Name, thumbprint, status == CertificateTrustStatus.Rejected ? "rejeitado" : "removido");
+                    string actionStr = status == CertificateTrustStatus.Rejected ? "Rejected" : "Removed";
+                    _logger.LogWarning("{Message}",
+                        Loc.Instance.Format("Log_CertRevokedActiveDisconnect", conn.Config.Name, thumbprint, actionStr));
                     _ = Application.Current?.Dispatcher?.InvokeAsync(async () =>
                     {
                         if (conn.IsConnected)
@@ -1711,7 +1805,7 @@ public sealed partial class MainViewModel : ObservableObject
                                 BrowserRoots.Clear();
                                 SelectedNodeAttributes = null;
                             }
-                            HandleConnectionDisconnectedWhileOnline(conn, "Certificado rejeitado ou removido");
+                            HandleConnectionDisconnectedWhileOnline(conn, actionStr);
                             RefreshStatusAndValues();
                             NotifyConnectionStateChanged();
                         }
@@ -1750,16 +1844,17 @@ public sealed partial class MainViewModel : ObservableObject
             {
                 BrowserRoots.Add(new BrowseNodeViewModel(r, item.Driver, OnBrowseNodeSelected, OnBrowseNodeError));
             }
+            _logger.LogInformation("{Message}", Loc.Instance.Format("Log_BrowseRootLoaded", item.Name, roots.Count));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Falha ao navegar raiz de '{Name}'", item.Name);
+            _logger.LogError(ex, "{Message}", Loc.Instance.Format("Log_BrowseRootError", item.Name, ex.Message));
         }
     }
 
     private void OnBrowseNodeError(Exception ex, BrowseNode node)
     {
-        _logger.LogError(ex, "Falha ao expandir nó '{Name}' ({NodeId})", node.DisplayName, node.Id);
+        _logger.LogError(ex, "{Message}", Loc.Instance.Format("Log_BrowseNodeError", node.DisplayName, node.Id, ex.Message));
     }
 
     public void SelectBrowseNodeFromUi(BrowseNodeViewModel nodeVm, bool ctrlPressed, bool shiftPressed)
@@ -1869,7 +1964,7 @@ public sealed partial class MainViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            _logger.LogDebug(ex, "Não foi possível ler atributos do nó {NodeId}", nodeVm.Node.Id);
+            _logger.LogWarning(ex, "{Message}", Loc.Instance.Format("Log_NodeAttributesWarn", nodeVm.Node.Id, ex.Message));
         }
     }
 
@@ -1902,14 +1997,22 @@ public sealed partial class MainViewModel : ObservableObject
             }
         }
 
-        if (added.Count > 0)
+        if (added.Count == 1)
         {
-            _logger.LogInformation("{Count} tag(s) adicionada(s) da conexão '{Conn}'.", added.Count, conn.Name);
+            var tag = added[0];
+            _logger.LogInformation("{Message}",
+                Loc.Instance.Format("Log_TagAddedSingle", tag.Alias, tag.Address, tag.DataType, conn.Name));
+            await ActivateOrRefreshOnlineAfterAddingTagsAsync(conn, added);
+        }
+        else if (added.Count > 1)
+        {
+            _logger.LogInformation("{Message}",
+                Loc.Instance.Format("Log_TagAddedMulti", added.Count, conn.Name));
             await ActivateOrRefreshOnlineAfterAddingTagsAsync(conn, added);
         }
         else
         {
-            _logger.LogWarning("Nenhuma tag variável nova encontrada nos nós selecionados.");
+            _logger.LogWarning("{Message}", Loc.Instance["Log_TagAddNoneFoundWarn"]);
         }
     }
 
@@ -1949,7 +2052,7 @@ public sealed partial class MainViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            _logger.LogDebug(ex, "Falha na leitura/ativação inicial das tags adicionadas");
+            _logger.LogWarning(ex, "{Message}", Loc.Instance.Format("Log_TagInitialReadWarn", ex.Message));
         }
     }
 
@@ -2068,7 +2171,9 @@ public sealed partial class MainViewModel : ObservableObject
 
         var vm = new MonitoredTagViewModel(cfg, conn.Name)
         {
-            IsPlotted = true
+            IsPlotted = true,
+            AliasRenamedCallback = (oldAlias, newAlias) =>
+                _logger.LogInformation("{Message}", Loc.Instance.Format("Log_TagRenamed", cfg.Address, oldAlias, newAlias))
         };
         if (!vm.CanPlotOnChart)
         {
@@ -2080,8 +2185,33 @@ public sealed partial class MainViewModel : ObservableObject
 
     private void OnLanguageChanged(object? sender, PropertyChangedEventArgs e)
     {
+        int savedAcqIdx = SelectedAcquisitionModeIndex;
+        int savedTsIdx = SelectedTimestampSourceIndex;
+
         OnPropertyChanged(nameof(OnlineButtonText));
+        OnPropertyChanged(nameof(OnlineButtonToolTip));
         OnPropertyChanged(nameof(OnlineStateText));
+        OnPropertyChanged(nameof(MarkerButtonToolTip));
+        OnPropertyChanged(nameof(ConnectButtonText));
+        OnPropertyChanged(nameof(ConnectButtonToolTip));
+        OnPropertyChanged(nameof(AcquisitionModeOptions));
+        SelectedAcquisitionModeIndex = savedAcqIdx;
+        OnPropertyChanged(nameof(SelectedAcquisitionModeIndex));
+        OnPropertyChanged(nameof(TimestampSourceOptions));
+        SelectedTimestampSourceIndex = savedTsIdx;
+        OnPropertyChanged(nameof(SelectedTimestampSourceIndex));
+        OnPropertyChanged(nameof(TimestampColumnHeaderText));
+        OnPropertyChanged(nameof(SpreadsheetHeaderHeightText));
+        OnPropertyChanged(nameof(AddSelectedBrowserButtonText));
+        OnPropertyChanged(nameof(RemoveTagButtonText));
+        OnPropertyChanged(nameof(RemoveTagToolTip));
+
+        foreach (var conn in Connections)
+            conn.RefreshLocalization();
+
+        foreach (var tag in MonitoredTags)
+            tag.RefreshLocalization();
+
         RefreshStatusAndValues();
     }
 

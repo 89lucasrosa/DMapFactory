@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Input;
+using DMapFactory.Localization;
 
 namespace DMapFactory.App.Views;
 
@@ -12,9 +13,9 @@ public partial class MarkerInputDialog : Window
         InitializeComponent();
         if (isEditing)
         {
-            Title = "Editar Marcador";
-            DialogHeaderText.Text = "Editar Marcador de Sessão";
-            ConfirmButton.Content = "Salvar Alterações";
+            Title = Loc.Instance["MarkerDlg_EditTitle"];
+            DialogHeaderText.Text = Loc.Instance["MarkerDlg_EditHeader"];
+            ConfirmButton.Content = Loc.Instance["MarkerDlg_BtnSave"];
         }
         MarkerTextBox.Text = defaultText;
         Loaded += (_, _) =>

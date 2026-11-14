@@ -57,7 +57,7 @@
                           Command="{Binding AddConnectionCommand}" />
                 <MenuItem Header="{Binding ConnectButtonText}"
                           Command="{Binding ConnectOrDisconnectSelectedCommand}" />
-                <MenuItem Header="Editar conexão selecionada…"
+                <MenuItem Header="{Binding [Menu_EditConnection], Source={x:Static loc:Loc.Instance}}"
                           Command="{Binding EditConnectionCommand}" />
                 <Separator />
                 <MenuItem Header="{Binding OnlineButtonText}"
@@ -66,14 +66,13 @@
                 <Separator />
                 <MenuItem Header="{Binding [Menu_OpenSession], Source={x:Static loc:Loc.Instance}}"
                           Command="{Binding OpenRecordedSessionCommand}" InputGestureText="Ctrl+Shift+O" />
-                <MenuItem Header="Configurar local de salvamento das sessões…"
-                          Command="{Binding ConfigureSessionsFolderCommand}"
-                          ToolTip="Escolher a pasta onde os arquivos CSV/Excel e JSON de sessão são criados ao entrar On-line/Off-line" />
-                <MenuItem Header="Abrir pasta de sessões salvas…"
+                <MenuItem Header="{Binding [Menu_ConfigSessionsFolder], Source={x:Static loc:Loc.Instance}}"
+                          Command="{Binding ConfigureSessionsFolderCommand}" />
+                <MenuItem Header="{Binding [Menu_OpenSessionsFolder], Source={x:Static loc:Loc.Instance}}"
                           Command="{Binding OpenSessionsFolderCommand}" />
                 <MenuItem Header="{Binding [Toolbar_Export], Source={x:Static loc:Loc.Instance}}"
                           Command="{Binding ExportSpreadsheetCommand}" InputGestureText="Ctrl+E" />
-                <MenuItem Header="Gerenciador de certificados OPC UA…"
+                <MenuItem Header="{Binding [Menu_CertManager], Source={x:Static loc:Loc.Instance}}"
                           Command="{Binding OpenCertificateManagerCommand}" />
                 <MenuItem Header="{Binding [Toolbar_ExportCert], Source={x:Static loc:Loc.Instance}}"
                           Command="{Binding ExportApplicationCertificateCommand}" />
@@ -82,82 +81,80 @@
                           Command="{Binding ExitCommand}"
                           InputGestureText="Alt+F4" />
             </MenuItem>
-            <MenuItem Header="_Editar">
-                <MenuItem Header="Localizar valor…"
+            <MenuItem Header="{Binding [Menu_Edit], Source={x:Static loc:Loc.Instance}}">
+                <MenuItem Header="{Binding [Menu_FindValue], Source={x:Static loc:Loc.Instance}}"
                           Command="{Binding OpenFindValueDialogCommand}"
-                          InputGestureText="Ctrl+F"
-                          ToolTip="Localizar valor de tag na planilha ou no gráfico (Ctrl+F)" />
-                <MenuItem Header="Localizar marcadores…"
+                          InputGestureText="Ctrl+F" />
+                <MenuItem Header="{Binding [Menu_FindMarkers], Source={x:Static loc:Loc.Instance}}"
                           Command="{Binding OpenFindMarkerDialogCommand}"
-                          InputGestureText="Ctrl+Shift+M"
-                          ToolTip="Buscar e navegar pelos marcadores existentes na sessão (Ctrl+Shift+M)" />
+                          InputGestureText="Ctrl+Shift+M" />
                 <Separator />
-                <MenuItem Header="Inserir marcador"
+                <MenuItem Header="{Binding [Menu_AddMarker], Source={x:Static loc:Loc.Instance}}"
                           Command="{Binding AddMarkerCommand}"
                           InputGestureText="Ctrl+M" />
-                <MenuItem Header="Editar marcador…"
+                <MenuItem Header="{Binding [Menu_EditMarker], Source={x:Static loc:Loc.Instance}}"
                           Click="EditSelectedMarkerMenuItem_Click"
                           IsEnabled="{Binding HasSelectedMarker}" />
-                <MenuItem Header="Excluir marcador"
+                <MenuItem Header="{Binding [Menu_DeleteMarker], Source={x:Static loc:Loc.Instance}}"
                           Click="DeleteSelectedMarkerMenuItem_Click"
                           IsEnabled="{Binding HasSelectedMarker}" />
                 <Separator />
-                <MenuItem Header="Limpar linhas"
+                <MenuItem Header="{Binding [Menu_ClearRows], Source={x:Static loc:Loc.Instance}}"
                           Command="{Binding ClearSpreadsheetRowsCommand}" />
-                <MenuItem Header="Excluir tag selecionada"
+                <MenuItem Header="{Binding [Menu_DeleteSelectedTag], Source={x:Static loc:Loc.Instance}}"
                           Command="{Binding RemoveSelectedTagCommand}"
                           InputGestureText="Delete" />
-                <MenuItem Header="Excluir todas as tags"
+                <MenuItem Header="{Binding [Menu_DeleteAllTags], Source={x:Static loc:Loc.Instance}}"
                           Command="{Binding ClearAllTagsCommand}" />
             </MenuItem>
-            <MenuItem Header="E_xibir">
-                <MenuItem Header="Planilha"
+            <MenuItem Header="{Binding [Menu_View], Source={x:Static loc:Loc.Instance}}">
+                <MenuItem Header="{Binding [Menu_ViewSpreadsheet], Source={x:Static loc:Loc.Instance}}"
                           Click="ShowSpreadsheetTabMenuItem_Click"
                           InputGestureText="Ctrl+1" />
-                <MenuItem Header="Gráfico de Tendências"
+                <MenuItem Header="{Binding [Menu_ViewChart], Source={x:Static loc:Loc.Instance}}"
                           Click="ShowChartTabMenuItem_Click"
                           InputGestureText="Ctrl+2" />
                 <Separator />
-                <MenuItem Header="Marcador"
+                <MenuItem Header="{Binding [Menu_ViewMarkerColumn], Source={x:Static loc:Loc.Instance}}"
                           IsCheckable="True"
                           IsChecked="{Binding ShowMarkerColumn, Mode=TwoWay}" />
                 <Separator />
-                <MenuItem Header="Títulos na vertical"
+                <MenuItem Header="{Binding [Menu_ViewVerticalHeaders], Source={x:Static loc:Loc.Instance}}"
                           IsCheckable="True"
                           IsChecked="{Binding VerticalColumnHeaders, Mode=TwoWay}" />
-                <MenuItem Header="Auto-scroll na planilha"
+                <MenuItem Header="{Binding [Menu_ViewAutoScroll], Source={x:Static loc:Loc.Instance}}"
                           IsCheckable="True"
                           IsChecked="{Binding AutoScrollSpreadsheet, Mode=TwoWay}"
-                          InputGestureText="Espaço" />
+                          InputGestureText="Space" />
                 <Separator />
-                <MenuItem Header="Auto-follow no gráfico"
+                <MenuItem Header="{Binding [Menu_ViewAutoFollow], Source={x:Static loc:Loc.Instance}}"
                           IsCheckable="True"
                           IsChecked="{Binding AutoFollowChart, Mode=TwoWay}"
-                          InputGestureText="Espaço" />
-                <MenuItem Header="Modo Pan no gráfico (arrastar com mouse)"
+                          InputGestureText="Space" />
+                <MenuItem Header="{Binding [Menu_ViewPanMode], Source={x:Static loc:Loc.Instance}}"
                           IsCheckable="True"
                           IsChecked="{Binding IsChartPanMode, Mode=TwoWay}" />
-                <MenuItem Header="Painel de penas no gráfico"
+                <MenuItem Header="{Binding [Menu_ViewPensPanel], Source={x:Static loc:Loc.Instance}}"
                           IsCheckable="True"
                           IsChecked="{Binding ShowChartPensPanel, Mode=TwoWay}" />
-                <MenuItem Header="Cursores A/B no gráfico"
+                <MenuItem Header="{Binding [Menu_ViewCursors], Source={x:Static loc:Loc.Instance}}"
                           IsCheckable="True"
                           IsChecked="{Binding ShowChartCursors, Mode=TwoWay}" />
-                <MenuItem Header="Mira (Crosshair) no gráfico"
+                <MenuItem Header="{Binding [Menu_ViewCrosshair], Source={x:Static loc:Loc.Instance}}"
                           IsCheckable="True"
                           IsChecked="{Binding ShowChartCrosshair, Mode=TwoWay}" />
-                <MenuItem Header="Grade no gráfico"
+                <MenuItem Header="{Binding [Menu_ViewGrid], Source={x:Static loc:Loc.Instance}}"
                           IsCheckable="True"
                           IsChecked="{Binding ShowChartGrid, Mode=TwoWay}" />
                 <Separator />
-                <MenuItem x:Name="TimestampSourceMenu" Header="Fonte do Timestamp" SubmenuOpened="TimestampSourceMenu_SubmenuOpened">
-                    <MenuItem x:Name="TsAutoMenuItem" Header="Automático (Fonte ➔ Servidor ➔ Local)"
+                <MenuItem x:Name="TimestampSourceMenu" Header="{Binding [Menu_ViewTimestampSource], Source={x:Static loc:Loc.Instance}}" SubmenuOpened="TimestampSourceMenu_SubmenuOpened">
+                    <MenuItem x:Name="TsAutoMenuItem" Header="{Binding [TsOption_Auto], Source={x:Static loc:Loc.Instance}}"
                               Click="SetTimestampSourceAuto_Click" />
-                    <MenuItem x:Name="TsSourceMenuItem" Header="Fonte / CLP (SourceTimestamp)"
+                    <MenuItem x:Name="TsSourceMenuItem" Header="{Binding [TsOption_Source], Source={x:Static loc:Loc.Instance}}"
                               Click="SetTimestampSourceSource_Click" />
-                    <MenuItem x:Name="TsServerMenuItem" Header="Servidor OPC UA (ServerTimestamp)"
+                    <MenuItem x:Name="TsServerMenuItem" Header="{Binding [TsOption_Server], Source={x:Static loc:Loc.Instance}}"
                               Click="SetTimestampSourceServer_Click" />
-                    <MenuItem x:Name="TsLocalMenuItem" Header="Sistema Operacional / Local (PC)"
+                    <MenuItem x:Name="TsLocalMenuItem" Header="{Binding [TsOption_Local], Source={x:Static loc:Loc.Instance}}"
                               Click="SetTimestampSourceLocal_Click" />
                 </MenuItem>
             </MenuItem>
@@ -255,7 +252,7 @@
 
                     <Button Command="{Binding OpenCertificateManagerCommand}"
                             Margin="4,0,0,0" Padding="8,5"
-                            ToolTip="Gerenciador de Certificados OPC UA (Cliente e Servidores)">
+                            ToolTip="{Binding [Toolbar_CertManager_Tip], Source={x:Static loc:Loc.Instance}}">
                         <TextBlock Style="{StaticResource Icon}" Text="&#xEB95;" FontSize="15" />
                     </Button>
 
@@ -263,26 +260,25 @@
 
                     <!-- Grupo 3: Parâmetros de Aquisição (FN-01, FN-02) -->
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="Taxa:" Style="{StaticResource SecondaryText}" VerticalAlignment="Center" Margin="0,0,4,0" FontSize="11" />
+                        <TextBlock Text="{Binding [Toolbar_RateLabel], Source={x:Static loc:Loc.Instance}}" Style="{StaticResource SecondaryText}" VerticalAlignment="Center" Margin="0,0,4,0" FontSize="11" />
                         <ComboBox ItemsSource="{Binding SamplingIntervalOptions}" SelectedItem="{Binding SelectedSamplingIntervalMs}"
                                   IsEnabled="{Binding IsSamplingIntervalEnabled}"
-                                  Width="70" VerticalAlignment="Center" ToolTip="Taxa de amostragem periódica (ms) — ativa somente no modo 'Por Taxa de Amostragem (ms)'" />
+                                  Width="70" VerticalAlignment="Center" />
                         <TextBlock Text="ms" Style="{StaticResource SecondaryText}" VerticalAlignment="Center" Margin="3,0,8,0" FontSize="11" />
 
-                        <TextBlock Text="Modo:" Style="{StaticResource SecondaryText}" VerticalAlignment="Center" Margin="0,0,4,0" FontSize="11" />
+                        <TextBlock Text="{Binding [Toolbar_ModeLabel], Source={x:Static loc:Loc.Instance}}" Style="{StaticResource SecondaryText}" VerticalAlignment="Center" Margin="0,0,4,0" FontSize="11" />
                         <ComboBox ItemsSource="{Binding AcquisitionModeOptions}" SelectedIndex="{Binding SelectedAcquisitionModeIndex}"
-                                  Width="195" VerticalAlignment="Center" ToolTip="Modo de aquisição: 'Upon Change (Mudança de valor)' ou 'Por Taxa de Amostragem (ms)'" />
+                                  Width="195" VerticalAlignment="Center" />
 
                         <!-- Indicador de Gatilho de Ciclo Ativo -->
                         <Border Margin="8,0,0,0" Padding="6,2" CornerRadius="3" Background="{StaticResource SurfaceBrush}"
-                                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
-                                ToolTip="Gatilho de ciclo de máquina configurado (clique direito em qualquer tag booleana para alterar)">
+                                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="Ciclo: " Style="{StaticResource SecondaryText}" FontSize="11" />
-                                <TextBlock Text="{Binding CycleTriggerTagAlias, TargetNullValue='(Padrão: Cycle_Active)'}"
+                                <TextBlock Text="{Binding [Toolbar_CycleLabel], Source={x:Static loc:Loc.Instance}}" Style="{StaticResource SecondaryText}" FontSize="11" Margin="0,0,3,0" />
+                                <TextBlock Text="{Binding CycleTriggerTagAlias, TargetNullValue='Cycle_Active'}"
                                            FontWeight="SemiBold" FontSize="11" Foreground="{StaticResource GoodBrush}" />
                                 <Button Command="{Binding ClearCycleTriggerCommand}" Content="×" Margin="5,0,0,0" Padding="4,0"
-                                        FontWeight="Bold" FontSize="10" ToolTip="Desativar gatilho customizado de ciclo" />
+                                        FontWeight="Bold" FontSize="10" />
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -349,12 +345,12 @@
                             </Button>
                             <Button Padding="6,3" Margin="0,0,2,0"
                                     Command="{Binding EditConnectionCommand}"
-                                    ToolTip="Editar conexão selecionada">
+                                    ToolTip="{Binding [Conn_Edit_Tip], Source={x:Static loc:Loc.Instance}}">
                                 <TextBlock Style="{StaticResource Icon}" Text="&#xE70F;" FontSize="12" />
                             </Button>
                             <Button Padding="6,3"
                                     Command="{Binding RemoveConnectionCommand}"
-                                    ToolTip="Excluir conexão selecionada">
+                                    ToolTip="{Binding [Conn_Delete_Tip], Source={x:Static loc:Loc.Instance}}">
                                 <TextBlock Style="{StaticResource Icon}" Text="&#xE74D;" FontSize="12" />
                             </Button>
                         </StackPanel>
@@ -378,10 +374,10 @@
                                         <ContextMenu>
                                             <MenuItem Header="{Binding ConnectActionText}" FontWeight="SemiBold"
                                                       Click="ConnectOrDisconnectMenuItem_Click" />
-                                            <MenuItem Header="Editar conexão..."
+                                            <MenuItem Header="{Binding [Menu_EditConnection], Source={x:Static loc:Loc.Instance}}"
                                                       Click="EditConnectionMenuItem_Click" />
                                             <Separator />
-                                            <MenuItem Header="Excluir conexão"
+                                            <MenuItem Header="{Binding [Conn_Delete_Tip], Source={x:Static loc:Loc.Instance}}"
                                                       Click="RemoveConnectionMenuItem_Click" />
                                         </ContextMenu>
                                     </DockPanel.ContextMenu>
@@ -444,7 +440,7 @@
                     <DockPanel Grid.Row="3">
                         <Button DockPanel.Dock="Right" Margin="0,2,4,0" Padding="6,3"
                                 Command="{Binding ReloadBrowserCommand}"
-                                ToolTip="Recarregar árvore OPC UA">
+                                ToolTip="{Binding [Browser_Reload_Tip], Source={x:Static loc:Loc.Instance}}">
                             <TextBlock Style="{StaticResource Icon}" Text="&#xE72C;" FontSize="12" />
                         </Button>
                         <TextBlock Style="{StaticResource PanelHeaderText}"
@@ -459,14 +455,14 @@
                                        Foreground="{StaticResource TextSecondaryBrush}" />
                             <TextBox Text="{Binding BrowserSearchText, UpdateSourceTrigger=PropertyChanged}"
                                      FontSize="11" Padding="4,2"
-                                     ToolTip="Buscar nós na árvore pelo nome ou NodeId (expande automaticamente correspondências)" />
+                                     ToolTip="{Binding [Browser_Search_Tip], Source={x:Static loc:Loc.Instance}}" />
                         </DockPanel>
 
                         <DockPanel DockPanel.Dock="Bottom" Margin="6,2,6,4"
-                                   ToolTip="Adicionar tag por endereço (ex.: ns=2;s=Canal.Device.Tag ou Canal.Device.DB1.DBD0)">
+                                   ToolTip="{Binding [Browser_ManualTag_Tip], Source={x:Static loc:Loc.Instance}}">
                             <Button DockPanel.Dock="Right" Margin="4,0,0,0" Padding="8,2"
-                                    Command="{Binding AddManualTagCommand}"
-                                    Content="+" FontWeight="Bold" />
+                                     Command="{Binding AddManualTagCommand}"
+                                     Content="+" FontWeight="Bold" />
                             <TextBox Text="{Binding ManualTagAddress, UpdateSourceTrigger=PropertyChanged}"
                                      FontFamily="{StaticResource MonoFont}" FontSize="11"
                                      Padding="4,3" />
@@ -475,8 +471,7 @@
                         <TreeView x:Name="BrowserTreeView"
                                   ItemsSource="{Binding BrowserRoots}" Padding="4"
                                   PreviewMouseLeftButtonDown="BrowserTreeView_PreviewMouseLeftButtonDown"
-                                  MouseDoubleClick="BrowserTreeView_MouseDoubleClick"
-                                  ToolTip="Segure a tecla Ctrl para selecionar múltiplas tags e clique em '+ Planilha' para adicioná-las juntas">
+                                  MouseDoubleClick="BrowserTreeView_MouseDoubleClick">
                             <TreeView.ItemContainerStyle>
                                 <Style TargetType="TreeViewItem">
                                     <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
@@ -498,12 +493,12 @@
                                             Background="Transparent" BorderThickness="1" BorderBrush="Transparent">
                                         <Border.ContextMenu>
                                             <ContextMenu>
-                                                <MenuItem Header="+ Adicionar à Planilha e Gráfico" FontWeight="SemiBold"
+                                                <MenuItem Header="{Binding [Browser_Ctx_AddNode], Source={x:Static loc:Loc.Instance}}" FontWeight="SemiBold"
                                                           Click="AddSelectedNodeAsTagMenuItem_Click" />
-                                                <MenuItem Header="📁 Adicionar todas as variáveis desta pasta"
+                                                <MenuItem Header="{Binding [Browser_Ctx_AddFolder], Source={x:Static loc:Loc.Instance}}"
                                                           Click="AddFolderVariablesAsTagsMenuItem_Click" />
                                                 <Separator />
-                                                <MenuItem Header="📋 Copiar NodeId"
+                                                <MenuItem Header="{Binding [Browser_Ctx_CopyNodeId], Source={x:Static loc:Loc.Instance}}"
                                                           Click="CopyNodeId_Click" />
                                             </ContextMenu>
                                         </Border.ContextMenu>
@@ -528,7 +523,6 @@
                     <DockPanel Grid.Row="6">
                         <Button DockPanel.Dock="Right" Margin="0,2,6,0" Padding="6,2"
                                 Command="{Binding AddSelectedNodeAsTagCommand}"
-                                ToolTip="Adicionar nó(s) selecionado(s) à planilha e ao gráfico"
                                 Content="{Binding AddSelectedBrowserButtonText}" FontSize="11" />
                         <TextBlock Style="{StaticResource PanelHeaderText}"
                                    Text="{Binding [Panel_NodeDetails], Source={x:Static loc:Loc.Instance}}" />
@@ -555,61 +549,51 @@
                 <TabControl x:Name="MainTabControl" Grid.Row="0" SelectedIndex="0">
                     <!-- ===== Aba 0: Planilha (Wide Format RF-GRD-01..10) ===== -->
                     <TabItem Header="{Binding [Tab_Grid], Source={x:Static loc:Loc.Instance}}"
-                             ToolTip="Visualização em Planilha (Ctrl+1)"
                              services:HelpProvider.TopicId="IDH_SPREADSHEET">
                         <DockPanel>
                             <Border DockPanel.Dock="Top" Background="{StaticResource SurfaceAltBrush}"
                                     BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="8,4">
                                 <DockPanel>
                                     <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <CheckBox Content="Auto-scroll" IsChecked="{Binding AutoScrollSpreadsheet}"
-                                                  VerticalAlignment="Center" Margin="0,2,12,2"
-                                                  ToolTip="Rolagem automática para acompanhar as linhas mais recentes da planilha (Espaço)" />
-                                        <CheckBox Content="Agrupar mesmo timestamp (P3)" IsChecked="{Binding GroupSameTimestamp}"
+                                        <CheckBox Content="{Binding [Grid_AutoScroll], Source={x:Static loc:Loc.Instance}}" IsChecked="{Binding AutoScrollSpreadsheet}"
+                                                  VerticalAlignment="Center" Margin="0,2,12,2" />
+                                        <CheckBox Content="{Binding [Grid_GroupSameTimestamp], Source={x:Static loc:Loc.Instance}}" IsChecked="{Binding GroupSameTimestamp}"
                                                   VerticalAlignment="Center" Margin="0,2,12,2" />
                                         <CheckBox Content="{Binding [Grid_VerticalHeaders], Source={x:Static loc:Loc.Instance}}"
                                                   IsChecked="{Binding VerticalColumnHeaders}"
-                                                  VerticalAlignment="Center" Margin="0,2,12,2"
-                                                  ToolTip="Orienta os títulos das colunas na vertical para visualizar mais variáveis simultaneamente" />
+                                                  VerticalAlignment="Center" Margin="0,2,12,2" />
 
                                         <Rectangle Width="1" Height="16" Margin="0,2,10,2" Fill="{StaticResource BorderBrush}" />
 
-                                        <TextBlock Text="Fonte Ts:" Style="{StaticResource SecondaryText}"
+                                        <TextBlock Text="{Binding [Grid_TsSourceLabel], Source={x:Static loc:Loc.Instance}}" Style="{StaticResource SecondaryText}"
                                                    VerticalAlignment="Center" Margin="0,2,4,2" />
                                         <ComboBox ItemsSource="{Binding TimestampSourceOptions}"
                                                   SelectedIndex="{Binding SelectedTimestampSourceIndex}"
-                                                  Width="195" VerticalAlignment="Center" Margin="0,2,10,2"
-                                                  ToolTip="Selecionar a fonte do Timestamp exibido na planilha e no gráfico (Automático, Fonte/CLP, Servidor OPC UA ou Sistema Operacional/PC)" />
+                                                  Width="195" VerticalAlignment="Center" Margin="0,2,10,2" />
 
                                         <Rectangle Width="1" Height="16" Margin="0,2,10,2" Fill="{StaticResource BorderBrush}" />
 
-                                        <TextBlock Text="Altura título:" Style="{StaticResource SecondaryText}"
-                                                   VerticalAlignment="Center" Margin="0,2,4,2"
-                                                   ToolTip="Ajuste a altura da linha de título (ou arraste a borda inferior do cabeçalho com o mouse)" />
+                                        <TextBlock Text="{Binding [Grid_HeaderHeightLabel], Source={x:Static loc:Loc.Instance}}" Style="{StaticResource SecondaryText}"
+                                                   VerticalAlignment="Center" Margin="0,2,4,2" />
                                         <Button Click="DecreaseHeaderHeight_Click" Padding="6,1" Margin="0,2,2,2"
-                                                Content="−" FontWeight="Bold"
-                                                ToolTip="Reduzir altura da linha do título das colunas (-20 px)" />
+                                                Content="−" FontWeight="Bold" />
                                         <TextBlock Text="{Binding SpreadsheetHeaderHeightText}"
                                                    Style="{StaticResource SecondaryText}"
                                                    MinWidth="46" TextAlignment="Center"
-                                                   VerticalAlignment="Center" Margin="2,2,2,2"
-                                                   ToolTip="Altura atual do cabeçalho (arraste a borda inferior do título da coluna para redimensionar livremente)" />
+                                                   VerticalAlignment="Center" Margin="2,2,2,2" />
                                         <Button Click="IncreaseHeaderHeight_Click" Padding="6,1" Margin="0,2,2,2"
-                                                Content="+" FontWeight="Bold"
-                                                ToolTip="Aumentar altura da linha do título das colunas (+20 px)" />
+                                                Content="+" FontWeight="Bold" />
                                         <Button Click="AutoFitHeaderHeight_Click" Padding="6,1" Margin="0,2,10,2"
-                                                Content="↕ Auto"
-                                                ToolTip="Auto-ajustar altura da linha do título para exibir o texto completo na vertical" />
+                                                Content="{Binding [Grid_AutoFitHeader], Source={x:Static loc:Loc.Instance}}" />
 
                                         <Button Click="AutoFitColumnWidths_Click" Padding="8,2" Margin="0,2,10,2"
-                                                Content="↔ Auto-ajustar larguras"
-                                                ToolTip="Ajusta automaticamente a largura de todas as colunas com base no título (vertical ou horizontal) e nas informações contidas em cada coluna" />
+                                                Content="{Binding [Grid_AutoFitColumns], Source={x:Static loc:Loc.Instance}}" />
 
                                         <Button Click="ExportSpreadsheetPng_Click" Padding="7,2" Margin="0,2,12,2"
-                                                Content="📷 PNG"
-                                                ToolTip="Salvar range atual visível da planilha em imagem PNG" />
+                                                Content="{Binding [Grid_SavePng], Source={x:Static loc:Loc.Instance}}"
+                                                ToolTip="{Binding [Grid_SavePng_Tip], Source={x:Static loc:Loc.Instance}}" />
 
-                                        <TextBlock Text="{Binding SpreadsheetRows.Count, StringFormat=Linhas: {0:N0}}"
+                                        <TextBlock Text="{Binding SpreadsheetRows.Count, StringFormat='# {0:N0}'}"
                                                    Style="{StaticResource SecondaryText}" VerticalAlignment="Center" Margin="0,2,6,2" />
                                     </WrapPanel>
                                 </DockPanel>
@@ -652,58 +636,54 @@
 
                     <!-- ===== Aba 1: Gráfico (Trend + Digital Strips + Kit de Ferramentas RF-CHT-01..04) ===== -->
                     <TabItem Header="{Binding [Tab_Chart], Source={x:Static loc:Loc.Instance}}"
-                             ToolTip="Visualização em Gráfico de Tendências (Ctrl+2)"
                              services:HelpProvider.TopicId="IDH_CHART">
                         <DockPanel>
                             <!-- Barra de Ferramentas do Gráfico (Linha 1: Navegação temporal, Zoom X/Y e Exportação) -->
                             <Border DockPanel.Dock="Top" Background="{StaticResource SurfaceAltBrush}"
                                     BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="8,4">
                                 <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <CheckBox Content="Auto-follow (Ao vivo)" IsChecked="{Binding AutoFollowChart}"
-                                              VerticalAlignment="Center" Margin="0,2,10,2"
-                                              ToolTip="Acompanha os dados mais recentes em tempo real no gráfico (Espaço)" />
+                                    <CheckBox Content="{Binding [Chart_AutoFollow], Source={x:Static loc:Loc.Instance}}" IsChecked="{Binding AutoFollowChart}"
+                                              VerticalAlignment="Center" Margin="0,2,10,2" />
 
                                     <Button Command="{Binding ChartJumpToStartCommand}" Padding="6,2" Margin="0,2,2,2"
-                                            Content="|◀" ToolTip="Ir para o início do histórico" />
+                                            Content="|◀" />
                                     <Button Command="{Binding ChartPanLeftCommand}" Padding="6,2" Margin="0,2,2,2"
-                                            Content="◀" ToolTip="Voltar no tempo (25% da janela)" />
+                                            Content="◀" />
                                     <Button Command="{Binding ChartPanRightCommand}" Padding="6,2" Margin="0,2,2,2"
-                                            Content="▶" ToolTip="Avançar no tempo (25% da janela)" />
+                                            Content="▶" />
                                     <Button Command="{Binding ChartJumpToLiveCommand}" Padding="6,2" Margin="0,2,6,2"
-                                            Content="▶|" ToolTip="Voltar para o tempo real (Ao vivo)" />
+                                            Content="▶|" />
 
-                                    <ToggleButton IsChecked="{Binding IsChartPanMode, Mode=TwoWay}" Padding="7,2" Margin="0,2,10,2"
-                                                  ToolTip="Modo Pan (Mão): arraste o gráfico mantendo o botão esquerdo pressionado para navegar no tempo">
+                                    <ToggleButton IsChecked="{Binding IsChartPanMode, Mode=TwoWay}" Padding="7,2" Margin="0,2,10,2">
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                             <TextBlock Text="✋" FontSize="13" Margin="0,0,3,0" VerticalAlignment="Center" />
-                                            <TextBlock Text="Pan" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding [Chart_Pan], Source={x:Static loc:Loc.Instance}}" FontWeight="SemiBold" VerticalAlignment="Center" />
                                         </StackPanel>
                                     </ToggleButton>
 
-                                    <TextBlock Text="Janela (s):" Style="{StaticResource SecondaryText}"
+                                    <TextBlock Text="{Binding [Chart_WindowLabel], Source={x:Static loc:Loc.Instance}}" Style="{StaticResource SecondaryText}"
                                                VerticalAlignment="Center" Margin="0,2,4,2" />
                                     <ComboBox ItemsSource="{Binding ChartWindowOptions}"
                                               SelectedItem="{Binding ChartWindowSeconds}"
-                                              Width="64" VerticalAlignment="Center" Margin="0,2,4,2"
-                                              ToolTip="Duração da janela horizontal em segundos" />
+                                              Width="64" VerticalAlignment="Center" Margin="0,2,4,2" />
                                     <Button Command="{Binding ChartZoomInCommand}" Padding="6,2" Margin="0,2,2,2"
-                                            Content="🔍+" ToolTip="Zoom In horizontal (reduzir janela de tempo / Scroll do mouse)" />
+                                            Content="🔍+" />
                                     <Button Command="{Binding ChartZoomOutCommand}" Padding="6,2" Margin="0,2,2,2"
-                                            Content="🔍-" ToolTip="Zoom Out horizontal (ampliar janela de tempo / Scroll do mouse)" />
+                                            Content="🔍-" />
                                     <Button Command="{Binding ChartFitAllCommand}" Padding="7,2" Margin="0,2,10,2"
-                                            Content="↔ Tudo" ToolTip="Ajustar janela para exibir todo o histórico coletado" />
+                                            Content="{Binding [Chart_FitAll], Source={x:Static loc:Loc.Instance}}" />
 
-                                    <TextBlock Text="Escala Y:" Style="{StaticResource SecondaryText}"
+                                    <TextBlock Text="{Binding [Chart_YScaleLabel], Source={x:Static loc:Loc.Instance}}" Style="{StaticResource SecondaryText}"
                                                VerticalAlignment="Center" Margin="0,2,4,2" />
                                     <Button Click="ChartZoomYIn_Click" Padding="6,2" Margin="0,2,2,2"
-                                            Content="Y+" ToolTip="Ampliar escala vertical (Zoom Y+)" />
+                                            Content="Y+" />
                                     <Button Click="ChartZoomYOut_Click" Padding="6,2" Margin="0,2,2,2"
-                                            Content="Y-" ToolTip="Reduzir escala vertical (Zoom Y-)" />
+                                            Content="Y-" />
                                     <Button Click="ChartResetY_Click" Padding="6,2" Margin="0,2,10,2"
-                                            Content="Auto Y" ToolTip="Restaurar escala Y automática" />
+                                            Content="{Binding [Chart_AutoY], Source={x:Static loc:Loc.Instance}}" />
 
                                     <Button Click="ExportChartPng_Click" Padding="7,2" Margin="0,2,4,2"
-                                            Content="📷 PNG" ToolTip="Salvar imagem atual do gráfico em PNG" />
+                                            Content="{Binding [Chart_SavePng], Source={x:Static loc:Loc.Instance}}" />
                                 </WrapPanel>
                             </Border>
 
@@ -711,28 +691,22 @@
                             <Border DockPanel.Dock="Top" Background="{StaticResource SurfaceBrush}"
                                     BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="8,4">
                                 <DockPanel>
-                                    <CheckBox DockPanel.Dock="Right" Content="Painel de Penas"
+                                    <CheckBox DockPanel.Dock="Right" Content="{Binding [Chart_PensPanel], Source={x:Static loc:Loc.Instance}}"
                                               IsChecked="{Binding ShowChartPensPanel}"
-                                              VerticalAlignment="Center" Margin="8,0,0,0"
-                                              ToolTip="Mostrar/ocultar o painel lateral de seleção de penas e estatísticas" />
+                                              VerticalAlignment="Center" Margin="8,0,0,0" />
                                     <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <CheckBox Content="Degrau (Step)" IsChecked="{Binding ChartStepInterpolation}"
-                                                  VerticalAlignment="Center" Margin="0,0,12,0"
-                                                  ToolTip="Desmarque para interpolação linear entre pontos" />
-                                        <CheckBox Content="Pontos (●)" IsChecked="{Binding ShowChartSamplePoints}"
-                                                  VerticalAlignment="Center" Margin="0,0,12,0"
-                                                  ToolTip="Destaca os pontos individuais de amostragem sobre as curvas" />
-                                        <CheckBox Content="Grade" IsChecked="{Binding ShowChartGrid}"
-                                                  VerticalAlignment="Center" Margin="0,0,12,0"
-                                                  ToolTip="Mostrar/ocultar linhas de grade" />
-                                        <CheckBox Content="Mira (Crosshair)" IsChecked="{Binding ShowChartCrosshair}"
-                                                  VerticalAlignment="Center" Margin="0,0,12,0"
-                                                  ToolTip="Exibe valores exatos de todas as penas ao passar o mouse" />
-                                        <CheckBox Content="Cursores A/B" IsChecked="{Binding ShowChartCursors}"
-                                                  VerticalAlignment="Center" Margin="0,0,6,0"
-                                                  ToolTip="Ativa os cursores verticais de medição A e B (clique ou arraste no gráfico)" />
+                                        <CheckBox Content="{Binding [Chart_Step], Source={x:Static loc:Loc.Instance}}" IsChecked="{Binding ChartStepInterpolation}"
+                                                  VerticalAlignment="Center" Margin="0,0,12,0" />
+                                        <CheckBox Content="{Binding [Chart_SamplePoints], Source={x:Static loc:Loc.Instance}}" IsChecked="{Binding ShowChartSamplePoints}"
+                                                  VerticalAlignment="Center" Margin="0,0,12,0" />
+                                        <CheckBox Content="{Binding [Chart_Grid], Source={x:Static loc:Loc.Instance}}" IsChecked="{Binding ShowChartGrid}"
+                                                  VerticalAlignment="Center" Margin="0,0,12,0" />
+                                        <CheckBox Content="{Binding [Chart_Crosshair], Source={x:Static loc:Loc.Instance}}" IsChecked="{Binding ShowChartCrosshair}"
+                                                  VerticalAlignment="Center" Margin="0,0,12,0" />
+                                        <CheckBox Content="{Binding [Chart_CursorsAB], Source={x:Static loc:Loc.Instance}}" IsChecked="{Binding ShowChartCursors}"
+                                                  VerticalAlignment="Center" Margin="0,0,6,0" />
                                         <Button Click="ChartCenterCursors_Click" Padding="6,1" Margin="0,0,10,0"
-                                                Content="Centralizar A/B" ToolTip="Reposiciona os cursores A e B no centro da janela atual" />
+                                                Content="{Binding [Chart_CenterCursors], Source={x:Static loc:Loc.Instance}}" />
                                         <TextBlock Text="{Binding CursorDeltaText}"
                                                    FontFamily="{StaticResource MonoFont}"
                                                    FontWeight="SemiBold"
@@ -789,8 +763,7 @@
                                               ResizeBehavior="PreviousAndNext"
                                               ResizeDirection="Columns"
                                               Cursor="SizeWE"
-                                              Background="{StaticResource BorderBrush}"
-                                              ToolTip="Arraste com o mouse para ajustar a largura do painel de penas">
+                                              Background="{StaticResource BorderBrush}">
                                     <GridSplitter.Style>
                                         <Style TargetType="GridSplitter">
                                             <Setter Property="Visibility" Value="Visible" />
@@ -820,15 +793,14 @@
                                         <DockPanel DockPanel.Dock="Top" Margin="6,6,6,4">
                                             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                                                 <Button Command="{Binding SelectAllChartPensCommand}" Padding="5,1" Margin="0,0,3,0"
-                                                        Content="Todas" FontSize="11" ToolTip="Exibir todas as penas no gráfico" />
+                                                        Content="{Binding [Chart_PensAll], Source={x:Static loc:Loc.Instance}}" FontSize="11" />
                                                 <Button Command="{Binding ClearAllChartPensCommand}" Padding="5,1"
-                                                        Content="Nenhuma" FontSize="11" ToolTip="Ocultar todas as penas do gráfico" />
+                                                        Content="{Binding [Chart_PensNone], Source={x:Static loc:Loc.Instance}}" FontSize="11" />
                                                 <Button Command="{Binding RemoveTagCommand}" CommandParameter="{Binding SelectedMonitoredTag}"
                                                         Padding="5,1" Margin="3,0,0,0"
-                                                        Content="× Excluir" FontSize="11" FontWeight="SemiBold"
-                                                        ToolTip="Excluir a tag selecionada da planilha e do gráfico" />
+                                                        Content="{Binding [Chart_PensDelete], Source={x:Static loc:Loc.Instance}}" FontSize="11" FontWeight="SemiBold" />
                                             </StackPanel>
-                                            <TextBlock Text="PENAS / SINAIS" FontWeight="SemiBold" FontSize="11"
+                                            <TextBlock Text="{Binding [Chart_PensHeader], Source={x:Static loc:Loc.Instance}}" FontWeight="SemiBold" FontSize="11"
                                                        Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
                                         </DockPanel>
 
@@ -857,16 +829,16 @@
                                                             BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                                                         <Border.ContextMenu>
                                                             <ContextMenu>
-                                                                <MenuItem Header="🗑 Deletar esta tag da planilha e do gráfico"
+                                                                <MenuItem Header="{Binding [Pen_Ctx_Delete], Source={x:Static loc:Loc.Instance}}"
                                                                           InputGestureText="Delete"
                                                                           FontWeight="SemiBold"
                                                                           Click="RemovePenMenuItem_Click" />
                                                                 <Separator />
-                                                                <MenuItem Header="Alternar visibilidade no gráfico (Plot)"
+                                                                <MenuItem Header="{Binding [Pen_Ctx_TogglePlot], Source={x:Static loc:Loc.Instance}}"
                                                                           IsCheckable="True" IsChecked="{Binding IsPlotted}" IsEnabled="{Binding CanPlotOnChart}" />
-                                                                <MenuItem Header="🏷 Definir como Gatilho de Ciclo"
+                                                                <MenuItem Header="{Binding [Pen_Ctx_SetCycle], Source={x:Static loc:Loc.Instance}}"
                                                                           Click="SetPenAsCycleTriggerMenuItem_Click" />
-                                                                <MenuItem Header="📋 Copiar Endereço / NodeId"
+                                                                <MenuItem Header="{Binding [Pen_Ctx_CopyAddress], Source={x:Static loc:Loc.Instance}}"
                                                                           Click="CopyPenAddress_Click" />
                                                             </ContextMenu>
                                                         </Border.ContextMenu>
@@ -880,7 +852,6 @@
                                                                            Fill="{Binding PenBrush}" VerticalAlignment="Center" Margin="0,0,6,0" />
                                                                 <Button DockPanel.Dock="Right" Content="×" FontWeight="Bold" FontSize="10"
                                                                         Padding="4,0" Margin="4,0,0,0" VerticalAlignment="Center"
-                                                                        ToolTip="Excluir esta tag da planilha e do gráfico (Delete)"
                                                                         Command="{Binding DataContext.RemoveTagCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                                         CommandParameter="{Binding}" />
                                                                 <TextBlock Text="{Binding ValueText}" DockPanel.Dock="Right"
@@ -897,7 +868,7 @@
                                                                     <TextBlock Text="{Binding MinValueText, StringFormat=Min:{0}}" FontSize="10"
                                                                                FontFamily="{StaticResource MonoFont}"
                                                                                Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,6,0" />
-                                                                    <TextBlock Text="{Binding MaxValueText, StringFormat=Máx:{0}}" FontSize="10"
+                                                                    <TextBlock Text="{Binding MaxValueText, StringFormat=Max:{0}}" FontSize="10"
                                                                                FontFamily="{StaticResource MonoFont}"
                                                                                Foreground="{StaticResource TextSecondaryBrush}" />
                                                                 </StackPanel>
@@ -928,7 +899,7 @@
                                   IsReadOnly="False">
                             <DataGrid.Columns>
                                 <DataGridCheckBoxColumn Width="60" Binding="{Binding IsPlotted, UpdateSourceTrigger=PropertyChanged}"
-                                                        Header="Plot" />
+                                                        Header="{Binding [Col_Plot], Source={x:Static loc:Loc.Instance}}" />
                                 <DataGridTextColumn Width="1.4*" Binding="{Binding Alias}"
                                                     Header="{Binding [Col_Tag], Source={x:Static loc:Loc.Instance}}" />
                                 <DataGridTextColumn Width="1.6*" Binding="{Binding Address}" IsReadOnly="True"
@@ -940,14 +911,13 @@
                                 <DataGridTextColumn Width="0.8*" Binding="{Binding Quality}" IsReadOnly="True"
                                                     Header="{Binding [Col_Quality], Source={x:Static loc:Loc.Instance}}" />
                                 <DataGridTextColumn Width="0.9*" Binding="{Binding OriginText}" IsReadOnly="True"
-                                                    Header="Fonte Ts" />
+                                                    Header="{Binding [Col_TsOrigin], Source={x:Static loc:Loc.Instance}}" />
                                 <DataGridTextColumn Width="1.4*" Binding="{Binding TimestampUtc, StringFormat=yyyy-MM-dd HH:mm:ss.fff}" IsReadOnly="True"
                                                     Header="{Binding [Col_Timestamp], Source={x:Static loc:Loc.Instance}}" />
-                                <DataGridTemplateColumn Width="50" Header="Ação">
+                                <DataGridTemplateColumn Width="50" Header="{Binding [Col_Action], Source={x:Static loc:Loc.Instance}}">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Button Content="×" FontWeight="Bold" Padding="6,0"
-                                                    ToolTip="Excluir esta tag"
                                                     Command="{Binding DataContext.RemoveTagCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                     CommandParameter="{Binding}" />
                                         </DataTemplate>
@@ -966,14 +936,14 @@
                     <DockPanel>
                         <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4">
                             <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
-                                <Button Command="{Binding ClearLogsCommand}" Content="Limpar" Margin="0,0,4,0" Padding="6,1" FontSize="11" ToolTip="Limpar logs exibidos na tela" />
-                                <Button Command="{Binding OpenLogsFolderCommand}" Content="Pasta de Logs…" Margin="0,0,10,0" Padding="6,1" FontSize="11" ToolTip="Abrir a pasta que contém os arquivos de log gravados em disco" />
+                                <Button Command="{Binding ClearLogsCommand}" Content="{Binding [Log_Clear], Source={x:Static loc:Loc.Instance}}" Margin="0,0,4,0" Padding="6,1" FontSize="11" />
+                                <Button Command="{Binding OpenLogsFolderCommand}" Content="{Binding [Log_OpenFolder], Source={x:Static loc:Loc.Instance}}" Margin="0,0,10,0" Padding="6,1" FontSize="11" />
 
-                                <TextBlock Text="Filtros:" Margin="0,0,8,0" VerticalAlignment="Center" Style="{StaticResource SecondaryText}" FontSize="11" />
-                                <CheckBox Content="Informação" IsChecked="{Binding LogShowInformation}" Margin="0,0,10,0" VerticalAlignment="Center" FontSize="11" />
-                                <CheckBox Content="Avisos" IsChecked="{Binding LogShowWarning}" Margin="0,0,10,0" VerticalAlignment="Center" FontSize="11" />
-                                <CheckBox Content="Erros" IsChecked="{Binding LogShowError}" Margin="0,0,10,0" VerticalAlignment="Center" FontSize="11" />
-                                <CheckBox Content="Debug" IsChecked="{Binding LogShowDebug}" Margin="0,0,4,0" VerticalAlignment="Center" FontSize="11" />
+                                <TextBlock Text="{Binding [Log_FiltersLabel], Source={x:Static loc:Loc.Instance}}" Margin="0,0,8,0" VerticalAlignment="Center" Style="{StaticResource SecondaryText}" FontSize="11" />
+                                <CheckBox Content="{Binding [Log_FilterInfo], Source={x:Static loc:Loc.Instance}}" IsChecked="{Binding LogShowInformation}" Margin="0,0,10,0" VerticalAlignment="Center" FontSize="11" />
+                                <CheckBox Content="{Binding [Log_FilterWarn], Source={x:Static loc:Loc.Instance}}" IsChecked="{Binding LogShowWarning}" Margin="0,0,10,0" VerticalAlignment="Center" FontSize="11" />
+                                <CheckBox Content="{Binding [Log_FilterError], Source={x:Static loc:Loc.Instance}}" IsChecked="{Binding LogShowError}" Margin="0,0,10,0" VerticalAlignment="Center" FontSize="11" />
+                                <CheckBox Content="{Binding [Log_FilterDebug], Source={x:Static loc:Loc.Instance}}" IsChecked="{Binding LogShowDebug}" Margin="0,0,4,0" VerticalAlignment="Center" FontSize="11" />
                             </StackPanel>
                             <TextBlock Style="{StaticResource PanelHeaderText}"
                                        Text="{Binding [Panel_Log], Source={x:Static loc:Loc.Instance}}" />
@@ -982,11 +952,11 @@
                                   AlternatingRowBackground="{StaticResource SurfaceBrush}">
                             <DataGrid.ContextMenu>
                                 <ContextMenu>
-                                    <MenuItem Header="📋 Copiar Mensagem de Log" Click="CopySelectedLog_Click" />
-                                    <MenuItem Header="📋 Copiar Todos os Logs Exibidos" Click="CopyAllLogs_Click" />
+                                    <MenuItem Header="{Binding [Log_Ctx_CopySelected], Source={x:Static loc:Loc.Instance}}" Click="CopySelectedLog_Click" />
+                                    <MenuItem Header="{Binding [Log_Ctx_CopyAll], Source={x:Static loc:Loc.Instance}}" Click="CopyAllLogs_Click" />
                                     <Separator />
-                                    <MenuItem Header="Limpar logs da tela" Command="{Binding ClearLogsCommand}" />
-                                    <MenuItem Header="Abrir pasta de logs…" Command="{Binding OpenLogsFolderCommand}" />
+                                    <MenuItem Header="{Binding [Log_Ctx_Clear], Source={x:Static loc:Loc.Instance}}" Command="{Binding ClearLogsCommand}" />
+                                    <MenuItem Header="{Binding [Log_Ctx_OpenFolder], Source={x:Static loc:Loc.Instance}}" Command="{Binding OpenLogsFolderCommand}" />
                                 </ContextMenu>
                             </DataGrid.ContextMenu>
                             <DataGrid.Columns>

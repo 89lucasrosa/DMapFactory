@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using DMapFactory.Core.Models;
+using DMapFactory.Localization;
 
 namespace DMapFactory.App.Controls;
 
@@ -506,7 +507,7 @@ public sealed class TrendChartControl : FrameworkElement
     {
         if (!_showCursors)
         {
-            CursorDeltaChanged?.Invoke("Cursores ocultos");
+            CursorDeltaChanged?.Invoke(Loc.Instance["Chart_CursorsHidden"]);
             return;
         }
 
@@ -640,8 +641,8 @@ public sealed class TrendChartControl : FrameworkElement
         if (_series.Count == 0 || (analogSeries.Count == 0 && digitalSeries.Count == 0))
         {
             string msg = _series.Count == 0
-                ? "Marque as penas à direita e inicie a sessão On-line (F5) para visualizar o gráfico."
-                : "Aguardando amostras das penas selecionadas...";
+                ? Loc.Instance["Chart_EmptyNoPens"]
+                : Loc.Instance["Chart_EmptyWaiting"];
             var emptyText = CreateText(msg, 13, SecondaryTextBrush, dpi);
             dc.DrawText(emptyText, new Point(
                 plotRect.Left + Math.Max(10, (plotRect.Width - emptyText.Width) / 2),

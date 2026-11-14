@@ -3,6 +3,7 @@ using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using DMapFactory.Core.Models;
 using DMapFactory.Drivers.OpcUa;
+using DMapFactory.Localization;
 
 namespace DMapFactory.App.ViewModels;
 
@@ -29,14 +30,20 @@ public sealed partial class ConnectionItemViewModel : ObservableObject
     [ObservableProperty] private string? _statusMessage;
 
     public bool IsConnected => Driver.State == ConnectionState.Connected || State == ConnectionState.Connected;
-    public string ConnectActionText => IsConnected ? "Desconectar" : "Conectar";
+    public string ConnectActionText => IsConnected ? Loc.Instance["Toolbar_Disconnect"] : Loc.Instance["Toolbar_Connect"];
     public string ConnectActionToolTip => IsConnected
-        ? "Desconectar deste servidor OPC UA"
-        : "Conectar a este servidor OPC UA";
+        ? Loc.Instance["Toolbar_Disconnect_Tip"]
+        : Loc.Instance["Toolbar_Connect_Tip"];
 
     partial void OnStateChanged(ConnectionState value)
     {
         OnPropertyChanged(nameof(IsConnected));
+        OnPropertyChanged(nameof(ConnectActionText));
+        OnPropertyChanged(nameof(ConnectActionToolTip));
+    }
+
+    public void RefreshLocalization()
+    {
         OnPropertyChanged(nameof(ConnectActionText));
         OnPropertyChanged(nameof(ConnectActionToolTip));
     }
@@ -85,7 +92,7 @@ public sealed partial class BrowseNodeViewModel : ObservableObject
 
     private BrowseNodeViewModel(OpcUaDriver driver, Action<BrowseNodeViewModel> onSelected)
     {
-        Node = new BrowseNode("__dummy__", "Carregando…", false, false);
+        Node = new BrowseNode("__dummy__", Loc.Instance["Browser_Loading"], false, false);
         _driver = driver;
         _onSelected = onSelected;
         _loaded = true;
@@ -99,7 +106,7 @@ public sealed partial class BrowseNodeViewModel : ObservableObject
         get
         {
             if (Node.Id == "__dummy__")
-                return Node.DisplayName;
+                return Loc.Instance["Browser_Loading"];
 
             string prefix = Node.IsVariable ? "🏷 " : "📁 ";
             return string.IsNullOrEmpty(Node.DataType)
@@ -192,6 +199,7 @@ public sealed partial class MonitoredTagViewModel : ObservableObject
     public TagConfig Config { get; }
     public string ConnectionName { get; }
     public string Address => Config.Address;
+    public Action<string, string>? AliasRenamedCallback { get; set; }
 
     [ObservableProperty] private string _alias;
     [ObservableProperty]
@@ -214,9 +222,9 @@ public sealed partial class MonitoredTagViewModel : ObservableObject
 
     public string OriginText => Origin switch
     {
-        TimestampOrigin.Source => "Fonte / CLP",
-        TimestampOrigin.Server => "Servidor OPC",
-        _ => "Sistema / PC"
+        TimestampOrigin.Source => Loc.Instance["Origin_Source"],
+        TimestampOrigin.Server => Loc.Instance["Origin_Server"],
+        _ => Loc.Instance["Origin_Local"]
     };
 
     public bool IsBoolean =>
@@ -235,8 +243,14 @@ public sealed partial class MonitoredTagViewModel : ObservableObject
     public bool CanPlotOnChart => !IsString;
 
     public string PlotToolTip => CanPlotOnChart
-        ? "Exibir ou ocultar esta pena no gráfico de tendências"
-        : "Variáveis do tipo texto (String) não podem ser plotadas no gráfico de tendências";
+        ? Loc.Instance["Chart_PenPlot_Tip_Allowed"]
+        : Loc.Instance["Chart_PenPlot_Tip_String"];
+
+    public void RefreshLocalization()
+    {
+        OnPropertyChanged(nameof(OriginText));
+        OnPropertyChanged(nameof(PlotToolTip));
+    }
 
     partial void OnDataTypeChanged(string value)
     {
@@ -255,7 +269,15 @@ public sealed partial class MonitoredTagViewModel : ObservableObject
         }
     }
 
-    partial void OnAliasChanged(string value) => Config.Alias = value;
+    partial void OnAliasChanged(string? oldValue, string newValue)
+    {
+        string prev = oldValue ?? Config.Alias;
+        Config.Alias = newValue;
+        if (!string.Equals(prev, newValue, StringComparison.Ordinal) && !string.IsNullOrWhiteSpace(newValue))
+        {
+            AliasRenamedCallback?.Invoke(prev, newValue);
+        }
+    }
 
     public void UpdateFromSample(in Sample sample)
     {
@@ -291,16 +313,19 @@ public sealed partial class MonitoredTagViewModel : ObservableObject
 public sealed partial class ChartInspectorRowViewModel : ObservableObject
 {
     private readonly Dictionary<int, string> _valuesByTagId = [];
+    private readonly string _labelResourceKey;
 
-    public ChartInspectorRowViewModel(string cursorLabel, Brush accentBrush)
+    public ChartInspectorRowViewModel(string labelResourceKey, Brush accentBrush)
     {
-        CursorLabel = cursorLabel;
+        _labelResourceKey = labelResourceKey;
         AccentBrush = accentBrush;
     }
 
-    public string CursorLabel { get; }
+    public string CursorLabel => Loc.Instance[_labelResourceKey];
     public Brush AccentBrush { get; }
     public string TimestampText { get; private set; } = "—";
+
+    public void RefreshLocalization() => OnPropertyChanged(nameof(CursorLabel));
 
     public string GetTagValueText(int tagId) =>
         _valuesByTagId.TryGetValue(tagId, out var val) ? val : "—";

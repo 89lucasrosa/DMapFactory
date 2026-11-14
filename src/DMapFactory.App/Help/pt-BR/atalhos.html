@@ -280,6 +280,350 @@
           <li><strong>Tempo de Sessão</strong>: contabilização contínua do tempo transcorrido no ensaio.</li>
           <li><strong>Painel de Logs Operacionais</strong>: registra mensagens classificadas por nível (<em>Information</em>, <em>Warning</em>, <em>Error</em>, <em>Debug</em>) com botões para <strong>Limpar</strong> e <strong>Pasta de Logs…</strong>.</li>
         </ul>
+
+        <h2>Níveis de Severidade dos Logs</h2>
+        <table class="help-table">
+          <thead>
+            <tr>
+              <th style="width: 140px;">Nível</th>
+              <th style="width: 240px;">Significado</th>
+              <th>Quando Verificar / Ação Geral</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge-success">Information</span></td>
+              <td>Eventos operacionais normais e auditoria de ações do usuário.</td>
+              <td>Nenhuma ação corretiva necessária. Confirma que conexões, coletas On-line/Off-line, marcadores, certificados e exportações foram executados com sucesso.</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-warn">Warning</span></td>
+              <td>Alertas operacionais, reconexões automáticas ou condições parciais.</td>
+              <td>Verifique a estabilidade da rede, se há conexões/tags cadastradas antes de iniciar o On-line ou se certificados foram revogados/auto-aceitos.</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-danger">Error</span></td>
+              <td>Falhas críticas de conectividade, segurança PKI ou acesso a disco.</td>
+              <td>Exige intervenção imediata: valide o Endpoint OPC UA, credenciais, validade/confiança do certificado X.509 ou permissões de gravação na pasta destino.</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-info">Debug</span></td>
+              <td>Rastreamento interno detalhado (leitura de atributos, ciclos de pilha).</td>
+              <td>Utilizado para diagnóstico avançado de engenharia. Mantenha oculto em operação normal e habilite o filtro <em>Debug</em> ao investigar comportamentos específicos de nós OPC UA.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2>Catálogo Completo de Mensagens de Log e Ações Recomendadas</h2>
+        <p>Abaixo estão listados todos os textos de log gerados pelo DMapFactory, agrupados por subsistema, com sua explicação técnica, o que verificar e qual ação tomar:</p>
+
+        <h3>1. Inicialização, Projeto e Sessões</h3>
+        <table class="help-table">
+          <thead>
+            <tr>
+              <th style="width: 110px;">Nível</th>
+              <th style="width: 310px;">Texto / Padrão da Mensagem de Log</th>
+              <th>Explicação, O Que Verificar e Ação Recomendada</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>DMapFactory iniciado. Pronto para configurar conexões OPC UA.</code></td>
+              <td><strong>Explicação:</strong> Aplicação inicializada com sucesso e motor de aquisição pronto.<br><strong>Ação:</strong> Adicione uma conexão OPC UA ou abra um projeto existente (<code>Ctrl+O</code>).</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>Novo projeto iniciado.</code></td>
+              <td><strong>Explicação:</strong> O estado atual foi limpo para iniciar uma nova configuração.<br><strong>Ação:</strong> Configure conexões e variáveis e salve com <code>Ctrl+S</code>.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>Projeto carregado: '{caminho}' ({N} conexões, {M} tags).</code></td>
+              <td><strong>Explicação:</strong> Arquivo <code>.dmproj</code> lido com sucesso.<br><strong>Ação:</strong> Clique no botão de conectar ou pressione <code>F5</code> para iniciar a coleta On-line.</td>
+            </tr>
+            <tr>
+              <td><strong>Error</strong></td>
+              <td><code>Falha ao abrir projeto '{caminho}'.</code></td>
+              <td><strong>Explicação:</strong> O arquivo <code>.dmproj</code> está corrompido, inacessível ou em formato JSON inválido.<br><strong>Verificar / Ação:</strong> Verifique se o arquivo existe, se você possui permissão de leitura e se o JSON não foi editado manualmente com erro de sintaxe.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>Projeto salvo em '{caminho}'.</code></td>
+              <td><strong>Explicação:</strong> Todas as conexões, tags e parâmetros de amostragem foram gravados em disco.<br><strong>Ação:</strong> Nenhuma ação necessária.</td>
+            </tr>
+            <tr>
+              <td><strong>Error</strong></td>
+              <td><code>Falha ao salvar projeto em '{caminho}'.</code></td>
+              <td><strong>Explicação:</strong> Erro de E/S ao gravar o arquivo de projeto.<br><strong>Verificar / Ação:</strong> Verifique espaço em disco, permissões da pasta destino ou se o arquivo está bloqueado como somente leitura.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>Sessão carregada: '{nome}' ({linhas} linhas, {tags} tags, {marcadores} marcadores).</code></td>
+              <td><strong>Explicação:</strong> Sessão histórica (<code>.csv</code> ou <code>.session.json</code>) reidratada na planilha e no gráfico.<br><strong>Ação:</strong> Utilize o gráfico, cursores A/B e busca de valores/marcadores para análise pós-operação.</td>
+            </tr>
+            <tr>
+              <td><strong>Error</strong></td>
+              <td><code>Falha ao abrir sessão '{caminho}'.</code></td>
+              <td><strong>Explicação:</strong> O arquivo de sessão não pôde ser interpretado.<br><strong>Verificar / Ação:</strong> Verifique se o arquivo CSV/JSON não está aberto com bloqueio exclusivo no Excel ou corrompido.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>Local de salvamento das sessões alterado para: '{pasta}'.</code></td>
+              <td><strong>Explicação:</strong> O diretório onde os arquivos automáticos de sessão On-line são gravados foi atualizado.<br><strong>Ação:</strong> As próximas gravações On-line serão salvas neste novo diretório.</td>
+            </tr>
+            <tr>
+              <td><strong>Error</strong></td>
+              <td><code>Falha ao configurar/abrir a pasta de sessões '{pasta}': {erro}</code></td>
+              <td><strong>Explicação:</strong> O diretório configurado para sessões não pôde ser criado ou acessado pelo Windows.<br><strong>Verificar / Ação:</strong> Acesse <em>Arquivo &gt; Configurar local de salvamento das sessões…</em> e selecione uma pasta local válida com permissão de escrita.</td>
+            </tr>
+            <tr>
+              <td><strong>Error</strong></td>
+              <td><code>Falha ao abrir a pasta de logs '{pasta}': {erro}</code></td>
+              <td><strong>Explicação:</strong> Não foi possível abrir o diretório de logs no Windows Explorer.<br><strong>Verificar / Ação:</strong> Verifique permissões em <code>%LOCALAPPDATA%\DMapFactory\logs</code>.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>Idioma da interface alterado para '{idioma} ({cultura})'.</code></td>
+              <td><strong>Explicação:</strong> O idioma da aplicação e dos logs operacionais foi alterado em tempo real.<br><strong>Ação:</strong> Nenhuma ação necessária.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>2. Conectividade OPC UA</h3>
+        <table class="help-table">
+          <thead>
+            <tr>
+              <th style="width: 110px;">Nível</th>
+              <th style="width: 310px;">Texto / Padrão da Mensagem de Log</th>
+              <th>Explicação, O Que Verificar e Ação Recomendada</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>Conexão '{nome}' ({endpoint}) adicionada.</code><br><code>Conexão '{nome}' ({endpoint}) atualizada.</code><br><code>Conexão '{nome}' ({endpoint}) removida.</code></td>
+              <td><strong>Explicação:</strong> Auditoria de cadastro, edição ou exclusão de uma conexão OPC UA.<br><strong>Ação:</strong> Salve o projeto (<code>Ctrl+S</code>) caso deseje persistir a alteração.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>[Conexão] '{nome}' ({endpoint}) CONECTADA com sucesso.</code></td>
+              <td><strong>Explicação:</strong> Sessão OPC UA estabelecida e canal seguro ativo.<br><strong>Ação:</strong> Navegue pelos nós na árvore OPC UA à esquerda ou inicie o modo On-line (<code>F5</code>).</td>
+            </tr>
+            <tr>
+              <td><strong>Error</strong></td>
+              <td><code>[Conexão] Falha ao conectar em '{nome}' ({endpoint}). Motivo: {erro}</code></td>
+              <td><strong>Explicação:</strong> Não foi possível estabelecer sessão com o servidor OPC UA.<br><strong>Verificar / Ação:</strong> 1) Confirme se o IP/porta estão acessíveis na rede; 2) Verifique se a política de segurança e usuário/senha estão corretos; 3) Caso o motivo indique <code>BadCertificateUntrusted</code>, abra o <strong>Gerenciador de Certificados</strong> e confie no certificado do servidor (e autorize o certificado cliente no CLP/servidor).</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>[Conexão] '{nome}' ({endpoint}) desconectada pelo usuário.</code></td>
+              <td><strong>Explicação:</strong> O operador clicou intencionalmente no botão Desconectar.<br><strong>Ação:</strong> Nenhuma ação necessária.</td>
+            </tr>
+            <tr>
+              <td><strong>Warning</strong></td>
+              <td><code>[Conexão] '{nome}' ({endpoint}) desconectada (encerrada pelo servidor ou sessão finalizada).</code></td>
+              <td><strong>Explicação:</strong> A sessão foi fechada sem solicitação direta do operador.<br><strong>Verificar / Ação:</strong> Verifique se o servidor OPC UA/CLP foi reiniciado ou se o tempo limite de sessão expirou.</td>
+            </tr>
+            <tr>
+              <td><strong>Warning</strong></td>
+              <td><code>[Conexão] '{nome}' ({endpoint}) perdeu comunicação. Tentando reconexão automática...</code><br><code>KeepAlive falhou em {nome}: {status}. Iniciando reconexão...</code></td>
+              <td><strong>Explicação:</strong> O pacote de <em>Keep-Alive</em> não obteve resposta do servidor. O driver iniciou a rotina automática de reconexão.<br><strong>Verificar / Ação:</strong> Verifique cabos de rede, switch industrial e carga de CPU do CLP. O DMapFactory reconectará sozinho assim que o servidor responder.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>Reconectado com sucesso a {nome}.</code></td>
+              <td><strong>Explicação:</strong> A sessão OPC UA e as subscrições foram restabelecidas automaticamente.<br><strong>Ação:</strong> Nenhuma ação necessária; a coleta de dados foi retomada.</td>
+            </tr>
+            <tr>
+              <td><strong>Error</strong></td>
+              <td><code>[Conexão] '{nome}' ({endpoint}) em estado de FALHA (erro de conectividade com o servidor OPC UA).</code></td>
+              <td><strong>Explicação:</strong> A conexão entrou em estado de falha crítica após perda de comunicação.<br><strong>Verificar / Ação:</strong> Verifique se o servidor OPC UA está ativo na rede e clique no botão Conectar para restabelecer a sessão.</td>
+            </tr>
+            <tr>
+              <td><strong>Warning</strong></td>
+              <td><code>[Conectividade] {N} tag(s) da conexão '{nome}' assumiram status Bad devido à perda de conexão ({estado}).</code></td>
+              <td><strong>Explicação:</strong> Como a conexão caiu durante a coleta On-line, todas as tags associadas foram marcadas como <code>Bad</code> e deixaram de plotar valores obsoletos no gráfico.<br><strong>Verificar / Ação:</strong> Restabeleça a conexão com o servidor OPC UA para que as tags voltem ao status <code>Good</code>.</td>
+            </tr>
+            <tr>
+              <td><strong>Information / Error</strong></td>
+              <td><code>[Descoberta OPC UA] {N} endpoint(s) encontrado(s) em '{url}'.</code><br><code>[Descoberta OPC UA] Falha ao buscar endpoints em '{url}': {erro}</code><br><code>[Teste de Conexão] Teste bem-sucedido para '{nome}' ({url}).</code><br><code>[Teste de Conexão] Falha ao testar conexão '{nome}' ({url}): {erro}</code></td>
+              <td><strong>Explicação:</strong> Resultados de descoberta de endpoints e teste de conexão na janela <em>Nova/Editar Conexão</em>.<br><strong>Verificar / Ação:</strong> Em caso de falha, confira a sintaxe <code>opc.tcp://host:porta</code> e se o firewall permite tráfego na porta TCP do servidor.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>3. Aquisição On-line / Off-line e Navegação de Tags</h3>
+        <table class="help-table">
+          <thead>
+            <tr>
+              <th style="width: 110px;">Nível</th>
+              <th style="width: 310px;">Texto / Padrão da Mensagem de Log</th>
+              <th>Explicação, O Que Verificar e Ação Recomendada</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Warning</strong></td>
+              <td><code>[On-line] Nenhuma conexão OPC UA cadastrada. Adicione uma conexão antes de iniciar a coleta On-line.</code><br><code>[On-line] Nenhuma tag configurada para monitoramento. Adicione tags à planilha antes de entrar On-line.</code></td>
+              <td><strong>Explicação:</strong> O modo On-line foi acionado sem conexões ou sem tags na lista de monitoramento.<br><strong>Ação:</strong> Adicione ao menos uma conexão e inclua variáveis na planilha antes de pressionar <code>F5</code>.</td>
+            </tr>
+            <tr>
+              <td><strong>Warning</strong></td>
+              <td><code>[On-line] Falha ao conectar automaticamente '{nome}' durante ativação do modo On-line: {erro}</code></td>
+              <td><strong>Explicação:</strong> Ao entrar On-line, o DMapFactory tentou conectar automaticamente uma conexão desconectada, mas houve erro.<br><strong>Verificar / Ação:</strong> Verifique a conectividade do servidor indicado ou desative conexões fora de uso no projeto.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>[On-line] Aquisição ON-LINE iniciada ({N} tags, modo={modo}, taxa={ms} ms). Gravando sessão em '{arquivo}'.</code></td>
+              <td><strong>Explicação:</strong> Subscrições OPC UA criadas e gravação contínua em disco iniciada.<br><strong>Ação:</strong> Acompanhe os dados na Planilha ou no Gráfico de Tendências.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>[Off-line] Aquisição OFF-LINE finalizada ({linhas} linhas coletadas, {marcadores} marcadores).</code></td>
+              <td><strong>Explicação:</strong> Coleta em tempo real encerrada e arquivos de sessão (<code>.csv</code> e <code>.session.json</code>) finalizados.<br><strong>Ação:</strong> Você pode exportar a planilha (<code>Ctrl+E</code>) ou inspecionar o histórico.</td>
+            </tr>
+            <tr>
+              <td><strong>Error</strong></td>
+              <td><code>[On-line/Off-line] Erro durante transição de estado de aquisição: {erro}</code></td>
+              <td><strong>Explicação:</strong> Ocorreu uma exceção inesperada ao iniciar ou parar o motor de aquisição.<br><strong>Verificar / Ação:</strong> Verifique permissões da pasta de sessões e o estado dos servidores OPC UA conectados.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>Modo de aquisição alterado para '{modo}' (taxa={ms} ms).</code><br><code>Fonte do Timestamp alterada para '{fonte}'.</code></td>
+              <td><strong>Explicação:</strong> O operador alterou o modo de aquisição (<em>Upon Change</em> vs <em>Taxa Fixa</em>) ou a origem do horário (<em>Auto</em>, <em>Source/CLP</em>, <em>Server</em> ou <em>Local/PC</em>).<br><strong>Ação:</strong> Nenhuma ação necessária; se estiver On-line, a alteração é aplicada imediatamente.</td>
+            </tr>
+            <tr>
+              <td><strong>Error / Debug</strong></td>
+              <td><code>Falha ao navegar raiz OPC UA: {erro}</code><br><code>Falha ao expandir nó {id}: {erro}</code><br><code>Não foi possível ler atributos de {id}: {erro}</code></td>
+              <td><strong>Explicação:</strong> O servidor OPC UA recusou a navegação ou leitura de atributos de um nó específico.<br><strong>Verificar / Ação:</strong> Verifique permissões do usuário OPC UA no servidor ou se a sessão ainda está conectada.</td>
+            </tr>
+            <tr>
+              <td><strong>Information / Warning</strong></td>
+              <td><code>Tag adicionada: {alias} ({nodeId}) [{tipo}]</code><br><code>{N} tags adicionadas em lote à planilha e ao gráfico.</code><br><code>Tag manual adicionada: {alias} ({nodeId}) [{tipo}]</code><br><code>Nenhuma variável encontrada nos itens selecionados para adicionar.</code></td>
+              <td><strong>Explicação:</strong> Registro de inclusão de tags na coleta ou aviso quando uma pasta selecionada não contém variáveis.<br><strong>Ação:</strong> Se nenhuma variável foi encontrada, expanda a pasta na árvore para localizar os nós do tipo <em>Variable</em>.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>[Tag] Tag renomeada de '{antigo}' para '{novo}' ({endereco}).</code><br><code>Tag removida da coleta: '{alias}' ({endereco}).</code><br><code>Todas as {N} tags foram removidas da coleta.</code><br><code>Histórico da planilha limpo ({N} linhas e {M} marcadores removidos da visualização).</code></td>
+              <td><strong>Explicação:</strong> Auditoria de renomeação de alias, remoção de tags ou limpeza das linhas da planilha.<br><strong>Ação:</strong> Nenhuma ação necessária.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>Gatilho de ciclo definido para a tag '{alias}' (ID={id}).</code><br><code>Gatilho de ciclo customizado removido (usando detecção automática 'Cycle_Active').</code></td>
+              <td><strong>Explicação:</strong> Define qual variável booleana marca o início de um novo ciclo de máquina na coluna <em>Cycle</em>.<br><strong>Ação:</strong> Nenhuma ação necessária.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>4. Marcadores de Evento</h3>
+        <table class="help-table">
+          <thead>
+            <tr>
+              <th style="width: 110px;">Nível</th>
+              <th style="width: 310px;">Texto / Padrão da Mensagem de Log</th>
+              <th>Explicação, O Que Verificar e Ação Recomendada</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>[Marcador] Modo de inserção de marcador ativado. Clique em uma linha da planilha ou em um ponto do gráfico.</code><br><code>[Marcador] Modo de inserção de marcador desativado.</code></td>
+              <td><strong>Explicação:</strong> Indica que o cursor de inserção de marcador (<code>Ctrl+M</code>) foi ativado ou cancelado (<code>Esc</code>).<br><strong>Ação:</strong> Quando ativo, clique na linha desejada da planilha ou sobre a curva no gráfico para inserir a anotação.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>[Marcador] Marcador adicionado na linha #{linha} ({horario}): '{texto}'</code><br><code>[Marcador] Marcador adicionado no gráfico em {horario}: '{texto}'</code></td>
+              <td><strong>Explicação:</strong> Um novo marcador de evento foi registrado na sessão e persistido no arquivo <code>.session.json</code>.<br><strong>Ação:</strong> Use <code>Ctrl+Shift+M</code> para localizar e navegar entre os marcadores.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>[Marcador] Marcador editado na linha #{linha} ({horario}): '{antigo}' -> '{novo}'</code><br><code>[Marcador] Marcador editado em {horario}: '{antigo}' -> '{novo}'</code></td>
+              <td><strong>Explicação:</strong> O texto descritivo de um marcador existente foi renomeado/alterado.<br><strong>Ação:</strong> Nenhuma ação necessária.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>[Marcador] Marcador removido da linha #{linha} ({horario}): '{texto}'</code><br><code>[Marcador] Marcador removido em {horario}: '{texto}'</code></td>
+              <td><strong>Explicação:</strong> O marcador selecionado foi excluído da planilha e do gráfico.<br><strong>Ação:</strong> Nenhuma ação necessária.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>5. Certificados de Segurança PKI (OPC UA X.509)</h3>
+        <table class="help-table">
+          <thead>
+            <tr>
+              <th style="width: 110px;">Nível</th>
+              <th style="width: 310px;">Texto / Padrão da Mensagem de Log</th>
+              <th>Explicação, O Que Verificar e Ação Recomendada</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Warning / Information</strong></td>
+              <td><code>[Certificados] Aceitação automática de certificados não confiáveis ATIVADA pelo usuário.</code><br><code>[Certificados] Aceitação automática de certificados não confiáveis DESATIVADA pelo usuário.</code></td>
+              <td><strong>Explicação:</strong> Alteração da política global de validação de certificados de servidores.<br><strong>Verificar / Ação:</strong> Em ambientes de produção, mantenha a aceitação automática <strong>desativada</strong> e aprove manualmente apenas os certificados legítimos dos CLPs.</td>
+            </tr>
+            <tr>
+              <td><strong>Warning / Information</strong></td>
+              <td><code>[Certificados] Certificado não confiável aceito automaticamente (AutoAccept): Assunto='{subject}', Thumbprint={thumb}</code><br><code>[Certificados] Certificado aceito pelo usuário e movido para Trusted: Assunto='{subject}', Thumbprint={thumb}</code></td>
+              <td><strong>Explicação:</strong> Um certificado de servidor desconhecido foi aceito durante a conexão.<br><strong>Ação:</strong> Nenhuma ação necessária.</td>
+            </tr>
+            <tr>
+              <td><strong>Error</strong></td>
+              <td><code>[Certificados] Certificado rejeitado pelo usuário (armazenado em Rejected): Assunto='{subject}', Thumbprint={thumb}, Motivo={status}</code></td>
+              <td><strong>Explicação:</strong> O certificado apresentado pelo servidor não era confiável e foi recusado. A conexão foi bloqueada.<br><strong>Verificar / Ação:</strong> Caso tenha recusado por engano, abra o <strong>Gerenciador de Certificados</strong>, selecione o certificado com status <em>Rejeitado</em> e clique em <strong>Confiar (Trust)</strong>.</td>
+            </tr>
+            <tr>
+              <td><strong>Information / Warning</strong></td>
+              <td><code>[Certificados] Certificado de servidor marcado como CONFIÁVEL (Trust): Assunto='{subject}', Thumbprint={thumb}</code><br><code>[Certificados] Certificado de servidor marcado como REJEITADO (Reject): Assunto='{subject}', Thumbprint={thumb}</code><br><code>[Certificados] Certificado de servidor importado como confiável: ...</code><br><code>[Certificados] Certificado de servidor exportado: ...</code><br><code>[Certificados] Certificado de servidor removido da store: ...</code></td>
+              <td><strong>Explicação:</strong> Auditoria de todas as ações de gerenciamento sobre certificados de servidores no store PKI.<br><strong>Ação:</strong> Nenhuma ação necessária.</td>
+            </tr>
+            <tr>
+              <td><strong>Warning / Error</strong></td>
+              <td><code>[Certificados] Conexão ativa '{nome}' desconectada automaticamente pois o certificado do servidor ({thumb}) foi rejeitado/revogado.</code><br><code>[Certificados] Conexão '{nome}' desconectada/bloqueada automaticamente: o certificado do servidor '{subject}' ({thumb}) está VENCIDO (expirado em {data}).</code></td>
+              <td><strong>Explicação:</strong> Por segurança, o DMapFactory encerra imediatamente qualquer sessão ativa cujo certificado seja revogado pelo usuário ou esteja com data de validade expirada.<br><strong>Verificar / Ação:</strong> Se o certificado expirou, renove o certificado X.509 no servidor OPC UA / CLP e confie no novo certificado no Gerenciador de Certificados.</td>
+            </tr>
+            <tr>
+              <td><strong>Information / Warning / Error</strong></td>
+              <td><code>[Certificados] {N} certificado(s) de servidor obtido(s) de '{url}' e salvo(s) na store.</code><br><code>[Certificados] Nenhum certificado de servidor retornado pelo endpoint '{url}'.</code><br><code>[Certificados] Falha ao buscar certificado do servidor '{url}': {erro}</code></td>
+              <td><strong>Explicação:</strong> Resultado da busca de certificados via <em>Find Servers / GetEndpoints</em>.<br><strong>Verificar / Ação:</strong> Se nenhum certificado for retornado, verifique se o servidor possui políticas de segurança com criptografia habilitadas (Basic256Sha256).</td>
+            </tr>
+            <tr>
+              <td><strong>Information / Error</strong></td>
+              <td><code>[Certificados] Novo certificado de cliente (Application Instance) gerado: Assunto='{subject}', Thumbprint={thumb}</code><br><code>[Certificados] Certificado público do cliente exportado (.der) para '{caminho}'.</code><br><code>[Certificados] Certificado do cliente com chave privada exportado (.pfx) para '{caminho}'.</code><br><code>[Certificados] Certificado do cliente importado de '{caminho}': ...</code><br><code>[Certificados] Falha na operação de certificado ({op}): {erro}</code></td>
+              <td><strong>Explicação:</strong> Auditoria do ciclo de vida do certificado de aplicação cliente.<br><strong>Verificar / Ação:</strong> Sempre que gerar ou importar um novo certificado cliente, exporte a chave pública (<code>.der</code>) e adicione-a na lista de <em>Trusted Clients</em> do servidor OPC UA / CLP.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>6. Exportação de Planilha e Imagens PNG</h3>
+        <table class="help-table">
+          <thead>
+            <tr>
+              <th style="width: 110px;">Nível</th>
+              <th style="width: 310px;">Texto / Padrão da Mensagem de Log</th>
+              <th>Explicação, O Que Verificar e Ação Recomendada</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Warning</strong></td>
+              <td><code>[Exportação] Não há linhas na planilha para exportar.</code></td>
+              <td><strong>Explicação:</strong> O comando de exportação (<code>Ctrl+E</code>) foi acionado com a planilha vazia.<br><strong>Ação:</strong> Realize uma coleta On-line ou abra uma sessão gravada antes de exportar.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>Planilha exportada para '{caminho}' ({N} linhas).</code><br><code>[Exportação] Imagem PNG da planilha salva em '{caminho}' ({L}x{A} px).</code><br><code>[Exportação] Imagem PNG do gráfico salva em '{caminho}' ({L}x{A} px).</code></td>
+              <td><strong>Explicação:</strong> O arquivo Excel/CSV/TSV ou a captura visual PNG foi gravado com sucesso.<br><strong>Ação:</strong> Nenhuma ação necessária.</td>
+            </tr>
+            <tr>
+              <td><strong>Error</strong></td>
+              <td><code>Falha ao exportar planilha para '{caminho}'.</code><br><code>[Exportação] Falha ao salvar imagem PNG da planilha em '{caminho}': {erro}</code><br><code>[Exportação] Falha ao salvar imagem PNG do gráfico em '{caminho}': {erro}</code></td>
+              <td><strong>Explicação:</strong> Falha de gravação ao exportar dados ou imagem.<br><strong>Verificar / Ação:</strong> Verifique se o arquivo de destino já está aberto no Excel/visualizador de imagens ou se a pasta exige privilégios de administrador.</td>
+            </tr>
+          </tbody>
+        </table>
       </section>
 
       <footer class="topic-footer">

@@ -3,8 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:loc="clr-namespace:DMapFactory.Localization;assembly=DMapFactory.Localization"
         mc:Ignorable="d"
-        Title="Localizar Marcadores"
+        Title="{Binding [FindMarker_Title], Source={x:Static loc:Loc.Instance}}"
         Width="680" Height="480" MinWidth="520" MinHeight="350"
         WindowStartupLocation="CenterOwner"
         Background="{StaticResource BackgroundBrush}"
@@ -25,9 +26,9 @@
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
             <TextBlock Text="🚩" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center" />
             <StackPanel VerticalAlignment="Center">
-                <TextBlock Text="Localizar Marcadores da Sessão" FontWeight="SemiBold" FontSize="15" />
+                <TextBlock Text="{Binding [FindMarker_Header], Source={x:Static loc:Loc.Instance}}" FontWeight="SemiBold" FontSize="15" />
                 <TextBlock Style="{StaticResource SecondaryText}" FontSize="11"
-                           Text="Pesquise, filtre e navegue instantaneamente pelos marcadores de tempo inseridos na sessão." />
+                           Text="{Binding [FindMarker_Subheader], Source={x:Static loc:Loc.Instance}}" />
             </StackPanel>
         </StackPanel>
 
@@ -39,10 +40,10 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Filtrar marcador:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0" />
+                <TextBlock Grid.Column="0" Text="{Binding [FindMarker_FilterLabel], Source={x:Static loc:Loc.Instance}}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0" />
                 <TextBox Grid.Column="1" x:Name="SearchTextBox" Padding="6,3" VerticalAlignment="Center"
                          TextChanged="SearchTextBox_TextChanged" />
-                <Button Grid.Column="2" Content="Limpar" Margin="6,0,0,0" Padding="8,2" Click="ClearSearchButton_Click" />
+                <Button Grid.Column="2" Content="{Binding [FindMarker_BtnClear], Source={x:Static loc:Loc.Instance}}" Margin="6,0,0,0" Padding="8,2" Click="ClearSearchButton_Click" />
             </Grid>
         </Border>
 
@@ -67,8 +68,8 @@
                       MouseDoubleClick="MarkersGrid_MouseDoubleClick">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="#" Width="55" Binding="{Binding RowDisplay}" />
-                    <DataGridTextColumn Header="Timestamp (UTC)" Width="180" Binding="{Binding TimestampDisplay}" />
-                    <DataGridTextColumn Header="Marcador / Comentário" Width="*" Binding="{Binding Text}" />
+                    <DataGridTextColumn x:Name="ColTimestamp" Header="Timestamp (UTC)" Width="180" Binding="{Binding TimestampDisplay}" />
+                    <DataGridTextColumn x:Name="ColComment" Header="Marcador / Comentário" Width="*" Binding="{Binding Text}" />
                 </DataGrid.Columns>
             </DataGrid>
         </Border>
@@ -79,18 +80,18 @@
         <!-- Botões de Ação -->
         <DockPanel Grid.Row="4" LastChildFill="False">
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                <Button x:Name="FocusChartButton" Content="📈 Centralizar no Gráfico (Cursor A)" Padding="10,4" Margin="0,0,6,0"
+                <Button x:Name="FocusChartButton" Content="{Binding [FindMarker_BtnFocusChart], Source={x:Static loc:Loc.Instance}}" Padding="10,4" Margin="0,0,6,0"
                         Click="FocusChartButton_Click" IsEnabled="False" />
-                <Button x:Name="LocateSpreadsheetButton" Content="📋 Localizar na Planilha" Padding="10,4" Margin="0,0,6,0"
+                <Button x:Name="LocateSpreadsheetButton" Content="{Binding [FindMarker_BtnLocateGrid], Source={x:Static loc:Loc.Instance}}" Padding="10,4" Margin="0,0,6,0"
                         Click="LocateSpreadsheetButton_Click" IsEnabled="False" />
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                <Button x:Name="EditMarkerButton" Content="✏️ Editar…" Padding="10,4" Margin="0,0,6,0"
+                <Button x:Name="EditMarkerButton" Content="{Binding [FindMarker_BtnEdit], Source={x:Static loc:Loc.Instance}}" Padding="10,4" Margin="0,0,6,0"
                         Click="EditMarkerButton_Click" IsEnabled="False" />
-                <Button x:Name="DeleteMarkerButton" Content="🗑️ Excluir" Padding="10,4" Margin="0,0,10,0"
+                <Button x:Name="DeleteMarkerButton" Content="{Binding [FindMarker_BtnDelete], Source={x:Static loc:Loc.Instance}}" Padding="10,4" Margin="0,0,10,0"
                         Click="DeleteMarkerButton_Click" IsEnabled="False" />
-                <Button Content="Fechar" IsCancel="True" Padding="14,4" Click="CloseButton_Click" />
+                <Button Content="{Binding [FindMarker_BtnClose], Source={x:Static loc:Loc.Instance}}" IsCancel="True" Padding="14,4" Click="CloseButton_Click" />
             </StackPanel>
         </DockPanel>
     </Grid>

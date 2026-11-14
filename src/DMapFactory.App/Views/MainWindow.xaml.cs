@@ -13,6 +13,7 @@ using DMapFactory.App.Controls;
 using DMapFactory.App.Services;
 using DMapFactory.App.ViewModels;
 using DMapFactory.Core.Models;
+using DMapFactory.Localization;
 using Microsoft.Win32;
 
 namespace DMapFactory.App.Views;
@@ -24,9 +25,9 @@ public partial class MainWindow : Window
     private readonly List<TextBlock> _verticalHeaderTextBlocks = [];
     private readonly IReadOnlyList<ChartInspectorRowViewModel> _chartInspectorRows =
     [
-        new ChartInspectorRowViewModel("Cursor A", CreateFrozenBrush("#2B6CB0")),
-        new ChartInspectorRowViewModel("Cursor B", CreateFrozenBrush("#C53030")),
-        new ChartInspectorRowViewModel("Mira", CreateFrozenBrush("#68707A"))
+        new ChartInspectorRowViewModel("Chart_Inspector_CursorA", CreateFrozenBrush("#2B6CB0")),
+        new ChartInspectorRowViewModel("Chart_Inspector_CursorB", CreateFrozenBrush("#C53030")),
+        new ChartInspectorRowViewModel("Chart_Inspector_Crosshair", CreateFrozenBrush("#68707A"))
     ];
     private long _lastRenderedRowNumber = -1;
     private int _lastRenderedRowCount = -1;
@@ -216,6 +217,15 @@ public partial class MainWindow : Window
             }
         };
 
+        Loc.Instance.PropertyChanged += (_, _) =>
+        {
+            foreach (var row in _chartInspectorRows)
+                row.RefreshLocalization();
+            RebuildSpreadsheetColumns();
+            RebuildChartInspectorColumns();
+            TrendPlot.InvalidateVisual();
+        };
+
         _uiRefreshTimer = new DispatcherTimer(
             TimeSpan.FromMilliseconds(250),
             DispatcherPriority.Render,
@@ -332,9 +342,9 @@ public partial class MainWindow : Window
 
         var sfd = new SaveFileDialog
         {
-            Title = "Salvar Imagem do Gráfico (PNG)",
-            FileName = $"Grafico_DMapFactory_{DateTime.Now:yyyyMMdd_HHmmss}.png",
-            Filter = "Imagem PNG (*.png)|*.png"
+            Title = Loc.Instance["Chart_SavePng"],
+            FileName = $"Chart_DMapFactory_{DateTime.Now:yyyyMMdd_HHmmss}.png",
+            Filter = "PNG (*.png)|*.png"
         };
 
         if (sfd.ShowDialog() != true)
@@ -350,10 +360,12 @@ public partial class MainWindow : Window
 
             using var fs = File.Create(sfd.FileName);
             encoder.Save(fs);
+            _vm.LogChartPngSaved(sfd.FileName, width, height);
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Não foi possível salvar a imagem PNG:\n{ex.Message}", "DMapFactory", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _vm.LogChartPngError(sfd.FileName, ex);
+            MessageBox.Show(ex.Message, "DMapFactory", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
@@ -652,8 +664,8 @@ public partial class MainWindow : Window
 
         double dpi = VisualTreeHelper.GetDpi(this).PixelsPerDip;
         var headerFont = (FontFamily)TryFindResource("UiFont") ?? SystemFonts.MessageFontFamily;
-        double maxTextWidth = MeasureTextWidth("Marcador", headerFont, 13, FontWeights.SemiBold, dpi);
-        double cycleW = MeasureTextWidth("Cycle", headerFont, 13, FontWeights.SemiBold, dpi);
+        double maxTextWidth = MeasureTextWidth(Loc.Instance["Grid_Col_Marker"], headerFont, 13, FontWeights.SemiBold, dpi);
+        double cycleW = MeasureTextWidth(Loc.Instance["Grid_Col_Cycle"], headerFont, 13, FontWeights.SemiBold, dpi);
         if (cycleW > maxTextWidth) maxTextWidth = cycleW;
 
         foreach (var tag in _vm.MonitoredTags)
@@ -720,7 +732,7 @@ public partial class MainWindow : Window
 
         SpreadsheetGrid.Columns.Add(new DataGridTextColumn
         {
-            Header = CreateFixedHeader("Cycle", rotateVertical: isVertical, columnIndex: 2),
+            Header = CreateFixedHeader(Loc.Instance["Grid_Col_Cycle"], rotateVertical: isVertical, columnIndex: 2),
             Width = new DataGridLength(CalculateColumnAutoWidth(2)),
             MinWidth = 38,
             Binding = new Binding(nameof(WideSpreadsheetRow.CycleDisplay))
@@ -728,7 +740,7 @@ public partial class MainWindow : Window
 
         SpreadsheetGrid.Columns.Add(new DataGridTextColumn
         {
-            Header = CreateFixedHeader("Marcador", rotateVertical: isVertical, columnIndex: 3),
+            Header = CreateFixedHeader(Loc.Instance["Grid_Col_Marker"], rotateVertical: isVertical, columnIndex: 3),
             Width = new DataGridLength(CalculateColumnAutoWidth(3)),
             MinWidth = 42,
             Visibility = _vm.ShowMarkerColumn ? Visibility.Visible : Visibility.Collapsed,
@@ -1656,7 +1668,7 @@ public partial class MainWindow : Window
 
         ChartInspectorGrid.Columns.Add(new DataGridTextColumn
         {
-            Header = "Cursor / Mira",
+            Header = Loc.Instance["Chart_Inspector_CursorCol"],
             Width = 105,
             Binding = new Binding(nameof(ChartInspectorRowViewModel.CursorLabel)),
             CellStyle = cursorHeaderStyle
@@ -1664,7 +1676,7 @@ public partial class MainWindow : Window
 
         ChartInspectorGrid.Columns.Add(new DataGridTextColumn
         {
-            Header = "Timestamp (UTC)",
+            Header = Loc.Instance["Col_Timestamp"],
             Width = 175,
             Binding = new Binding(nameof(ChartInspectorRowViewModel.TimestampText))
         });
@@ -2427,9 +2439,9 @@ public partial class MainWindow : Window
 
         var sfd = new SaveFileDialog
         {
-            Title = "Salvar Imagem da Planilha (PNG)",
-            FileName = $"Planilha_DMapFactory_{DateTime.Now:yyyyMMdd_HHmmss}.png",
-            Filter = "Imagem PNG (*.png)|*.png"
+            Title = Loc.Instance["Grid_SavePng"],
+            FileName = $"Spreadsheet_DMapFactory_{DateTime.Now:yyyyMMdd_HHmmss}.png",
+            Filter = "PNG (*.png)|*.png"
         };
 
         if (sfd.ShowDialog() != true)
@@ -2445,10 +2457,12 @@ public partial class MainWindow : Window
 
             using var fs = File.Create(sfd.FileName);
             encoder.Save(fs);
+            _vm.LogSpreadsheetPngSaved(sfd.FileName, width, height);
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Não foi possível salvar a imagem da planilha:\n{ex.Message}", "DMapFactory", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _vm.LogSpreadsheetPngError(sfd.FileName, ex);
+            MessageBox.Show(ex.Message, "DMapFactory", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 

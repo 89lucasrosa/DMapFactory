@@ -1,78 +1,472 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
-  <resheader name="version"><value>2.0</value></resheader>
-  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <!-- Idioma neutro: Português (Brasil) -->
-  <data name="App_Title" xml:space="preserve"><value>DMapFactory — Diagnóstico e Histórico OPC UA</value></data>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- Título e Menus Principais -->
+  <data name="App_Title" xml:space="preserve"><value>DMapFactory — Diagnóstico e Mapeamento Industrial</value></data>
   <data name="Menu_File" xml:space="preserve"><value>_Arquivo</value></data>
-  <data name="Menu_NewProject" xml:space="preserve"><value>Novo projeto</value></data>
-  <data name="Menu_OpenProject" xml:space="preserve"><value>Abrir projeto…</value></data>
-  <data name="Menu_SaveProject" xml:space="preserve"><value>Salvar projeto</value></data>
-  <data name="Menu_OpenSession" xml:space="preserve"><value>Abrir sessão gravada…</value></data>
-  <data name="Menu_Exit" xml:space="preserve"><value>Sair</value></data>
-  <data name="Menu_View" xml:space="preserve"><value>_Exibir</value></data>
-  <data name="Menu_Language" xml:space="preserve"><value>Idioma</value></data>
-  <data name="Menu_Help" xml:space="preserve"><value>Aj_uda</value></data>
-  <data name="Menu_HelpTopics" xml:space="preserve"><value>Manual de Ajuda (F1)</value></data>
-  <data name="Menu_About" xml:space="preserve"><value>Sobre</value></data>
-  <data name="Toolbar_GoOnline" xml:space="preserve"><value>Ficar on-line</value></data>
-  <data name="Toolbar_GoOffline" xml:space="preserve"><value>Ficar off-line</value></data>
-  <data name="Toolbar_Marker" xml:space="preserve"><value>Marcador</value></data>
-  <data name="Toolbar_Export" xml:space="preserve"><value>Exportar</value></data>
-  <data name="Toolbar_AddConnection" xml:space="preserve"><value>Nova conexão</value></data>
-  <data name="Toolbar_EditConnection" xml:space="preserve"><value>Editar conexão</value></data>
+  <data name="Menu_NewProject" xml:space="preserve"><value>_Novo projeto</value></data>
+  <data name="Menu_OpenProject" xml:space="preserve"><value>_Abrir projeto…</value></data>
+  <data name="Menu_SaveProject" xml:space="preserve"><value>_Salvar projeto</value></data>
+  <data name="Menu_SaveProjectAs" xml:space="preserve"><value>Salvar projeto _como…</value></data>
+  <data name="Menu_EditConnection" xml:space="preserve"><value>Editar conexão selecionada…</value></data>
+  <data name="Menu_RemoveConnection" xml:space="preserve"><value>Excluir conexão selecionada</value></data>
+  <data name="Menu_OpenSession" xml:space="preserve"><value>Abrir _sessão gravada…</value></data>
+  <data name="Menu_ConfigureSessionsFolder" xml:space="preserve"><value>Configurar local de salvamento das sessões…</value></data>
+  <data name="Menu_ConfigureSessionsFolder_Tip" xml:space="preserve"><value>Escolher a pasta onde os arquivos CSV/Excel e JSON de sessão são criados ao entrar On-line/Off-line</value></data>
+  <data name="Menu_OpenSessionsFolder" xml:space="preserve"><value>Abrir pasta de sessões salvas…</value></data>
+  <data name="Menu_CertManager" xml:space="preserve"><value>Gerenciador de certificados OPC UA…</value></data>
+  <data name="Menu_Exit" xml:space="preserve"><value>Sai_r</value></data>
+
+  <data name="Menu_Edit" xml:space="preserve"><value>_Editar</value></data>
+  <data name="Menu_FindValue" xml:space="preserve"><value>Localizar valor…</value></data>
+  <data name="Menu_FindValue_Tip" xml:space="preserve"><value>Localizar valor de tag na planilha ou no gráfico (Ctrl+F)</value></data>
+  <data name="Menu_FindMarkers" xml:space="preserve"><value>Localizar marcadores…</value></data>
+  <data name="Menu_FindMarkers_Tip" xml:space="preserve"><value>Buscar e navegar pelos marcadores existentes na sessão (Ctrl+Shift+M)</value></data>
+  <data name="Menu_InsertMarker" xml:space="preserve"><value>Inserir marcador</value></data>
+  <data name="Menu_EditMarker" xml:space="preserve"><value>Editar marcador…</value></data>
+  <data name="Menu_DeleteMarker" xml:space="preserve"><value>Excluir marcador</value></data>
+  <data name="Menu_ClearRows" xml:space="preserve"><value>Limpar linhas</value></data>
+  <data name="Menu_RemoveSelectedTag" xml:space="preserve"><value>Excluir tag selecionada</value></data>
+  <data name="Menu_ClearAllTags" xml:space="preserve"><value>Excluir todas as tags</value></data>
+
+  <data name="Menu_View" xml:space="preserve"><value>E_xibir</value></data>
+  <data name="Menu_ViewSpreadsheet" xml:space="preserve"><value>Planilha</value></data>
+  <data name="Menu_ViewChart" xml:space="preserve"><value>Gráfico de Tendências</value></data>
+  <data name="Menu_ViewMarkerColumn" xml:space="preserve"><value>Marcador</value></data>
+  <data name="Menu_ViewVerticalHeaders" xml:space="preserve"><value>Títulos na vertical</value></data>
+  <data name="Menu_ViewAutoScroll" xml:space="preserve"><value>Auto-scroll na planilha</value></data>
+  <data name="Menu_ViewAutoFollow" xml:space="preserve"><value>Auto-follow no gráfico</value></data>
+  <data name="Menu_ViewPanMode" xml:space="preserve"><value>Modo Pan no gráfico (arrastar com mouse)</value></data>
+  <data name="Menu_ViewPensPanel" xml:space="preserve"><value>Painel de penas no gráfico</value></data>
+  <data name="Menu_ViewCursors" xml:space="preserve"><value>Cursores A/B no gráfico</value></data>
+  <data name="Menu_ViewCrosshair" xml:space="preserve"><value>Mira (Crosshair) no gráfico</value></data>
+  <data name="Menu_ViewGrid" xml:space="preserve"><value>Grade no gráfico</value></data>
+  <data name="Menu_ViewTimestampSource" xml:space="preserve"><value>Fonte do Timestamp</value></data>
+  <data name="Menu_TsAuto" xml:space="preserve"><value>Automático (Fonte ➔ Servidor ➔ Local)</value></data>
+  <data name="Menu_TsSource" xml:space="preserve"><value>Fonte / CLP (SourceTimestamp)</value></data>
+  <data name="Menu_TsServer" xml:space="preserve"><value>Servidor OPC UA (ServerTimestamp)</value></data>
+  <data name="Menu_TsLocal" xml:space="preserve"><value>Sistema Operacional / Local (PC)</value></data>
+  <data name="Key_Space" xml:space="preserve"><value>Espaço</value></data>
+
+  <data name="Menu_Language" xml:space="preserve"><value>_Idioma</value></data>
+  <data name="Menu_Help" xml:space="preserve"><value>A_juda</value></data>
+  <data name="Menu_HelpTopics" xml:space="preserve"><value>_Tópicos de ajuda</value></data>
+  <data name="Menu_About" xml:space="preserve"><value>_Sobre o DMapFactory</value></data>
+
+  <!-- Barra de Ferramentas Principal -->
+  <data name="Toolbar_NewConnection" xml:space="preserve"><value>Nova conexão</value></data>
+  <data name="Toolbar_AddConnection" xml:space="preserve"><value>+ Conexão OPC UA</value></data>
   <data name="Toolbar_Connect" xml:space="preserve"><value>Conectar</value></data>
+  <data name="Toolbar_Connect_Tip" xml:space="preserve"><value>Conectar à conexão selecionada</value></data>
   <data name="Toolbar_Disconnect" xml:space="preserve"><value>Desconectar</value></data>
-  <data name="Toolbar_AddSelectedTag" xml:space="preserve"><value>Monitorar nó selecionado</value></data>
-  <data name="Toolbar_AddFolderTags" xml:space="preserve"><value>Monitorar todas as variáveis da pasta</value></data>
-  <data name="Toolbar_RemoveTag" xml:space="preserve"><value>Remover tag</value></data>
-  <data name="Toolbar_ExportCert" xml:space="preserve"><value>Exportar certificado (.der)</value></data>
+  <data name="Toolbar_Disconnect_Tip" xml:space="preserve"><value>Desconectar a conexão selecionada</value></data>
+  <data name="Toolbar_GoOnline" xml:space="preserve"><value>▶ On-line</value></data>
+  <data name="Toolbar_GoOnline_Tip" xml:space="preserve"><value>Iniciar aquisição em tempo real (F5)</value></data>
+  <data name="Toolbar_GoOffline" xml:space="preserve"><value>■ Off-line</value></data>
+  <data name="Toolbar_GoOffline_Tip" xml:space="preserve"><value>Parar aquisição em tempo real (F5)</value></data>
+  <data name="Toolbar_AddMarker" xml:space="preserve"><value>Marcador</value></data>
+  <data name="Toolbar_MarkerActive_Tip" xml:space="preserve"><value>Modo Marcador ATIVO: clique em uma linha da planilha ou em um ponto do gráfico para inserir o marcador (Esc ou Ctrl+M para cancelar)</value></data>
+  <data name="Toolbar_MarkerIdle_Tip" xml:space="preserve"><value>Ativar cursor de marcador: clique em uma linha da planilha ou em um ponto do gráfico para inserir uma etiqueta (Ctrl+M)</value></data>
+  <data name="Toolbar_Export" xml:space="preserve"><value>Exportar planilha…</value></data>
+  <data name="Toolbar_ExportCert" xml:space="preserve"><value>Exportar certificado OPC UA…</value></data>
+  <data name="Toolbar_CertManager_Tip" xml:space="preserve"><value>Gerenciador de Certificados OPC UA (Cliente e Servidores)</value></data>
+  <data name="Toolbar_RateLabel" xml:space="preserve"><value>Taxa:</value></data>
+  <data name="Toolbar_Rate_Tip" xml:space="preserve"><value>Taxa de amostragem periódica (ms) — ativa somente no modo 'Por Taxa de Amostragem (ms)'</value></data>
+  <data name="Toolbar_ModeLabel" xml:space="preserve"><value>Modo:</value></data>
+  <data name="Toolbar_Mode_Tip" xml:space="preserve"><value>Modo de aquisição: 'Upon Change (Mudança de valor)' ou 'Por Taxa de Amostragem (ms)'</value></data>
+  <data name="Toolbar_CycleLabel" xml:space="preserve"><value>Ciclo: </value></data>
+  <data name="Toolbar_CycleDefault" xml:space="preserve"><value>(Padrão: Cycle_Active)</value></data>
+  <data name="Toolbar_Cycle_Tip" xml:space="preserve"><value>Gatilho de ciclo de máquina configurado (clique direito em qualquer tag booleana para alterar)</value></data>
+  <data name="Toolbar_ClearCycle_Tip" xml:space="preserve"><value>Desativar gatilho customizado de ciclo</value></data>
+
+  <!-- Opções de Modo de Aquisição e Fonte de Timestamp -->
+  <data name="AcqMode_UponChange" xml:space="preserve"><value>Upon Change (Mudança de valor)</value></data>
+  <data name="AcqMode_SamplingRate" xml:space="preserve"><value>Por Taxa de Amostragem (ms)</value></data>
+  <data name="TsOption_Auto" xml:space="preserve"><value>Automático (Fonte ➔ Servidor ➔ Local)</value></data>
+  <data name="TsOption_Source" xml:space="preserve"><value>Fonte / CLP (Source)</value></data>
+  <data name="TsOption_Server" xml:space="preserve"><value>Servidor OPC UA (Server)</value></data>
+  <data name="TsOption_Local" xml:space="preserve"><value>Sistema Operacional (Local)</value></data>
+  <data name="Origin_Source" xml:space="preserve"><value>Fonte / CLP</value></data>
+  <data name="Origin_Server" xml:space="preserve"><value>Servidor OPC</value></data>
+  <data name="Origin_Local" xml:space="preserve"><value>Sistema / PC</value></data>
+
+  <!-- Painéis Laterais (Conexões e Navegador OPC UA) -->
   <data name="Panel_Connections" xml:space="preserve"><value>Conexões</value></data>
-  <data name="Panel_Browser" xml:space="preserve"><value>Navegador OPC UA</value></data>
+  <data name="Panel_Browser" xml:space="preserve"><value>Navegador de Tags</value></data>
   <data name="Panel_NodeDetails" xml:space="preserve"><value>Atributos do Nó</value></data>
-  <data name="Panel_Log" xml:space="preserve"><value>Log</value></data>
+  <data name="Panel_Log" xml:space="preserve"><value>Log Operacional</value></data>
+  <data name="Conn_Edit_Tip" xml:space="preserve"><value>Editar conexão selecionada</value></data>
+  <data name="Conn_Delete_Tip" xml:space="preserve"><value>Excluir conexão selecionada</value></data>
+  <data name="Conn_Ctx_Edit" xml:space="preserve"><value>Editar conexão…</value></data>
+  <data name="Conn_Ctx_Delete" xml:space="preserve"><value>Excluir conexão</value></data>
+  <data name="Browser_Reload_Tip" xml:space="preserve"><value>Recarregar árvore OPC UA</value></data>
+  <data name="Browser_Search_Tip" xml:space="preserve"><value>Buscar nós na árvore pelo nome ou NodeId (expande automaticamente correspondências)</value></data>
+  <data name="Browser_ManualTag_Tip" xml:space="preserve"><value>Adicionar tag por endereço (ex.: ns=2;s=Canal.Device.Tag ou Canal.Device.DB1.DBD0)</value></data>
+  <data name="Browser_Tree_Tip" xml:space="preserve"><value>Segure a tecla Ctrl para selecionar múltiplas tags e clique em '+ Planilha' para adicioná-las juntas</value></data>
+  <data name="Browser_Ctx_AddSelected" xml:space="preserve"><value>+ Adicionar à Planilha e Gráfico</value></data>
+  <data name="Browser_Ctx_AddFolder" xml:space="preserve"><value>📁 Adicionar todas as variáveis desta pasta</value></data>
+  <data name="Browser_Ctx_CopyNodeId" xml:space="preserve"><value>📋 Copiar NodeId</value></data>
+  <data name="Browser_AddButton_Single" xml:space="preserve"><value>+ Planilha</value></data>
+  <data name="Browser_AddButton_Multi" xml:space="preserve"><value>+ Planilha ({0})</value></data>
+  <data name="Browser_AddButton_Tip" xml:space="preserve"><value>Adicionar nó(s) selecionado(s) à planilha e ao gráfico</value></data>
+  <data name="Browser_Loading" xml:space="preserve"><value>Carregando…</value></data>
+
+  <!-- Abas Centrais e Planilha -->
   <data name="Tab_Grid" xml:space="preserve"><value>Planilha</value></data>
+  <data name="Tab_Grid_Tip" xml:space="preserve"><value>Visualização em Planilha (Ctrl+1)</value></data>
   <data name="Tab_Chart" xml:space="preserve"><value>Gráfico</value></data>
+  <data name="Tab_Chart_Tip" xml:space="preserve"><value>Visualização em Gráfico de Tendências (Ctrl+2)</value></data>
   <data name="Tab_CurrentValues" xml:space="preserve"><value>Tags e Valores Atuais</value></data>
-  <data name="Status_Offline" xml:space="preserve"><value>Off-line</value></data>
-  <data name="Status_Online" xml:space="preserve"><value>On-line</value></data>
-  <data name="Status_EventsPerSecond" xml:space="preserve"><value>{0:N0} eventos/s</value></data>
-  <data name="Status_Buffer" xml:space="preserve"><value>Buffer {0:N0}%</value></data>
-  <data name="Status_SessionTime" xml:space="preserve"><value>Sessão {0}</value></data>
-  <data name="Status_Connections" xml:space="preserve"><value>{0} de {1} conexões ativas</value></data>
-  <data name="Placeholder_Browser" xml:space="preserve"><value>Conecte-se a um servidor para navegar no espaço de endereços.</value></data>
-  <data name="Placeholder_Grid" xml:space="preserve"><value>A planilha exibirá uma nova linha a cada mudança de sinal.</value></data>
-  <data name="Placeholder_Chart" xml:space="preserve"><value>O gráfico de tendência será exibido aqui.</value></data>
-  <data name="Placeholder_Values" xml:space="preserve"><value>Nenhuma conexão configurada.</value></data>
-  <data name="Col_Tag" xml:space="preserve"><value>Tag (Alias)</value></data>
-  <data name="Col_Address" xml:space="preserve"><value>NodeId</value></data>
-  <data name="Col_DataType" xml:space="preserve"><value>Tipo</value></data>
+  <data name="Grid_AutoScroll" xml:space="preserve"><value>Auto-scroll</value></data>
+  <data name="Grid_AutoScroll_Tip" xml:space="preserve"><value>Rolagem automática para acompanhar as linhas mais recentes da planilha (Espaço)</value></data>
+  <data name="Grid_GroupSameTs" xml:space="preserve"><value>Agrupar mesmo timestamp (P3)</value></data>
+  <data name="Grid_VerticalHeaders" xml:space="preserve"><value>Títulos na vertical</value></data>
+  <data name="Grid_VerticalHeaders_Tip" xml:space="preserve"><value>Orienta os títulos das colunas na vertical para visualizar mais variáveis simultaneamente</value></data>
+  <data name="Grid_TsSourceLabel" xml:space="preserve"><value>Fonte Ts:</value></data>
+  <data name="Grid_TsSource_Tip" xml:space="preserve"><value>Selecionar a fonte do Timestamp exibido na planilha e no gráfico (Automático, Fonte/CLP, Servidor OPC UA ou Sistema Operacional/PC)</value></data>
+  <data name="Grid_HeaderHeightLabel" xml:space="preserve"><value>Altura título:</value></data>
+  <data name="Grid_HeaderHeight_Tip" xml:space="preserve"><value>Ajuste a altura da linha de título (ou arraste a borda inferior do cabeçalho com o mouse)</value></data>
+  <data name="Grid_DecreaseHeader_Tip" xml:space="preserve"><value>Reduzir altura da linha do título das colunas (-20 px)</value></data>
+  <data name="Grid_IncreaseHeader_Tip" xml:space="preserve"><value>Aumentar altura da linha do título das colunas (+20 px)</value></data>
+  <data name="Grid_AutoHeader_Btn" xml:space="preserve"><value>↕ Auto</value></data>
+  <data name="Grid_AutoHeader_Tip" xml:space="preserve"><value>Auto-ajustar altura da linha do título para exibir o texto completo na vertical</value></data>
+  <data name="Grid_AutoWidths_Btn" xml:space="preserve"><value>↔ Auto-ajustar larguras</value></data>
+  <data name="Grid_AutoWidths_Tip" xml:space="preserve"><value>Ajusta automaticamente a largura de todas as colunas com base no título (vertical ou horizontal) e nas informações contidas em cada coluna</value></data>
+  <data name="Grid_ExportPng_Btn" xml:space="preserve"><value>📷 PNG</value></data>
+  <data name="Grid_ExportPng_Tip" xml:space="preserve"><value>Salvar range atual visível da planilha em imagem PNG</value></data>
+  <data name="Grid_RowsCountFormat" xml:space="preserve"><value>Linhas: {0:N0}</value></data>
+  <data name="Grid_Col_Marker" xml:space="preserve"><value>Marcador</value></data>
+  <data name="Grid_Col_Cycle" xml:space="preserve"><value>Cycle</value></data>
+  <data name="Grid_Col_TsAuto" xml:space="preserve"><value>Timestamp (UTC)</value></data>
+  <data name="Grid_Col_TsSource" xml:space="preserve"><value>Timestamp [Fonte/CLP] (UTC)</value></data>
+  <data name="Grid_Col_TsServer" xml:space="preserve"><value>Timestamp [Servidor OPC] (UTC)</value></data>
+  <data name="Grid_Col_TsLocal" xml:space="preserve"><value>Timestamp [Sistema Local]</value></data>
+  <data name="Grid_Ctx_RemoveTag" xml:space="preserve"><value>🗑 Deletar tag '{0}' da coleta (planilha e gráfico)</value></data>
+  <data name="Grid_Ctx_AutoFitThis" xml:space="preserve"><value>↔ Auto-ajustar largura desta coluna</value></data>
+  <data name="Grid_Ctx_AutoFitAll" xml:space="preserve"><value>↔ Auto-ajustar largura de todas as colunas</value></data>
+  <data name="Grid_Ctx_AutoFitHeader" xml:space="preserve"><value>↕ Auto-ajustar altura da linha de título</value></data>
+  <data name="Grid_Ctx_EditMarker" xml:space="preserve"><value>✏️ Editar Marcador ('{0}')…</value></data>
+  <data name="Grid_Ctx_DeleteMarker" xml:space="preserve"><value>🗑️ Excluir Marcador ('{0}')</value></data>
+  <data name="Grid_Ctx_InsertMarkerRow" xml:space="preserve"><value>📍 Inserir Marcador na Linha #{0}…</value></data>
+  <data name="Grid_Ctx_FocusChart" xml:space="preserve"><value>📈 Focar instante no Gráfico (Cursor A)</value></data>
+  <data name="Grid_Ctx_SetCycleTrigger" xml:space="preserve"><value>🏷 Definir '{0}' como Gatilho de Ciclo</value></data>
+  <data name="Grid_Ctx_CopyCellVal" xml:space="preserve"><value>Copiar valor de '{0}' ({1})</value></data>
+  <data name="Grid_Ctx_CopyRowTsv" xml:space="preserve"><value>📋 Copiar Linha Inteira (TSV)</value></data>
+  <data name="Grid_Ctx_CopyTimestamp" xml:space="preserve"><value>Copiar Horário ({0})</value></data>
+
+  <!-- Aba Gráfico -->
+  <data name="Chart_AutoFollow" xml:space="preserve"><value>Auto-follow (Ao vivo)</value></data>
+  <data name="Chart_AutoFollow_Tip" xml:space="preserve"><value>Acompanha os dados mais recentes em tempo real no gráfico (Espaço)</value></data>
+  <data name="Chart_JumpStart_Tip" xml:space="preserve"><value>Ir para o início do histórico</value></data>
+  <data name="Chart_PanLeft_Tip" xml:space="preserve"><value>Voltar no tempo (25% da janela)</value></data>
+  <data name="Chart_PanRight_Tip" xml:space="preserve"><value>Avançar no tempo (25% da janela)</value></data>
+  <data name="Chart_JumpLive_Tip" xml:space="preserve"><value>Voltar para o tempo real (Ao vivo)</value></data>
+  <data name="Chart_PanMode_Tip" xml:space="preserve"><value>Modo Pan (Mão): arraste o gráfico mantendo o botão esquerdo pressionado para navegar no tempo</value></data>
+  <data name="Chart_WindowLabel" xml:space="preserve"><value>Janela (s):</value></data>
+  <data name="Chart_Window_Tip" xml:space="preserve"><value>Duração da janela horizontal em segundos</value></data>
+  <data name="Chart_ZoomIn_Tip" xml:space="preserve"><value>Zoom In horizontal (reduzir janela de tempo / Scroll do mouse)</value></data>
+  <data name="Chart_ZoomOut_Tip" xml:space="preserve"><value>Zoom Out horizontal (ampliar janela de tempo / Scroll do mouse)</value></data>
+  <data name="Chart_FitAll_Btn" xml:space="preserve"><value>↔ Tudo</value></data>
+  <data name="Chart_FitAll_Tip" xml:space="preserve"><value>Ajustar janela para exibir todo o histórico coletado</value></data>
+  <data name="Chart_YScaleLabel" xml:space="preserve"><value>Escala Y:</value></data>
+  <data name="Chart_ZoomYIn_Tip" xml:space="preserve"><value>Ampliar escala vertical (Zoom Y+)</value></data>
+  <data name="Chart_ZoomYOut_Tip" xml:space="preserve"><value>Reduzir escala vertical (Zoom Y-)</value></data>
+  <data name="Chart_AutoY_Tip" xml:space="preserve"><value>Restaurar escala Y automática</value></data>
+  <data name="Chart_ExportPng_Tip" xml:space="preserve"><value>Salvar imagem atual do gráfico em PNG</value></data>
+  <data name="Chart_PensPanel" xml:space="preserve"><value>Painel de Penas</value></data>
+  <data name="Chart_PensPanel_Tip" xml:space="preserve"><value>Mostrar/ocultar o painel lateral de seleção de penas e estatísticas</value></data>
+  <data name="Chart_Step" xml:space="preserve"><value>Degrau (Step)</value></data>
+  <data name="Chart_Step_Tip" xml:space="preserve"><value>Desmarque para interpolação linear entre pontos</value></data>
+  <data name="Chart_Points" xml:space="preserve"><value>Pontos (●)</value></data>
+  <data name="Chart_Points_Tip" xml:space="preserve"><value>Destaca os pontos individuais de amostragem sobre as curvas</value></data>
+  <data name="Chart_Grid" xml:space="preserve"><value>Grade</value></data>
+  <data name="Chart_Grid_Tip" xml:space="preserve"><value>Mostrar/ocultar linhas de grade</value></data>
+  <data name="Chart_Crosshair" xml:space="preserve"><value>Mira (Crosshair)</value></data>
+  <data name="Chart_Crosshair_Tip" xml:space="preserve"><value>Exibe valores exatos de todas as penas ao passar o mouse</value></data>
+  <data name="Chart_Cursors" xml:space="preserve"><value>Cursores A/B</value></data>
+  <data name="Chart_Cursors_Tip" xml:space="preserve"><value>Ativa os cursores verticais de medição A e B (clique ou arraste no gráfico)</value></data>
+  <data name="Chart_CenterCursors" xml:space="preserve"><value>Centralizar A/B</value></data>
+  <data name="Chart_CenterCursors_Tip" xml:space="preserve"><value>Reposiciona os cursores A e B no centro da janela atual</value></data>
+  <data name="Chart_CursorsHidden" xml:space="preserve"><value>Cursores ocultos</value></data>
+  <data name="Chart_PensHeader" xml:space="preserve"><value>PENAS / SINAIS</value></data>
+  <data name="Chart_PensAll" xml:space="preserve"><value>Todas</value></data>
+  <data name="Chart_PensAll_Tip" xml:space="preserve"><value>Exibir todas as penas no gráfico</value></data>
+  <data name="Chart_PensNone" xml:space="preserve"><value>Nenhuma</value></data>
+  <data name="Chart_PensNone_Tip" xml:space="preserve"><value>Ocultar todas as penas do gráfico</value></data>
+  <data name="Chart_PensDelete" xml:space="preserve"><value>× Excluir</value></data>
+  <data name="Chart_PensDelete_Tip" xml:space="preserve"><value>Excluir a tag selecionada da planilha e do gráfico</value></data>
+  <data name="Chart_Splitter_Tip" xml:space="preserve"><value>Arraste com o mouse para ajustar a largura do painel de penas</value></data>
+  <data name="Chart_PenPlot_Tip_Allowed" xml:space="preserve"><value>Exibir ou ocultar esta pena no gráfico de tendências</value></data>
+  <data name="Chart_PenPlot_Tip_String" xml:space="preserve"><value>Variáveis do tipo texto (String) não podem ser plotadas no gráfico de tendências</value></data>
+  <data name="Chart_PenCtx_Delete" xml:space="preserve"><value>🗑 Deletar esta tag da planilha e do gráfico</value></data>
+  <data name="Chart_PenCtx_TogglePlot" xml:space="preserve"><value>Alternar visibilidade no gráfico (Plot)</value></data>
+  <data name="Chart_PenCtx_SetCycle" xml:space="preserve"><value>🏷 Definir como Gatilho de Ciclo</value></data>
+  <data name="Chart_PenCtx_CopyAddress" xml:space="preserve"><value>📋 Copiar Endereço / NodeId</value></data>
+  <data name="Chart_EmptyNoPens" xml:space="preserve"><value>Marque as penas à direita e inicie a sessão On-line (F5) para visualizar o gráfico.</value></data>
+  <data name="Chart_EmptyWaiting" xml:space="preserve"><value>Aguardando amostras das penas selecionadas...</value></data>
+  <data name="Chart_Inspector_CursorCol" xml:space="preserve"><value>Cursor / Mira</value></data>
+  <data name="Chart_Inspector_CursorA" xml:space="preserve"><value>Cursor A</value></data>
+  <data name="Chart_Inspector_CursorB" xml:space="preserve"><value>Cursor B</value></data>
+  <data name="Chart_Inspector_Crosshair" xml:space="preserve"><value>Mira</value></data>
+  <data name="Chart_Ctx_LocateSpreadsheet" xml:space="preserve"><value>📋 Localizar na Planilha</value></data>
+  <data name="Chart_Ctx_InsertMarkerHere" xml:space="preserve"><value>📍 Inserir Marcador neste ponto…</value></data>
+  <data name="Chart_Ctx_SessionMarkers" xml:space="preserve"><value>🚩 Marcadores da Sessão ({0})</value></data>
+  <data name="Chart_Ctx_PlaceCursorA" xml:space="preserve"><value>Posicionar Cursor A aqui</value></data>
+  <data name="Chart_Ctx_PlaceCursorB" xml:space="preserve"><value>Posicionar Cursor B aqui</value></data>
+  <data name="Chart_Ctx_CenterCursors" xml:space="preserve"><value>Centralizar Cursores</value></data>
+  <data name="Chart_Ctx_SavePng" xml:space="preserve"><value>Salvar Gráfico em Imagem (PNG)…</value></data>
+
+  <!-- Colunas de Tabelas e Painel de Log -->
+  <data name="Col_Timestamp" xml:space="preserve"><value>Timestamp (UTC)</value></data>
+  <data name="Col_Tag" xml:space="preserve"><value>Tag</value></data>
+  <data name="Col_Address" xml:space="preserve"><value>Endereço / NodeId</value></data>
+  <data name="Col_DataType" xml:space="preserve"><value>Tipo de Dado</value></data>
   <data name="Col_Value" xml:space="preserve"><value>Valor</value></data>
   <data name="Col_Quality" xml:space="preserve"><value>Qualidade</value></data>
-  <data name="Col_Timestamp" xml:space="preserve"><value>Data/hora</value></data>
-  <data name="Col_Origin" xml:space="preserve"><value>Origem TS</value></data>
+  <data name="Col_Origin" xml:space="preserve"><value>Fonte Ts</value></data>
+  <data name="Col_Action" xml:space="preserve"><value>Ação</value></data>
   <data name="Col_Level" xml:space="preserve"><value>Nível</value></data>
   <data name="Col_Message" xml:space="preserve"><value>Mensagem</value></data>
-  <data name="ConnDialog_Title" xml:space="preserve"><value>Configuração de Conexão OPC UA</value></data>
-  <data name="ConnDialog_Name" xml:space="preserve"><value>Nome da conexão</value></data>
-  <data name="ConnDialog_Endpoint" xml:space="preserve"><value>URL do Endpoint</value></data>
-  <data name="ConnDialog_Discover" xml:space="preserve"><value>Descobrir endpoints</value></data>
-  <data name="ConnDialog_DiscoveredList" xml:space="preserve"><value>Endpoints anunciados pelo servidor</value></data>
-  <data name="ConnDialog_SecurityPolicy" xml:space="preserve"><value>Política de segurança</value></data>
-  <data name="ConnDialog_SecurityMode" xml:space="preserve"><value>Modo de segurança</value></data>
-  <data name="ConnDialog_Auth" xml:space="preserve"><value>Autenticação</value></data>
-  <data name="ConnDialog_UserName" xml:space="preserve"><value>Usuário</value></data>
-  <data name="ConnDialog_Password" xml:space="preserve"><value>Senha</value></data>
+
+  <data name="Log_Clear_Btn" xml:space="preserve"><value>Limpar</value></data>
+  <data name="Log_Clear_Tip" xml:space="preserve"><value>Limpar logs exibidos na tela</value></data>
+  <data name="Log_Folder_Btn" xml:space="preserve"><value>Pasta de Logs…</value></data>
+  <data name="Log_Folder_Tip" xml:space="preserve"><value>Abrir a pasta que contém os arquivos de log gravados em disco</value></data>
+  <data name="Log_FiltersLabel" xml:space="preserve"><value>Filtros:</value></data>
+  <data name="Log_FilterInfo" xml:space="preserve"><value>Informação</value></data>
+  <data name="Log_FilterWarn" xml:space="preserve"><value>Avisos</value></data>
+  <data name="Log_FilterError" xml:space="preserve"><value>Erros</value></data>
+  <data name="Log_FilterDebug" xml:space="preserve"><value>Debug</value></data>
+  <data name="Log_Ctx_CopySelected" xml:space="preserve"><value>📋 Copiar Mensagem de Log</value></data>
+  <data name="Log_Ctx_CopyAll" xml:space="preserve"><value>📋 Copiar Todos os Logs Exibidos</value></data>
+  <data name="Log_Ctx_Clear" xml:space="preserve"><value>Limpar logs da tela</value></data>
+  <data name="Log_Ctx_OpenFolder" xml:space="preserve"><value>Abrir pasta de logs…</value></data>
+
+  <!-- Barra de Status -->
+  <data name="Status_Offline" xml:space="preserve"><value>Off-line</value></data>
+  <data name="Status_Online" xml:space="preserve"><value>On-line</value></data>
+  <data name="Status_Connections" xml:space="preserve"><value>Conexões: {0}/{1}</value></data>
+  <data name="Status_EventsPerSecond" xml:space="preserve"><value>Eventos/s: {0:F0}</value></data>
+  <data name="Status_Buffer" xml:space="preserve"><value>Buffer: {0}%</value></data>
+  <data name="Status_SessionTime" xml:space="preserve"><value>Sessão: {0}</value></data>
+  <data name="About_Body" xml:space="preserve"><value>DMapFactory v{0}
+Diagnóstico de campo e mapeamento de sinais industriais.
+Plataforma: .NET 8 / WPF (Windows).</value></data>
+
+  <!-- Diálogo de Conexão OPC UA -->
+  <data name="ConnDialog_Title" xml:space="preserve"><value>Conexão OPC UA</value></data>
+  <data name="ConnDialog_Name" xml:space="preserve"><value>Nome da conexão:</value></data>
+  <data name="ConnDialog_Endpoint" xml:space="preserve"><value>Endpoint URL:</value></data>
+  <data name="ConnDialog_Discover" xml:space="preserve"><value>Descobrir</value></data>
+  <data name="ConnDialog_DiscoveredList" xml:space="preserve"><value>Endpoints descobertos no servidor:</value></data>
+  <data name="ConnDialog_SecurityPolicy" xml:space="preserve"><value>Política de segurança:</value></data>
+  <data name="ConnDialog_SecurityMode" xml:space="preserve"><value>Modo de segurança:</value></data>
+  <data name="ConnDialog_Auth" xml:space="preserve"><value>Autenticação:</value></data>
+  <data name="ConnDialog_UserName" xml:space="preserve"><value>Usuário:</value></data>
+  <data name="ConnDialog_Password" xml:space="preserve"><value>Senha:</value></data>
+  <data name="ConnDialog_UserCert" xml:space="preserve"><value>Certificado (.pfx):</value></data>
   <data name="ConnDialog_Test" xml:space="preserve"><value>Testar conexão</value></data>
   <data name="ConnDialog_Save" xml:space="preserve"><value>Salvar</value></data>
   <data name="ConnDialog_Cancel" xml:space="preserve"><value>Cancelar</value></data>
-  <data name="Log_AppStarted" xml:space="preserve"><value>Aplicação iniciada (versão {0}).</value></data>
+  <data name="ConnDialog_TestSuccess" xml:space="preserve"><value>Conexão estabelecida com sucesso!</value></data>
+  <data name="ConnDialog_TestFailed" xml:space="preserve"><value>Falha ao conectar: {0}</value></data>
+  <data name="ConnDialog_Discovering" xml:space="preserve"><value>Consultando endpoints…</value></data>
+  <data name="ConnDialog_DiscoveredCount" xml:space="preserve"><value>{0} endpoint(s) encontrado(s).</value></data>
+
+  <!-- Diálogo de Localizar Valor (Ctrl+F) -->
+  <data name="FindVal_Title" xml:space="preserve"><value>Localizar Valor</value></data>
+  <data name="FindVal_Header" xml:space="preserve"><value>Localizar na Planilha e Gráfico</value></data>
+  <data name="FindVal_Subheader" xml:space="preserve"><value>Busca valores registrados de uma tag e navega diretamente até o ponto correspondente.</value></data>
+  <data name="FindVal_TagLabel" xml:space="preserve"><value>Tag:</value></data>
+  <data name="FindVal_ValueLabel" xml:space="preserve"><value>Valor procurado:</value></data>
+  <data name="FindVal_ExactMatch" xml:space="preserve"><value>Coincidência exata</value></data>
+  <data name="FindVal_ExactMatch_Tip" xml:space="preserve"><value>Busca pelo valor exato da tag ou equivalente numérico/booleano.</value></data>
+  <data name="FindVal_OnlyTransitions" xml:space="preserve"><value>Apenas transições</value></data>
+  <data name="FindVal_OnlyTransitions_Tip" xml:space="preserve"><value>Localiza apenas linhas onde o valor da tag mudou.</value></data>
+  <data name="FindVal_CaseSensitive" xml:space="preserve"><value>Diferenciar maiúsculas</value></data>
+  <data name="FindVal_CaseSensitive_Tip" xml:space="preserve"><value>Diferencia letras maiúsculas e minúsculas ao comparar textos.</value></data>
+  <data name="FindVal_InitialStatus" xml:space="preserve"><value>Digite o valor procurado e pressione Próximo (ou Enter).</value></data>
+  <data name="FindVal_Prev_Btn" xml:space="preserve"><value>◀ Anterior</value></data>
+  <data name="FindVal_Prev_Tip" xml:space="preserve"><value>Localizar ocorrência anterior (Shift+Enter ou Shift+F3)</value></data>
+  <data name="FindVal_Next_Btn" xml:space="preserve"><value>Próximo ▶</value></data>
+  <data name="FindVal_Next_Tip" xml:space="preserve"><value>Localizar próxima ocorrência (Enter ou F3)</value></data>
+  <data name="FindVal_Close_Btn" xml:space="preserve"><value>Fechar</value></data>
+  <data name="FindVal_ViewSpreadsheet" xml:space="preserve"><value>📋 Ver na Planilha</value></data>
+  <data name="FindVal_ViewSpreadsheet_Tip" xml:space="preserve"><value>Alterna a visualização para a Planilha</value></data>
+  <data name="FindVal_ViewChart" xml:space="preserve"><value>📈 Ver no Gráfico</value></data>
+  <data name="FindVal_ViewChart_Tip" xml:space="preserve"><value>Alterna a visualização para o Gráfico de Tendências</value></data>
+  <data name="FindVal_NoRows" xml:space="preserve"><value>Nenhum registro na planilha para pesquisar.</value></data>
+  <data name="FindVal_SelectTag" xml:space="preserve"><value>Selecione uma tag no menu suspenso para pesquisar.</value></data>
+  <data name="FindVal_EnterValue" xml:space="preserve"><value>Digite o valor a ser localizado.</value></data>
+  <data name="FindVal_SingleMatch" xml:space="preserve"><value>✓ Única ocorrência encontrada na linha #{0} ({1}) com valor '{2}'</value></data>
+  <data name="FindVal_WrappedEnd" xml:space="preserve"><value>Fim alcançado (reiniciado do início)</value></data>
+  <data name="FindVal_WrappedStart" xml:space="preserve"><value>Início alcançado (reiniciado do fim)</value></data>
+  <data name="FindVal_WrappedMatch" xml:space="preserve"><value>✓ {0}: linha #{1} ({2}) com valor '{3}'</value></data>
+  <data name="FindVal_FoundMatch" xml:space="preserve"><value>✓ Encontrado na linha #{0} ({1}) com valor '{2}'</value></data>
+  <data name="FindVal_NotFound" xml:space="preserve"><value>⚠ Valor '{0}' não encontrado para '{1}'.</value></data>
+
+  <!-- Diálogo de Localizar Marcadores (Ctrl+Shift+M) -->
+  <data name="FindMarker_Title" xml:space="preserve"><value>Localizar Marcadores</value></data>
+  <data name="FindMarker_Header" xml:space="preserve"><value>Localizar Marcadores da Sessão</value></data>
+  <data name="FindMarker_Subheader" xml:space="preserve"><value>Pesquise, filtre e navegue instantaneamente pelos marcadores de tempo inseridos na sessão.</value></data>
+  <data name="FindMarker_FilterLabel" xml:space="preserve"><value>Filtrar marcador:</value></data>
+  <data name="FindMarker_Clear_Btn" xml:space="preserve"><value>Limpar</value></data>
+  <data name="FindMarker_Col_Marker" xml:space="preserve"><value>Marcador / Comentário</value></data>
+  <data name="FindMarker_FocusChart_Btn" xml:space="preserve"><value>📈 Centralizar no Gráfico (Cursor A)</value></data>
+  <data name="FindMarker_LocateGrid_Btn" xml:space="preserve"><value>📋 Localizar na Planilha</value></data>
+  <data name="FindMarker_Edit_Btn" xml:space="preserve"><value>✏️ Editar…</value></data>
+  <data name="FindMarker_Delete_Btn" xml:space="preserve"><value>🗑️ Excluir</value></data>
+  <data name="FindMarker_StatusFormat" xml:space="preserve"><value>{0} marcador(es) listado(s) de um total de {1}.</value></data>
+  <data name="FindMarker_ConfirmDelete_Msg" xml:space="preserve"><value>Deseja realmente excluir o marcador '{0}' ({1})?</value></data>
+  <data name="FindMarker_ConfirmDelete_Title" xml:space="preserve"><value>Confirmar Exclusão de Marcador</value></data>
+
+  <!-- Diálogo de Inserir / Editar Marcador -->
+  <data name="MarkerInput_Title_New" xml:space="preserve"><value>Inserir Marcador</value></data>
+  <data name="MarkerInput_Header_New" xml:space="preserve"><value>Novo Marcador de Sessão</value></data>
+  <data name="MarkerInput_Title_Edit" xml:space="preserve"><value>Editar Marcador</value></data>
+  <data name="MarkerInput_Header_Edit" xml:space="preserve"><value>Editar Marcador de Sessão</value></data>
+  <data name="MarkerInput_Prompt" xml:space="preserve"><value>Digite uma etiqueta ou observação para este instante do histórico (será exibida na planilha e no gráfico):</value></data>
+  <data name="MarkerInput_Confirm_New" xml:space="preserve"><value>Inserir Marcador</value></data>
+  <data name="MarkerInput_Confirm_Edit" xml:space="preserve"><value>Salvar Alterações</value></data>
+
+  <!-- Gerenciador de Certificados OPC UA -->
+  <data name="CertMgr_Title" xml:space="preserve"><value>Gerenciador de Certificados OPC UA (Cliente)</value></data>
+  <data name="CertMgr_Tab_Servers" xml:space="preserve"><value>🛡 Certificados de Servidores</value></data>
+  <data name="CertMgr_Tab_Discovery" xml:space="preserve"><value>🔍 Descoberta de Certificados</value></data>
+  <data name="CertMgr_Tab_Client" xml:space="preserve"><value>🔑 Meu Certificado (Cliente)</value></data>
+  <data name="CertMgr_AutoAccept" xml:space="preserve"><value>Aceitar automaticamente certificados de servidores desconhecidos</value></data>
+  <data name="CertMgr_AutoAccept_Tip" xml:space="preserve"><value>Quando desmarcado (padrão), conexões com servidores desconhecidos solicitarão aprovação ou serão movidas para Rejeitados</value></data>
+  <data name="CertMgr_FilterLabel" xml:space="preserve"><value>Exibir:</value></data>
+  <data name="CertMgr_FilterAll" xml:space="preserve"><value>Todos</value></data>
+  <data name="CertMgr_FilterTrusted" xml:space="preserve"><value>Confiáveis (Trusted)</value></data>
+  <data name="CertMgr_FilterRejected" xml:space="preserve"><value>Rejeitados (Rejected)</value></data>
+  <data name="CertMgr_Refresh_Btn" xml:space="preserve"><value>🔄 Atualizar</value></data>
+  <data name="CertMgr_Refresh_Tip" xml:space="preserve"><value>Recarregar certificados das pastas Trusted e Rejected</value></data>
+  <data name="CertMgr_Trust_Btn" xml:space="preserve"><value>✔ Confiar (Trust)</value></data>
+  <data name="CertMgr_Trust_Tip" xml:space="preserve"><value>Move o certificado de servidor selecionado para a lista de Servidores Confiáveis (Trusted)</value></data>
+  <data name="CertMgr_Reject_Btn" xml:space="preserve"><value>✖ Rejeitar (Reject)</value></data>
+  <data name="CertMgr_Reject_Tip" xml:space="preserve"><value>Move o certificado de servidor selecionado para a lista de Servidores Rejeitados (Rejected)</value></data>
+  <data name="CertMgr_ImportServer_Btn" xml:space="preserve"><value>📥 Importar (.der / .cer / .crt)</value></data>
+  <data name="CertMgr_ImportServer_Tip" xml:space="preserve"><value>Importa arquivo(s) de certificado de servidor OPC UA diretamente para a lista de Confiáveis</value></data>
+  <data name="CertMgr_ExportServer_Btn" xml:space="preserve"><value>📤 Exportar (.der)</value></data>
+  <data name="CertMgr_ExportServer_Tip" xml:space="preserve"><value>Exporta o certificado de servidor selecionado para um arquivo .der</value></data>
+  <data name="CertMgr_Delete_Btn" xml:space="preserve"><value>🗑 Excluir</value></data>
+  <data name="CertMgr_Delete_Tip" xml:space="preserve"><value>Remove permanentemente o certificado selecionado do repositório PKI</value></data>
+  <data name="CertMgr_OpenPki_Btn" xml:space="preserve"><value>📁 Abrir Pasta PKI</value></data>
+  <data name="CertMgr_OpenPki_Tip" xml:space="preserve"><value>Abre a pasta de certificados no Windows Explorer</value></data>
+  <data name="CertMgr_SelectPrompt" xml:space="preserve"><value>Selecione um certificado na lista acima</value></data>
+
+  <!-- ========================================================================= -->
+  <!-- MENSAGENS DE LOG OPERACIONAL (Padronizadas e Localizadas)                 -->
+  <!-- ========================================================================= -->
+
+  <!-- 1. Aplicação, Projeto e Sessões -->
+  <data name="Log_AppStarted" xml:space="preserve"><value>DMapFactory iniciado. Pronto para configurar conexões OPC UA.</value></data>
   <data name="Log_LanguageChanged" xml:space="preserve"><value>Idioma alterado para {0}.</value></data>
-  <data name="About_Text" xml:space="preserve"><value>DMapFactory {0}
-Ferramenta open source (MIT) para diagnóstico de sinais de CLP, rastreio de ciclo de máquina e histórico de dados via OPC UA.</value></data>
-  <data name="Grid_VerticalHeaders" xml:space="preserve"><value>Títulos na vertical</value></data>
-  <data name="Menu_SaveProjectAs" xml:space="preserve"><value>Salvar projeto como…</value></data>
-  <data name="ConnDialog_UserCert" xml:space="preserve"><value>Certificado do usuário (.pfx/.der)</value></data>
+  <data name="Log_NewProjectCreated" xml:space="preserve"><value>Novo projeto criado.</value></data>
+  <data name="Log_ProjectLoaded" xml:space="preserve"><value>Projeto carregado: '{0}' ({1} conexões, {2} tags)</value></data>
+  <data name="Log_ProjectLoadError" xml:space="preserve"><value>Falha ao abrir o arquivo de projeto '{0}': {1}</value></data>
+  <data name="Log_ProjectSaved" xml:space="preserve"><value>Projeto salvo em '{0}' ({1} conexões, {2} tags)</value></data>
+  <data name="Log_ProjectSaveError" xml:space="preserve"><value>Falha ao salvar o arquivo de projeto '{0}': {1}</value></data>
+  <data name="Log_SessionLoaded" xml:space="preserve"><value>Sessão carregada: '{0}' — {1} linhas, {2} tags.</value></data>
+  <data name="Log_SessionLoadError" xml:space="preserve"><value>Falha ao abrir sessão gravada '{0}': {1}</value></data>
+  <data name="Log_SessionsFolderChanged" xml:space="preserve"><value>Local de salvamento das sessões alterado para: '{0}'</value></data>
+  <data name="Log_SessionsFolderError" xml:space="preserve"><value>Falha ao alterar ou abrir a pasta de sessões '{0}': {1}</value></data>
+  <data name="Log_LogsFolderError" xml:space="preserve"><value>Falha ao abrir a pasta de logs '{0}': {1}</value></data>
+
+  <!-- 2. Conectividade OPC UA -->
+  <data name="Log_ConnAdded" xml:space="preserve"><value>Conexão '{0}' ({1}) adicionada.</value></data>
+  <data name="Log_ConnUpdated" xml:space="preserve"><value>Conexão '{0}' ({1}) atualizada.</value></data>
+  <data name="Log_ConnRemoved" xml:space="preserve"><value>Conexão '{0}' ({1}) removida pelo usuário.</value></data>
+  <data name="Log_ConnConnecting" xml:space="preserve"><value>Conectando a '{0}' ({1})…</value></data>
+  <data name="Log_ConnConnected" xml:space="preserve"><value>Conexão '{0}' ({1}) estabelecida com sucesso. Detalhe: {2}</value></data>
+  <data name="Log_ConnDisconnectedByUser" xml:space="preserve"><value>Conexão '{0}' ({1}) desconectada pelo usuário.</value></data>
+  <data name="Log_ConnDisconnected" xml:space="preserve"><value>Conexão '{0}' ({1}) desconectada. Detalhe: {2}</value></data>
+  <data name="Log_ConnReconnecting" xml:space="preserve"><value>Conexão '{0}' ({1}) em reconexão automática: {2}</value></data>
+  <data name="Log_ConnFaulted" xml:space="preserve"><value>Erro de conectividade em '{0}' ({1}): {2}</value></data>
+  <data name="Log_ConnConnectError" xml:space="preserve"><value>Erro ao conectar '{0}': {1}</value></data>
+  <data name="Log_ConnKeepAliveFailed" xml:space="preserve"><value>Falha de comunicação (KeepAlive) na conexão '{0}' ({1}): Status={2}. Tentando reconexão automática...</value></data>
+  <data name="Log_ConnReconnectedSuccess" xml:space="preserve"><value>Conexão '{0}' ({1}) reconectada automaticamente com sucesso.</value></data>
+  <data name="Log_ConnDiscoverSuccess" xml:space="preserve"><value>Descoberta de endpoints concluída em '{0}': {1} endpoint(s) retornado(s).</value></data>
+  <data name="Log_ConnDiscoverError" xml:space="preserve"><value>Falha ao descobrir endpoints em '{0}': {1}</value></data>
+  <data name="Log_ConnTestSuccess" xml:space="preserve"><value>Teste de conexão com '{0}' ({1}) concluído com sucesso.</value></data>
+  <data name="Log_ConnTestError" xml:space="preserve"><value>Falha no teste de conexão com '{0}' ({1}): {2}</value></data>
+  <data name="Log_ConnDisconnectedTagsBad" xml:space="preserve"><value>Conexão '{0}' desconectada durante coleta On-line: {1} tag(s) assumiram status Bad e tiveram a plotagem interrompida no gráfico.</value></data>
+
+  <!-- 3. Aquisição On-line / Off-line e Tags -->
+  <data name="Log_OnlineStarted" xml:space="preserve"><value>Sessão On-line ATIVADA ({0} conexão(ões) ativa(s), {1} tag(s) monitorada(s), modo: '{2}'). Gravando em '{3}'.</value></data>
+  <data name="Log_OnlineStartNoConnectionsWarn" xml:space="preserve"><value>Sessão On-line ativada sem nenhuma conexão OPC UA configurada ou conectada.</value></data>
+  <data name="Log_OnlineStartNoTagsWarn" xml:space="preserve"><value>Sessão On-line ativada sem nenhuma tag adicionada à lista de monitoramento.</value></data>
+  <data name="Log_OfflineStopped" xml:space="preserve"><value>Sessão On-line DESATIVADA (Off-line). Duração: {0}, Linhas registradas: {1}, Marcadores: {2}. Arquivo: '{3}'.</value></data>
+  <data name="Log_OnlineTransitionError" xml:space="preserve"><value>Erro durante transição On-line/Off-line: {0}</value></data>
+  <data name="Log_AcqModeChanged" xml:space="preserve"><value>Modo de aquisição atualizado em tempo real: '{0}'.</value></data>
+  <data name="Log_TimestampSourceChanged" xml:space="preserve"><value>Fonte do Timestamp alterada para: '{0}'.</value></data>
+  <data name="Log_CycleTriggerSet" xml:space="preserve"><value>Tag booleana '{0}' configurada como gatilho de ciclo de máquina.</value></data>
+  <data name="Log_CycleTriggerCleared" xml:space="preserve"><value>Gatilho customizado de ciclo desativado (usando padrão 'Cycle_Active').</value></data>
+  <data name="Log_BrowseRootLoaded" xml:space="preserve"><value>Navegação raiz de '{0}': {1} nós carregados.</value></data>
+  <data name="Log_BrowseRootError" xml:space="preserve"><value>Falha ao navegar raiz de '{0}': {1}</value></data>
+  <data name="Log_BrowseNodeError" xml:space="preserve"><value>Falha ao expandir o nó '{0}' ({1}): {2}</value></data>
+  <data name="Log_NodeAttributesWarn" xml:space="preserve"><value>Não foi possível ler todos os atributos do nó '{0}': {1}</value></data>
+  <data name="Log_TagAddedSingle" xml:space="preserve"><value>Tag '{0}' ({1}) adicionada à planilha e ao gráfico.</value></data>
+  <data name="Log_TagAddedMulti" xml:space="preserve"><value>{0} tags adicionadas à planilha e ao gráfico.</value></data>
+  <data name="Log_TagAddedManual" xml:space="preserve"><value>Tag manual '{0}' ({1}) adicionada à planilha e ao gráfico.</value></data>
+  <data name="Log_TagAddNoneFoundWarn" xml:space="preserve"><value>Nenhuma variável nova encontrada nos nós selecionados (ou todas já estão na planilha).</value></data>
+  <data name="Log_TagInitialReadWarn" xml:space="preserve"><value>Falha na leitura ou ativação inicial das tags adicionadas na conexão '{0}': {1}</value></data>
+  <data name="Log_TagRemoved" xml:space="preserve"><value>Tag '{0}' ({1}) removida da planilha e do gráfico.</value></data>
+  <data name="Log_TagRenamed" xml:space="preserve"><value>Tag ({0}) renomeada de '{1}' para '{2}'.</value></data>
+  <data name="Log_TagsClearedAll" xml:space="preserve"><value>Todas as {0} tags foram removidas da planilha e do gráfico.</value></data>
+  <data name="Log_RowsCleared" xml:space="preserve"><value>Linhas da planilha limpas pelo usuário ({0} registros removidos).</value></data>
+
+  <!-- 4. Marcadores de Evento -->
+  <data name="Log_MarkerModeEnabled" xml:space="preserve"><value>Modo de inserção de marcador ativado. Clique em uma linha da planilha ou em um ponto do gráfico.</value></data>
+  <data name="Log_MarkerModeDisabled" xml:space="preserve"><value>Modo de inserção de marcador desativado.</value></data>
+  <data name="Log_MarkerAddedRow" xml:space="preserve"><value>Marcador adicionado na linha #{0} ({1}): '{2}'</value></data>
+  <data name="Log_MarkerAddedChart" xml:space="preserve"><value>Marcador adicionado no gráfico em {0}: '{1}'</value></data>
+  <data name="Log_MarkerRenamedRow" xml:space="preserve"><value>Marcador da linha #{0} ({1}) renomeado de '{2}' para '{3}'.</value></data>
+  <data name="Log_MarkerRenamedSession" xml:space="preserve"><value>Marcador ({0}) renomeado de '{1}' para '{2}'.</value></data>
+  <data name="Log_MarkerRemovedRow" xml:space="preserve"><value>Marcador '{0}' removido da linha #{1} ({2}) pelo usuário.</value></data>
+  <data name="Log_MarkerRemovedSession" xml:space="preserve"><value>Marcador '{0}' ({1}) excluído pelo usuário.</value></data>
+  <data name="Log_MarkerOperationError" xml:space="preserve"><value>Falha ao gravar marcador na sessão atual: {0}</value></data>
+
+  <!-- 5. Certificados de Segurança PKI -->
+  <data name="Log_CertAutoAcceptEnabled" xml:space="preserve"><value>Auto-aceite de certificados de servidores desconhecidos ATIVADO pelo usuário (não recomendado para produção).</value></data>
+  <data name="Log_CertAutoAcceptDisabled" xml:space="preserve"><value>Auto-aceite de certificados de servidores desconhecidos DESATIVADO pelo usuário (modo seguro).</value></data>
+  <data name="Log_CertClientExportedDer" xml:space="preserve"><value>Certificado público do cliente OPC UA exportado para '{0}' (Thumbprint={1}).</value></data>
+  <data name="Log_CertClientExportedPfx" xml:space="preserve"><value>Certificado do cliente OPC UA (com chave privada .pfx) exportado para '{0}' (Thumbprint={1}).</value></data>
+  <data name="Log_CertClientGenerated" xml:space="preserve"><value>Novo certificado X.509 do cliente OPC UA gerado: Subject='{0}', Validade={1} a {2}, Chave={3} bits, Thumbprint={4}.</value></data>
+  <data name="Log_CertClientImported" xml:space="preserve"><value>Certificado do cliente OPC UA importado de '{0}': Subject='{1}', Thumbprint={2}.</value></data>
+  <data name="Log_CertServerTrusted" xml:space="preserve"><value>Certificado de servidor aprovado como Confiável (Trusted): Subject='{0}', Thumbprint={1}.</value></data>
+  <data name="Log_CertServerRejected" xml:space="preserve"><value>Certificado de servidor movido para Rejeitados (Rejected): Subject='{0}', Thumbprint={1}.</value></data>
+  <data name="Log_CertServerImported" xml:space="preserve"><value>{0} certificado(s) de servidor OPC UA importado(s) para a lista de Confiáveis (Trusted).</value></data>
+  <data name="Log_CertServerExported" xml:space="preserve"><value>Certificado de servidor '{0}' (Thumbprint={1}) exportado para '{2}'.</value></data>
+  <data name="Log_CertServerDeleted" xml:space="preserve"><value>Certificado de servidor removido permanentemente do repositório PKI: Subject='{0}', Thumbprint={1}.</value></data>
+  <data name="Log_CertDiscoverySuccess" xml:space="preserve"><value>Descoberta de certificados em '{0}': {1} certificado(s) de servidor encontrado(s).</value></data>
+  <data name="Log_CertDiscoveryNoneWarn" xml:space="preserve"><value>Nenhum certificado X.509 retornado pelo endpoint '{0}' (servidor pode usar apenas SecurityMode=None).</value></data>
+  <data name="Log_CertDiscoveryError" xml:space="preserve"><value>Falha ao descobrir certificados do servidor '{0}': {1}</value></data>
+  <data name="Log_CertOperationError" xml:space="preserve"><value>Falha em operação de certificado OPC UA ({0}): {1}</value></data>
+  <data name="Log_CertUntrustedAcceptedByUser" xml:space="preserve"><value>Certificado de servidor aprovado pelo usuário: Subject='{0}', Thumbprint={1}.</value></data>
+  <data name="Log_CertUntrustedRejectedByUser" xml:space="preserve"><value>Certificado de servidor rejeitado pelo usuário: Subject='{0}', Thumbprint={1}, Motivo={2}.</value></data>
+  <data name="Log_CertUntrustedAutoAcceptedWarn" xml:space="preserve"><value>Certificado de servidor aceito automaticamente (AutoAcceptUntrustedCertificates=true): Subject='{0}', Thumbprint={1}.</value></data>
+  <data name="Log_CertRevokedActiveDisconnect" xml:space="preserve"><value>Conexão '{0}' encerrada imediatamente: o certificado do servidor (Thumbprint={1}) foi rejeitado ou removido.</value></data>
+  <data name="Log_CertExpiredActiveDisconnect" xml:space="preserve"><value>Conexão '{0}' encerrada automaticamente: o certificado do servidor '{1}' expirou em {2}.</value></data>
+
+  <!-- 6. Exportação de Dados e Imagens -->
+  <data name="Log_SpreadsheetExported" xml:space="preserve"><value>Planilha exportada para '{0}' ({1} linhas).</value></data>
+  <data name="Log_SpreadsheetExportError" xml:space="preserve"><value>Falha ao exportar planilha para '{0}': {1}</value></data>
+  <data name="Log_SpreadsheetPngSaved" xml:space="preserve"><value>Imagem PNG da planilha salva em '{0}' ({1}x{2} px).</value></data>
+  <data name="Log_SpreadsheetPngError" xml:space="preserve"><value>Falha ao salvar imagem PNG da planilha em '{0}': {1}</value></data>
+  <data name="Log_ChartPngSaved" xml:space="preserve"><value>Imagem PNG do gráfico salva em '{0}' ({1}x{2} px).</value></data>
+  <data name="Log_ChartPngError" xml:space="preserve"><value>Falha ao salvar imagem PNG do gráfico em '{0}': {1}</value></data>
 </root>

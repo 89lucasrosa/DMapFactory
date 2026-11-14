@@ -1,8 +1,9 @@
 <Window x:Class="DMapFactory.App.Views.CertificateManagerDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="clr-namespace:DMapFactory.Localization;assembly=DMapFactory.Localization"
         xmlns:services="clr-namespace:DMapFactory.App.Services"
-        Title="Gerenciador de Certificados OPC UA (Cliente)"
+        Title="{Binding [CertDlg_Title], Source={x:Static loc:Loc.Instance}}"
         Width="900" Height="650" MinWidth="740" MinHeight="540"
         WindowStartupLocation="CenterOwner"
         Background="{StaticResource BackgroundBrush}"
@@ -23,31 +24,30 @@
             <!-- ===================================================================== -->
             <!-- ABA 1: CERTIFICADOS DE SERVIDORES OPC UA (TRUSTED / REJECTED)         -->
             <!-- ===================================================================== -->
-            <TabItem x:Name="ServerCertsTab" Header="🛡 Certificados de Servidores">
+            <TabItem x:Name="ServerCertsTab" Header="{Binding [CertDlg_Tab_Servers], Source={x:Static loc:Loc.Instance}}">
                 <DockPanel>
                     <!-- Barra superior: filtro e opção de auto-aceite -->
                     <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
                         <CheckBox DockPanel.Dock="Right" x:Name="AutoAcceptServerCertsCheck"
-                                  Content="Aceitar automaticamente certificados de servidores desconhecidos"
+                                  Content="{Binding [CertDlg_AutoAccept], Source={x:Static loc:Loc.Instance}}"
                                   VerticalAlignment="Center"
                                   Checked="AutoAcceptServerCertsCheck_Changed"
                                   Unchecked="AutoAcceptServerCertsCheck_Changed"
-                                  ToolTip="Quando desmarcado (padrão), conexões com servidores desconhecidos solicitarão aprovação ou serão movidas para Rejeitados" />
+                                  ToolTip="{Binding [CertDlg_AutoAccept_Tip], Source={x:Static loc:Loc.Instance}}" />
 
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="Exibir:" Style="{StaticResource SecondaryText}" VerticalAlignment="Center" Margin="0,0,6,0" />
                             <RadioButton x:Name="FilterAllRadio" Content="Todos" IsChecked="True"
                                          GroupName="ServerFilter" VerticalAlignment="Center" Margin="0,0,10,0"
                                          Checked="ServerFilter_Changed" />
-                            <RadioButton x:Name="FilterTrustedRadio" Content="Confiáveis (Trusted)"
+                            <RadioButton x:Name="FilterTrustedRadio" Content="Confiáveis"
                                          GroupName="ServerFilter" VerticalAlignment="Center" Margin="0,0,10,0"
                                          Checked="ServerFilter_Changed" />
-                            <RadioButton x:Name="FilterRejectedRadio" Content="Rejeitados (Rejected)"
+                            <RadioButton x:Name="FilterRejectedRadio" Content="Rejeitados"
                                          GroupName="ServerFilter" VerticalAlignment="Center" Margin="0,0,12,0"
                                          Checked="ServerFilter_Changed" />
                             <Button Click="RefreshServers_Click" Padding="8,3"
                                     BorderBrush="{StaticResource BorderBrush}" Background="{StaticResource SurfaceAltBrush}"
-                                    Content="🔄 Atualizar" ToolTip="Recarregar certificados das pastas Trusted e Rejected" />
+                                    Content="{Binding [CertDlg_Btn_Refresh], Source={x:Static loc:Loc.Instance}}" />
                         </StackPanel>
                     </DockPanel>
 
@@ -55,28 +55,22 @@
                     <WrapPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,10,0,0">
                         <Button x:Name="TrustServerBtn" Click="TrustSelectedServer_Click" Padding="10,5" Margin="0,2,6,2"
                                 BorderBrush="{StaticResource BorderBrush}" Background="{StaticResource SurfaceAltBrush}"
-                                Content="✔ Confiar (Trust)"
-                                ToolTip="Move o certificado de servidor selecionado para a lista de Servidores Confiáveis (Trusted)" />
+                                Content="{Binding [CertDlg_Btn_Trust], Source={x:Static loc:Loc.Instance}}" />
                         <Button x:Name="RejectServerBtn" Click="RejectSelectedServer_Click" Padding="10,5" Margin="0,2,6,2"
                                 BorderBrush="{StaticResource BorderBrush}" Background="{StaticResource SurfaceAltBrush}"
-                                Content="✖ Rejeitar (Reject)"
-                                ToolTip="Move o certificado de servidor selecionado para a lista de Servidores Rejeitados (Rejected)" />
+                                Content="{Binding [CertDlg_Btn_Reject], Source={x:Static loc:Loc.Instance}}" />
                         <Button Click="ImportServerCert_Click" Padding="10,5" Margin="0,2,6,2"
                                 BorderBrush="{StaticResource BorderBrush}" Background="{StaticResource SurfaceAltBrush}"
-                                Content="📥 Importar (.der / .cer / .crt)"
-                                ToolTip="Importa arquivo(s) de certificado de servidor OPC UA diretamente para a lista de Confiáveis" />
+                                Content="{Binding [CertDlg_Btn_ImportServer], Source={x:Static loc:Loc.Instance}}" />
                         <Button x:Name="ExportServerBtn" Click="ExportSelectedServerCert_Click" Padding="10,5" Margin="0,2,6,2"
                                 BorderBrush="{StaticResource BorderBrush}" Background="{StaticResource SurfaceAltBrush}"
-                                Content="📤 Exportar (.der)"
-                                ToolTip="Exporta o certificado de servidor selecionado para um arquivo .der" />
+                                Content="{Binding [CertDlg_Btn_ExportServer], Source={x:Static loc:Loc.Instance}}" />
                         <Button x:Name="RemoveServerBtn" Click="RemoveSelectedServerCert_Click" Padding="10,5" Margin="0,2,6,2"
                                 BorderBrush="{StaticResource BorderBrush}" Background="{StaticResource SurfaceAltBrush}"
-                                Content="🗑 Excluir"
-                                ToolTip="Remove permanentemente o certificado selecionado do repositório PKI" />
+                                Content="{Binding [CertDlg_Btn_DeleteServer], Source={x:Static loc:Loc.Instance}}" />
                         <Button Click="OpenPkiFolder_Click" Padding="10,5" Margin="0,2,0,2"
                                 BorderBrush="{StaticResource BorderBrush}" Background="{StaticResource SurfaceAltBrush}"
-                                Content="📁 Abrir Pasta PKI"
-                                ToolTip="Abre a pasta de certificados no Windows Explorer" />
+                                Content="{Binding [CertDlg_Btn_OpenPki], Source={x:Static loc:Loc.Instance}}" />
                     </WrapPanel>
 
                     <!-- Painel de detalhes do certificado de servidor selecionado -->
@@ -95,9 +89,9 @@
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Sujeito / Emissor:" Style="{StaticResource SecondaryText}" Margin="0,0,6,0" />
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Subject:" Style="{StaticResource SecondaryText}" Margin="0,0,6,0" />
                             <TextBox Grid.Row="0" Grid.Column="1" x:Name="SelectedServerSubjectBox" IsReadOnly="True"
-                                     Background="Transparent" BorderThickness="0" Text="Selecione um certificado na lista acima" />
+                                     Background="Transparent" BorderThickness="0" Text="—" />
 
                             <TextBlock Grid.Row="0" Grid.Column="2" Text="Application URI:" Style="{StaticResource SecondaryText}" Margin="12,0,6,0" />
                             <TextBox Grid.Row="0" Grid.Column="3" x:Name="SelectedServerUriBox" IsReadOnly="True"
@@ -107,7 +101,7 @@
                             <TextBox Grid.Row="2" Grid.Column="1" x:Name="SelectedServerThumbBox" IsReadOnly="True"
                                      Background="Transparent" BorderThickness="0" FontFamily="{StaticResource MonoFont}" FontSize="12" Text="—" />
 
-                            <TextBlock Grid.Row="2" Grid.Column="2" Text="Validade / Chave:" Style="{StaticResource SecondaryText}" Margin="12,0,6,0" />
+                            <TextBlock Grid.Row="2" Grid.Column="2" Text="Validity / Key:" Style="{StaticResource SecondaryText}" Margin="12,0,6,0" />
                             <TextBox Grid.Row="2" Grid.Column="3" x:Name="SelectedServerValidityBox" IsReadOnly="True"
                                      Background="Transparent" BorderThickness="0" Text="—" />
                         </Grid>
@@ -120,19 +114,19 @@
                                   SelectionChanged="ServersGrid_SelectionChanged">
                             <DataGrid.ContextMenu>
                                 <ContextMenu>
-                                    <MenuItem Header="✔ Confiar neste Certificado (Trust)" Click="TrustSelectedServer_Click" />
-                                    <MenuItem Header="✖ Rejeitar este Certificado (Reject)" Click="RejectSelectedServer_Click" />
+                                    <MenuItem Header="{Binding [CertDlg_Btn_Trust], Source={x:Static loc:Loc.Instance}}" Click="TrustSelectedServer_Click" />
+                                    <MenuItem Header="{Binding [CertDlg_Btn_Reject], Source={x:Static loc:Loc.Instance}}" Click="RejectSelectedServer_Click" />
                                     <Separator />
-                                    <MenuItem Header="📤 Exportar Certificado (.der)..." Click="ExportSelectedServerCert_Click" />
-                                    <MenuItem Header="🗑 Excluir Certificado" Click="RemoveSelectedServerCert_Click" />
+                                    <MenuItem Header="{Binding [CertDlg_Btn_ExportServer], Source={x:Static loc:Loc.Instance}}" Click="ExportSelectedServerCert_Click" />
+                                    <MenuItem Header="{Binding [CertDlg_Btn_DeleteServer], Source={x:Static loc:Loc.Instance}}" Click="RemoveSelectedServerCert_Click" />
                                 </ContextMenu>
                             </DataGrid.ContextMenu>
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Status" Binding="{Binding TrustStatusText}" Width="95" FontWeight="SemiBold" />
-                                <DataGridTextColumn Header="Sujeito (Subject)" Binding="{Binding Subject}" Width="2*" />
+                                <DataGridTextColumn Header="Subject" Binding="{Binding Subject}" Width="2*" />
                                 <DataGridTextColumn Header="Application URI" Binding="{Binding ApplicationUri}" Width="1.4*" />
-                                <DataGridTextColumn Header="Validade" Binding="{Binding ValidityRangeText}" Width="155" />
-                                <DataGridTextColumn Header="Situação" Binding="{Binding ValidityStatusText}" Width="150" />
+                                <DataGridTextColumn Header="Validity" Binding="{Binding ValidityRangeText}" Width="155" />
+                                <DataGridTextColumn Header="State" Binding="{Binding ValidityStatusText}" Width="150" />
                                 <DataGridTextColumn Header="Thumbprint (SHA-1)" Binding="{Binding Thumbprint}" Width="1.4*" FontFamily="{StaticResource MonoFont}" />
                             </DataGrid.Columns>
                         </DataGrid>
@@ -143,13 +137,11 @@
             <!-- ===================================================================== -->
             <!-- ABA 2: DESCOBERTA DE CERTIFICADOS DE SERVIDORES (DISCOVERY)           -->
             <!-- ===================================================================== -->
-            <TabItem x:Name="DiscoveryTab" Header="🔍 Descoberta de Certificados">
+            <TabItem x:Name="DiscoveryTab" Header="{Binding [CertDlg_Tab_Discovery], Source={x:Static loc:Loc.Instance}}">
                 <DockPanel>
                     <Border DockPanel.Dock="Top" Style="{StaticResource Panel}" Background="{StaticResource SurfaceAltBrush}"
                             Padding="10" Margin="0,0,0,10">
                         <StackPanel>
-                            <TextBlock Text="Consulte um servidor OPC UA via GetEndpoints para inspecionar seu certificado X.509 antes de conectar e decidir se deseja confiar (Trust) ou rejeitar (Reject)."
-                                       Style="{StaticResource SecondaryText}" TextWrapping="Wrap" Margin="0,0,0,8" />
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
@@ -158,11 +150,10 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Column="0" Text="Endpoint URL:" VerticalAlignment="Center" Margin="0,0,8,0" />
                                 <ComboBox Grid.Column="1" x:Name="DiscoveryUrlCombo" IsEditable="True"
-                                          Padding="6,4" Margin="0,0,8,0"
-                                          ToolTip="Informe ou selecione a URL do servidor OPC UA (ex.: opc.tcp://192.168.0.10:4840)" />
+                                          Padding="6,4" Margin="0,0,8,0" />
                                 <Button Grid.Column="2" x:Name="DiscoverBtn" Click="DiscoverServerCerts_Click"
                                         Padding="14,5" BorderBrush="{StaticResource AccentBrush}" Background="{StaticResource AccentSoftBrush}"
-                                        FontWeight="SemiBold" Content="🔍 Descobrir Certificados" />
+                                        FontWeight="SemiBold" Content="{Binding [CertDlg_Btn_Discover], Source={x:Static loc:Loc.Instance}}" />
                             </Grid>
                         </StackPanel>
                     </Border>
@@ -171,16 +162,13 @@
                     <WrapPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,10,0,0">
                         <Button x:Name="TrustDiscoveredBtn" Click="TrustDiscoveredCert_Click" Padding="12,5" Margin="0,2,6,2"
                                 BorderBrush="{StaticResource BorderBrush}" Background="{StaticResource SurfaceAltBrush}"
-                                Content="✔ Confiar no Certificado Selecionado (Trust)"
-                                ToolTip="Salva o certificado descoberto na pasta de Servidores Confiáveis (Trusted)" />
+                                Content="{Binding [CertDlg_Btn_Trust], Source={x:Static loc:Loc.Instance}}" />
                         <Button x:Name="RejectDiscoveredBtn" Click="RejectDiscoveredCert_Click" Padding="12,5" Margin="0,2,6,2"
                                 BorderBrush="{StaticResource BorderBrush}" Background="{StaticResource SurfaceAltBrush}"
-                                Content="✖ Rejeitar Certificado Selecionado (Reject)"
-                                ToolTip="Salva o certificado descoberto na pasta de Servidores Rejeitados (Rejected)" />
+                                Content="{Binding [CertDlg_Btn_Reject], Source={x:Static loc:Loc.Instance}}" />
                         <Button x:Name="ExportDiscoveredBtn" Click="ExportDiscoveredCert_Click" Padding="12,5" Margin="0,2,0,2"
                                 BorderBrush="{StaticResource BorderBrush}" Background="{StaticResource SurfaceAltBrush}"
-                                Content="📤 Exportar (.der)"
-                                ToolTip="Salva o certificado descoberto em um arquivo .der" />
+                                Content="{Binding [CertDlg_Btn_ExportServer], Source={x:Static loc:Loc.Instance}}" />
                     </WrapPanel>
 
                     <Border Style="{StaticResource Panel}">
@@ -188,12 +176,12 @@
                                   SelectionMode="Single" RowHeight="27" GridLinesVisibility="Horizontal"
                                   SelectionChanged="DiscoveredCertsGrid_SelectionChanged">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Status Atual" Binding="{Binding Certificate.TrustStatusText}" Width="100" FontWeight="SemiBold" />
-                                <DataGridTextColumn Header="Sujeito (Subject)" Binding="{Binding Certificate.Subject}" Width="1.8*" />
+                                <DataGridTextColumn Header="Status" Binding="{Binding Certificate.TrustStatusText}" Width="100" FontWeight="SemiBold" />
+                                <DataGridTextColumn Header="Subject" Binding="{Binding Certificate.Subject}" Width="1.8*" />
                                 <DataGridTextColumn Header="Application URI" Binding="{Binding Certificate.ApplicationUri}" Width="1.3*" />
-                                <DataGridTextColumn Header="Endpoints / Políticas" Binding="{Binding EndpointsDisplay}" Width="1.6*" />
-                                <DataGridTextColumn Header="Validade" Binding="{Binding Certificate.ValidityRangeText}" Width="155" />
-                                <DataGridTextColumn Header="Chave (bits)" Binding="{Binding Certificate.KeySize}" Width="80" />
+                                <DataGridTextColumn Header="Endpoints" Binding="{Binding EndpointsDisplay}" Width="1.6*" />
+                                <DataGridTextColumn Header="Validity" Binding="{Binding Certificate.ValidityRangeText}" Width="155" />
+                                <DataGridTextColumn Header="Bits" Binding="{Binding Certificate.KeySize}" Width="80" />
                                 <DataGridTextColumn Header="Thumbprint (SHA-1)" Binding="{Binding Certificate.Thumbprint}" Width="1.4*" FontFamily="{StaticResource MonoFont}" />
                             </DataGrid.Columns>
                         </DataGrid>
@@ -204,16 +192,14 @@
             <!-- ===================================================================== -->
             <!-- ABA 3: MEU CERTIFICADO (CLIENTE OPC UA)                               -->
             <!-- ===================================================================== -->
-            <TabItem x:Name="ClientCertTab" Header="🔑 Meu Certificado (Cliente)">
+            <TabItem x:Name="ClientCertTab" Header="{Binding [CertDlg_Tab_Client], Source={x:Static loc:Loc.Instance}}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>
                         <!-- Seção A: Certificado atual em uso pelo cliente -->
                         <Border Style="{StaticResource Panel}" Padding="12" Margin="0,0,0,10">
                             <StackPanel>
-                                <TextBlock Text="CERTIFICADO ATUAL DA APLICAÇÃO (CLIENTE OPC UA)"
-                                           Style="{StaticResource PanelHeaderText}" Margin="0,0,0,4" />
-                                <TextBlock Text="O DMapFactory opera exclusivamente como Cliente OPC UA. Exporte a chave pública (.der) abaixo caso precise autorizar este cliente no servidor/CLP."
-                                           Style="{StaticResource SecondaryText}" TextWrapping="Wrap" Margin="0,0,0,10" />
+                                <TextBlock Text="{Binding [CertDlg_Tab_Client], Source={x:Static loc:Loc.Instance}}"
+                                           Style="{StaticResource PanelHeaderText}" Margin="0,0,0,8" />
 
                                 <Grid Margin="0,0,0,10">
                                     <Grid.ColumnDefinitions>
@@ -234,11 +220,11 @@
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
 
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Sujeito (Subject):" Style="{StaticResource SecondaryText}" />
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Subject:" Style="{StaticResource SecondaryText}" />
                                     <TextBox Grid.Row="0" Grid.Column="1" x:Name="ClientSubjectBox" IsReadOnly="True"
                                              Background="Transparent" BorderThickness="0" FontWeight="SemiBold" />
 
-                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="URI da Aplicação:" Style="{StaticResource SecondaryText}" />
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Application URI:" Style="{StaticResource SecondaryText}" />
                                     <TextBox Grid.Row="2" Grid.Column="1" x:Name="ClientUriBox" IsReadOnly="True"
                                              Background="Transparent" BorderThickness="0" />
 
@@ -246,13 +232,13 @@
                                     <TextBox Grid.Row="4" Grid.Column="1" x:Name="ClientThumbprintBox" IsReadOnly="True"
                                              Background="Transparent" BorderThickness="0" FontFamily="{StaticResource MonoFont}" FontSize="12" />
 
-                                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Validade:" Style="{StaticResource SecondaryText}" />
+                                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Validity:" Style="{StaticResource SecondaryText}" />
                                     <TextBlock Grid.Row="6" Grid.Column="1" x:Name="ClientValidityText" FontWeight="SemiBold" />
 
-                                    <TextBlock Grid.Row="8" Grid.Column="0" Text="Chave / Algoritmo:" Style="{StaticResource SecondaryText}" />
+                                    <TextBlock Grid.Row="8" Grid.Column="0" Text="Key / Algorithm:" Style="{StaticResource SecondaryText}" />
                                     <TextBlock Grid.Row="8" Grid.Column="1" x:Name="ClientKeyInfoText" Style="{StaticResource SecondaryText}" />
 
-                                    <TextBlock Grid.Row="10" Grid.Column="0" Text="Diretório PKI:" Style="{StaticResource SecondaryText}" />
+                                    <TextBlock Grid.Row="10" Grid.Column="0" Text="PKI Folder:" Style="{StaticResource SecondaryText}" />
                                     <TextBox Grid.Row="10" Grid.Column="1" x:Name="PkiPathBox" IsReadOnly="True"
                                              Background="Transparent" BorderThickness="0" Foreground="{StaticResource TextSecondaryBrush}" />
                                 </Grid>
@@ -261,11 +247,10 @@
                                     <Button Click="ExportClientDer_Click" Padding="12,5" Margin="0,2,8,2"
                                             BorderBrush="{StaticResource AccentBrush}" Background="{StaticResource AccentSoftBrush}"
                                             FontWeight="SemiBold"
-                                            Content="📤 Exportar Certificado Público (.der / .cer)"
-                                            ToolTip="Exporta o certificado público (.der) para importar no servidor OPC UA (ex.: KEPServerEX, Siemens S7-1500, Codesys)" />
+                                            Content="{Binding [CertDlg_Btn_ExportClientDer], Source={x:Static loc:Loc.Instance}}" />
                                     <Button Click="OpenPkiFolder_Click" Padding="10,5" Margin="0,2,0,2"
                                             BorderBrush="{StaticResource BorderBrush}" Background="{StaticResource SurfaceAltBrush}"
-                                            Content="📁 Abrir Pasta PKI" />
+                                            Content="{Binding [CertDlg_Btn_OpenPki], Source={x:Static loc:Loc.Instance}}" />
                                 </WrapPanel>
                             </StackPanel>
                         </Border>
@@ -273,7 +258,7 @@
                         <!-- Seção B: Gerar Novo Certificado de Cliente com escolha de data de validade -->
                         <Border Style="{StaticResource Panel}" Padding="12" Margin="0,0,0,10">
                             <StackPanel>
-                                <TextBlock Text="GERAR NOVO CERTIFICADO DE CLIENTE (COM DATA DE VALIDADE CUSTOMIZÁVEL)"
+                                <TextBlock Text="{Binding [CertDlg_Btn_GenerateClient], Source={x:Static loc:Loc.Instance}}"
                                            Style="{StaticResource PanelHeaderText}" Margin="0,0,0,8" />
 
                                 <Grid Margin="0,0,0,10">
@@ -291,35 +276,34 @@
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
 
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Nome Comum (CN):" VerticalAlignment="Center" Style="{StaticResource SecondaryText}" />
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Common Name (CN):" VerticalAlignment="Center" Style="{StaticResource SecondaryText}" />
                                     <TextBox Grid.Row="0" Grid.Column="1" x:Name="GenCommonNameBox" Text="DMapFactory OPC UA Client" Padding="6,4" Margin="0,0,12,0" />
 
-                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="Organização (O):" VerticalAlignment="Center" Style="{StaticResource SecondaryText}" />
+                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="Organization (O):" VerticalAlignment="Center" Style="{StaticResource SecondaryText}" />
                                     <TextBox Grid.Row="0" Grid.Column="3" x:Name="GenOrganizationBox" Text="DMapFactory" Padding="6,4" />
 
-                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Início da Validade:" VerticalAlignment="Center" Style="{StaticResource SecondaryText}" />
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Not Before:" VerticalAlignment="Center" Style="{StaticResource SecondaryText}" />
                                     <DatePicker Grid.Row="2" Grid.Column="1" x:Name="GenNotBeforePicker" Margin="0,0,12,0" VerticalAlignment="Center" />
 
-                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="Tamanho da Chave:" VerticalAlignment="Center" Style="{StaticResource SecondaryText}" />
+                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="Key Size:" VerticalAlignment="Center" Style="{StaticResource SecondaryText}" />
                                     <ComboBox Grid.Row="2" Grid.Column="3" x:Name="GenKeySizeCombo" SelectedIndex="0" Padding="6,4" VerticalAlignment="Center">
-                                        <ComboBoxItem Content="2048 bits (Padrão)" Tag="2048" />
+                                        <ComboBoxItem Content="2048 bits" Tag="2048" />
                                         <ComboBoxItem Content="3072 bits" Tag="3072" />
                                         <ComboBoxItem Content="4096 bits" Tag="4096" />
                                     </ComboBox>
 
-                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Data de Expiração:" VerticalAlignment="Center" Style="{StaticResource SecondaryText}" />
+                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Not After:" VerticalAlignment="Center" Style="{StaticResource SecondaryText}" />
                                     <DatePicker Grid.Row="4" Grid.Column="1" x:Name="GenNotAfterPicker" Margin="0,0,12,0" VerticalAlignment="Center" />
 
-                                    <TextBlock Grid.Row="4" Grid.Column="2" Text="Ajuste Rápido:" VerticalAlignment="Center" Style="{StaticResource SecondaryText}" />
+                                    <TextBlock Grid.Row="4" Grid.Column="2" Text="Preset:" VerticalAlignment="Center" Style="{StaticResource SecondaryText}" />
                                     <WrapPanel Grid.Row="4" Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
-                                        <Button Content="+1 Ano" Tag="1" Click="PresetValidityYears_Click" Padding="7,3" Margin="0,1,4,1"
+                                        <Button Content="+1Y" Tag="1" Click="PresetValidityYears_Click" Padding="7,3" Margin="0,1,4,1"
                                                 BorderBrush="{StaticResource BorderBrush}" Background="{StaticResource SurfaceAltBrush}" />
-                                        <Button Content="+2 Anos" Tag="2" Click="PresetValidityYears_Click" Padding="7,3" Margin="0,1,4,1"
-                                                BorderBrush="{StaticResource BorderBrush}" Background="{StaticResource SurfaceAltBrush}"
-                                                ToolTip="Validade padrão recomendada (2 anos)" />
-                                        <Button Content="+5 Anos" Tag="5" Click="PresetValidityYears_Click" Padding="7,3" Margin="0,1,4,1"
+                                        <Button Content="+2Y" Tag="2" Click="PresetValidityYears_Click" Padding="7,3" Margin="0,1,4,1"
                                                 BorderBrush="{StaticResource BorderBrush}" Background="{StaticResource SurfaceAltBrush}" />
-                                        <Button Content="+10 Anos" Tag="10" Click="PresetValidityYears_Click" Padding="7,3" Margin="0,1,0,1"
+                                        <Button Content="+5Y" Tag="5" Click="PresetValidityYears_Click" Padding="7,3" Margin="0,1,4,1"
+                                                BorderBrush="{StaticResource BorderBrush}" Background="{StaticResource SurfaceAltBrush}" />
+                                        <Button Content="+10Y" Tag="10" Click="PresetValidityYears_Click" Padding="7,3" Margin="0,1,0,1"
                                                 BorderBrush="{StaticResource BorderBrush}" Background="{StaticResource SurfaceAltBrush}" />
                                     </WrapPanel>
                                 </Grid>
@@ -328,27 +312,22 @@
                                     <Button Click="GenerateClientCert_Click" Padding="14,6"
                                             BorderBrush="{StaticResource AccentBrush}" Background="{StaticResource AccentSoftBrush}"
                                             FontWeight="SemiBold"
-                                            Content="🔄 Gerar Novo Certificado de Cliente"
-                                            ToolTip="Gera e ativa imediatamente um novo certificado X.509 autoassinado com a data de validade escolhida" />
+                                            Content="{Binding [CertDlg_Btn_GenerateClient], Source={x:Static loc:Loc.Instance}}" />
                                 </StackPanel>
                             </StackPanel>
                         </Border>
 
                         <!-- Seção C: Menu Escondido "Avançado" (Q3) -->
                         <Border Style="{StaticResource Panel}" Padding="10,6">
-                            <Expander x:Name="AdvancedClientExpander" Header="Avançado (Backup e Importação de Certificado do Cliente)" IsExpanded="False">
+                            <Expander x:Name="AdvancedClientExpander" Header="PKCS#12 (.pfx)" IsExpanded="False">
                                 <StackPanel Margin="0,8,0,4">
-                                    <TextBlock Text="Utilize as opções abaixo apenas para migrar o par de chaves do cliente entre computadores ou instalar um certificado emitido por uma Autoridade Certificadora (CA) corporativa."
-                                               Style="{StaticResource SecondaryText}" TextWrapping="Wrap" Margin="0,0,0,8" />
                                     <WrapPanel Orientation="Horizontal">
                                         <Button Click="ExportClientPfx_Click" Padding="10,5" Margin="0,2,8,2"
                                                 BorderBrush="{StaticResource BorderBrush}" Background="{StaticResource SurfaceAltBrush}"
-                                                Content="🔐 Exportar com Chave Privada (.pfx)"
-                                                ToolTip="Exporta o certificado completo do cliente (.pfx) para backup ou uso em outro computador" />
+                                                Content="{Binding [CertDlg_Btn_ExportClientPfx], Source={x:Static loc:Loc.Instance}}" />
                                         <Button Click="ImportClientCert_Click" Padding="10,5" Margin="0,2,0,2"
                                                 BorderBrush="{StaticResource BorderBrush}" Background="{StaticResource SurfaceAltBrush}"
-                                                Content="📥 Importar Meu Certificado (.pfx / .der)"
-                                                ToolTip="Substitui o certificado do cliente atual por um arquivo .pfx/.p12 ou .der/.cer" />
+                                                Content="{Binding [CertDlg_Btn_ImportClient], Source={x:Static loc:Loc.Instance}}" />
                                     </WrapPanel>
                                 </StackPanel>
                             </Expander>
@@ -364,7 +343,7 @@
 
         <!-- Rodapé -->
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button Padding="18,5" IsCancel="True" IsDefault="True" Content="Fechar" />
+            <Button Padding="18,5" IsCancel="True" IsDefault="True" Content="{Binding [CertDlg_Close], Source={x:Static loc:Loc.Instance}}" />
         </StackPanel>
     </Grid>
 </Window>
