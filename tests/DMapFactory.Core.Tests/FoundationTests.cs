@@ -18,9 +18,9 @@ public sealed class FoundationTests
     }
 
     [Theory]
-    [InlineData("pt-BR", "_Arquivo", "Ficar on-line")]
-    [InlineData("en-US", "_File", "Go online")]
-    [InlineData("es", "_Archivo", "Conectar en línea")]
+    [InlineData("pt-BR", "_Arquivo", "▶ On-line")]
+    [InlineData("en-US", "_File", "▶ Online")]
+    [InlineData("es", "_Archivo", "▶ En línea")]
     public void Localization_SwitchesBetweenAllThreeSupportedLanguages(
         string cultureCode, string expectedFileMenu, string expectedOnlineButton)
     {

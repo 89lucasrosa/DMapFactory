@@ -261,13 +261,13 @@
                     <!-- Grupo 3: Parâmetros de Aquisição (FN-01, FN-02) -->
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="{Binding [Toolbar_RateLabel], Source={x:Static loc:Loc.Instance}}" Style="{StaticResource SecondaryText}" VerticalAlignment="Center" Margin="0,0,4,0" FontSize="11" />
-                        <ComboBox ItemsSource="{Binding SamplingIntervalOptions}" SelectedItem="{Binding SelectedSamplingIntervalMs}"
+                        <ComboBox ItemsSource="{Binding SamplingIntervalOptions}" SelectedItem="{Binding SelectedSamplingIntervalMs, Mode=TwoWay}"
                                   IsEnabled="{Binding IsSamplingIntervalEnabled}"
                                   Width="70" VerticalAlignment="Center" />
                         <TextBlock Text="ms" Style="{StaticResource SecondaryText}" VerticalAlignment="Center" Margin="3,0,8,0" FontSize="11" />
 
                         <TextBlock Text="{Binding [Toolbar_ModeLabel], Source={x:Static loc:Loc.Instance}}" Style="{StaticResource SecondaryText}" VerticalAlignment="Center" Margin="0,0,4,0" FontSize="11" />
-                        <ComboBox ItemsSource="{Binding AcquisitionModeOptions}" SelectedIndex="{Binding SelectedAcquisitionModeIndex}"
+                        <ComboBox ItemsSource="{Binding AcquisitionModeOptions}" SelectedIndex="{Binding SelectedAcquisitionModeIndex, Mode=TwoWay}"
                                   Width="195" VerticalAlignment="Center" />
 
                         <!-- Indicador de Gatilho de Ciclo Ativo -->

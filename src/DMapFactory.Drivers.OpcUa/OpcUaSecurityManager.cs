@@ -419,7 +419,7 @@ public sealed class OpcUaSecurityManager
         await RemoveServerCertificateInternalAsync(config, cert.Thumbprint, fromTrusted: false).ConfigureAwait(false);
         await config.CertificateValidator.UpdateAsync(config.SecurityConfiguration).ConfigureAwait(false);
 
-        _logger.LogInformation("Certificado de servidor confiado (Trusted): {Subject} [{Thumbprint}]", cert.Subject, cert.Thumbprint);
+        _logger.LogInformation("{Message}", Loc.Instance.Format("Log_CertServerTrusted", cert.Subject, cert.Thumbprint));
         CertificateTrustChanged?.Invoke(cert.Thumbprint, CertificateTrustStatus.Trusted);
 
         string? path = FindFirstCertificateFileInDirectory(TrustedPeersDirectory, cert.Thumbprint) ?? TrustedPeersDirectory;
@@ -445,7 +445,7 @@ public sealed class OpcUaSecurityManager
         await RemoveServerCertificateInternalAsync(config, cert.Thumbprint, fromTrusted: true).ConfigureAwait(false);
         await config.CertificateValidator.UpdateAsync(config.SecurityConfiguration).ConfigureAwait(false);
 
-        _logger.LogWarning("Certificado de servidor rejeitado (Rejected): {Subject} [{Thumbprint}]", cert.Subject, cert.Thumbprint);
+        _logger.LogWarning("{Message}", Loc.Instance.Format("Log_CertServerRejected", cert.Subject, cert.Thumbprint));
         CertificateTrustChanged?.Invoke(cert.Thumbprint, CertificateTrustStatus.Rejected);
 
         string? path = FindFirstCertificateFileInDirectory(RejectedPeersDirectory, cert.Thumbprint) ?? RejectedPeersDirectory;
@@ -489,7 +489,7 @@ public sealed class OpcUaSecurityManager
         await RemoveServerCertificateInternalAsync(config, thumbprint, fromTrusted).ConfigureAwait(false);
         await config.CertificateValidator.UpdateAsync(config.SecurityConfiguration).ConfigureAwait(false);
 
-        _logger.LogInformation("Certificado de servidor removido da lista {Store}: [{Thumbprint}]", fromTrusted ? "Trusted" : "Rejected", thumbprint);
+        _logger.LogInformation("{Message}", Loc.Instance.Format("Log_CertServerDeleted", fromTrusted ? "Trusted" : "Rejected", thumbprint));
         CertificateTrustChanged?.Invoke(thumbprint, CertificateTrustStatus.Unknown);
     }
 
@@ -564,8 +564,8 @@ public sealed class OpcUaSecurityManager
                     value.Raw));
             }
 
-            _logger.LogInformation("Descoberta de certificados em {Url} concluída. {Count} certificado(s) de servidor encontrado(s).",
-                discoveryUrl, results.Count);
+            _logger.LogInformation("{Message}", Loc.Instance.Format("Log_CertDiscoverySuccess",
+                discoveryUrl, results.Count));
 
             return results;
         }
@@ -700,8 +700,8 @@ public sealed class OpcUaSecurityManager
         await config.CertificateValidator.UpdateAsync(config.SecurityConfiguration).ConfigureAwait(false);
 
         string? filePath = FindFirstCertificateFileInDirectory(OwnCertsDirectory, loaded.Thumbprint) ?? OwnCertsDirectory;
-        _logger.LogInformation("Novo certificado de aplicação autoassinado gerado com sucesso: {Subject} [{Thumbprint}] (Válido de {NotBefore:yyyy-MM-dd} até {NotAfter:yyyy-MM-dd}, RSA {KeySize} bits)",
-            loaded.Subject, loaded.Thumbprint, loaded.NotBefore, loaded.NotAfter, keySize);
+        _logger.LogInformation("{Message}", Loc.Instance.Format("Log_CertClientGenerated",
+            loaded.Subject, loaded.NotBefore.ToString("yyyy-MM-dd"), loaded.NotAfter.ToString("yyyy-MM-dd"), keySize, loaded.Thumbprint));
         return ToInfo(loaded, filePath, CertificateTrustStatus.Trusted);
     }
 

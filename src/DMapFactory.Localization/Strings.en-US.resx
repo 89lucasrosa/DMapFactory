@@ -469,4 +469,107 @@ Platform: .NET 8 / WPF (Windows).</value></data>
   <data name="Log_SpreadsheetPngError" xml:space="preserve"><value>Failed to save spreadsheet PNG image to '{0}': {1}</value></data>
   <data name="Log_ChartPngSaved" xml:space="preserve"><value>Chart PNG image saved to '{0}' ({1}x{2} px).</value></data>
   <data name="Log_ChartPngError" xml:space="preserve"><value>Failed to save chart PNG image to '{0}': {1}</value></data>
+  <data name="Log_NewProject" xml:space="preserve"><value>New project started.</value></data>
+  <data name="Log_OnlineAutoConnectWarn" xml:space="preserve"><value>Failed to auto-connect '{0}' while activating Online mode: {1}</value></data>
+  <data name="Log_MarkerPlaceModeOn" xml:space="preserve"><value>Marker placement mode enabled. Click a spreadsheet row or a chart point.</value></data>
+  <data name="Log_MarkerPlaceModeOff" xml:space="preserve"><value>Marker placement mode disabled.</value></data>
+  <data name="Log_SpreadsheetExportEmptyWarn" xml:space="preserve"><value>There are no rows in the spreadsheet to export.</value></data>
+  <data name="Log_OpcSubscriptionStarted" xml:space="preserve"><value>Subscription '{0}' started on '{1}' ({2}/{3} active tags).</value></data>
+  <data name="Log_OpcPollingStarted" xml:space="preserve"><value>Periodic acquisition '{0}' started on '{1}' at fixed rate {2} ms ({3} tags).</value></data>
+  <data name="Log_OpcMonitoredItemBadWarn" xml:space="preserve"><value>MonitoredItem '{0}' ({1}) returned status {2}.</value></data>
+  <data name="Log_OpcPollingLoopError" xml:space="preserve"><value>Error in polling loop for group {0}.</value></data>
+  <data name="Log_OpcBrowseStatusWarn" xml:space="preserve"><value>OPC UA browse at {0} returned status {1}.</value></data>
+  <data name="Log_CertExpiredDisconnectError" xml:space="preserve"><value>Error disconnecting session {0} after certificate expiration.</value></data>
+
+  <!-- Additional Menus, Toolbars, Dialogs & Controls -->
+  <data name="Menu_ConfigSessionsFolder" xml:space="preserve"><value>Configure sessions save location…</value></data>
+  <data name="Menu_AddMarker" xml:space="preserve"><value>Insert marker</value></data>
+  <data name="Menu_DeleteSelectedTag" xml:space="preserve"><value>Delete selected tag</value></data>
+  <data name="Menu_DeleteAllTags" xml:space="preserve"><value>Delete all tags</value></data>
+  <data name="Browser_Ctx_AddNode" xml:space="preserve"><value>+ Add to Spreadsheet &amp; Chart</value></data>
+  <data name="Grid_GroupSameTimestamp" xml:space="preserve"><value>Group same timestamp (P3)</value></data>
+  <data name="Grid_AutoFitHeader" xml:space="preserve"><value>↕ Auto</value></data>
+  <data name="Grid_AutoFitColumns" xml:space="preserve"><value>↔ Auto-fit widths</value></data>
+  <data name="Grid_SavePng" xml:space="preserve"><value>📷 PNG</value></data>
+  <data name="Grid_SavePng_Tip" xml:space="preserve"><value>Save current visible spreadsheet range as PNG image</value></data>
+  <data name="Chart_Pan" xml:space="preserve"><value>Pan</value></data>
+  <data name="Chart_FitAll" xml:space="preserve"><value>↔ Fit All</value></data>
+  <data name="Chart_AutoY" xml:space="preserve"><value>Auto Y</value></data>
+  <data name="Chart_SavePng" xml:space="preserve"><value>📷 PNG</value></data>
+  <data name="Chart_SamplePoints" xml:space="preserve"><value>Points (●)</value></data>
+  <data name="Chart_CursorsAB" xml:space="preserve"><value>Cursors A/B</value></data>
+  <data name="Pen_Ctx_Delete" xml:space="preserve"><value>🗑 Delete this tag from spreadsheet and chart</value></data>
+  <data name="Pen_Ctx_TogglePlot" xml:space="preserve"><value>Toggle chart visibility (Plot)</value></data>
+  <data name="Pen_Ctx_SetCycle" xml:space="preserve"><value>🏷 Set as Cycle Trigger</value></data>
+  <data name="Pen_Ctx_CopyAddress" xml:space="preserve"><value>📋 Copy Address / NodeId</value></data>
+  <data name="Col_Plot" xml:space="preserve"><value>Plot</value></data>
+  <data name="Col_TsOrigin" xml:space="preserve"><value>Ts Source</value></data>
+  <data name="Log_Clear" xml:space="preserve"><value>Clear</value></data>
+  <data name="Log_OpenFolder" xml:space="preserve"><value>Log Folder…</value></data>
+  <data name="Conn_Connect" xml:space="preserve"><value>Connect</value></data>
+  <data name="Conn_Disconnect" xml:space="preserve"><value>Disconnect</value></data>
+  <data name="Conn_Connect_Tip" xml:space="preserve"><value>Connect to selected OPC UA server</value></data>
+  <data name="Conn_Disconnect_Tip" xml:space="preserve"><value>Disconnect from selected OPC UA server</value></data>
+  <data name="Conn_CreateAndConnect_Tip" xml:space="preserve"><value>Add and connect to an OPC UA server</value></data>
+  <data name="Toolbar_DeleteTag" xml:space="preserve"><value>Delete tag</value></data>
+  <data name="Toolbar_DeleteTag_Tip" xml:space="preserve"><value>Delete selected tag from spreadsheet and chart (Delete)</value></data>
+  <data name="Toolbar_HeaderHeightAuto" xml:space="preserve"><value>Auto</value></data>
+
+  <!-- Certificate Manager Dialog -->
+  <data name="CertDlg_Title" xml:space="preserve"><value>OPC UA Certificate Manager (PKI)</value></data>
+  <data name="CertDlg_AutoAccept" xml:space="preserve"><value>Auto-accept untrusted server certificates (testing/lab only)</value></data>
+  <data name="CertDlg_AutoAccept_Tip" xml:space="preserve"><value>When checked, unknown server certificates are automatically trusted on connection</value></data>
+  <data name="CertDlg_Tab_Servers" xml:space="preserve"><value>Server Certificates (Trusted / Rejected)</value></data>
+  <data name="CertDlg_Tab_Discovery" xml:space="preserve"><value>Discover from Endpoint</value></data>
+  <data name="CertDlg_Tab_Client" xml:space="preserve"><value>Client Certificate (DMapFactory)</value></data>
+  <data name="CertDlg_Filter_All" xml:space="preserve"><value>All</value></data>
+  <data name="CertDlg_Filter_Trusted" xml:space="preserve"><value>Trusted</value></data>
+  <data name="CertDlg_Filter_Rejected" xml:space="preserve"><value>Rejected</value></data>
+  <data name="CertDlg_Btn_Trust" xml:space="preserve"><value>Trust</value></data>
+  <data name="CertDlg_Btn_Reject" xml:space="preserve"><value>Reject</value></data>
+  <data name="CertDlg_Btn_ImportServer" xml:space="preserve"><value>Import (.der/.cer)…</value></data>
+  <data name="CertDlg_Btn_ExportServer" xml:space="preserve"><value>Export…</value></data>
+  <data name="CertDlg_Btn_DeleteServer" xml:space="preserve"><value>Delete</value></data>
+  <data name="CertDlg_Btn_Refresh" xml:space="preserve"><value>Refresh</value></data>
+  <data name="CertDlg_Btn_Discover" xml:space="preserve"><value>Discover Certificates</value></data>
+  <data name="CertDlg_Btn_GenerateClient" xml:space="preserve"><value>Generate New Certificate</value></data>
+  <data name="CertDlg_Btn_ExportClientDer" xml:space="preserve"><value>Export Public (.der)…</value></data>
+  <data name="CertDlg_Btn_ExportClientPfx" xml:space="preserve"><value>Export Private (.pfx)…</value></data>
+  <data name="CertDlg_Btn_ImportClient" xml:space="preserve"><value>Import (.pfx)…</value></data>
+  <data name="CertDlg_Btn_OpenPki" xml:space="preserve"><value>Open PKI Folder…</value></data>
+  <data name="CertDlg_Close" xml:space="preserve"><value>Close</value></data>
+  <data name="CertDlg_StatusRefreshed" xml:space="preserve"><value>{0} certificate(s) found in PKI store.</value></data>
+
+  <!-- Marker Dialog -->
+  <data name="MarkerDlg_AddTitle" xml:space="preserve"><value>Insert Event Marker</value></data>
+  <data name="MarkerDlg_EditTitle" xml:space="preserve"><value>Edit Event Marker</value></data>
+  <data name="MarkerDlg_AddHeader" xml:space="preserve"><value>New marker at {0}</value></data>
+  <data name="MarkerDlg_EditHeader" xml:space="preserve"><value>Editing marker at {0}</value></data>
+  <data name="MarkerDlg_Prompt" xml:space="preserve"><value>Marker description / comment:</value></data>
+  <data name="MarkerDlg_BtnAdd" xml:space="preserve"><value>Insert</value></data>
+  <data name="MarkerDlg_BtnSave" xml:space="preserve"><value>Save</value></data>
+  <data name="MarkerDlg_BtnCancel" xml:space="preserve"><value>Cancel</value></data>
+
+  <!-- Find Marker Dialog -->
+  <data name="FindMarker_Col_Timestamp" xml:space="preserve"><value>Timestamp</value></data>
+  <data name="FindMarker_Col_Comment" xml:space="preserve"><value>Comment</value></data>
+  <data name="FindMarker_BtnClear" xml:space="preserve"><value>Clear</value></data>
+  <data name="FindMarker_BtnLocateGrid" xml:space="preserve"><value>Locate in Grid</value></data>
+  <data name="FindMarker_BtnFocusChart" xml:space="preserve"><value>Focus on Chart</value></data>
+  <data name="FindMarker_BtnEdit" xml:space="preserve"><value>Edit…</value></data>
+  <data name="FindMarker_BtnDelete" xml:space="preserve"><value>Delete</value></data>
+  <data name="FindMarker_BtnClose" xml:space="preserve"><value>Close</value></data>
+  <data name="FindMarker_DeleteConfirmTitle" xml:space="preserve"><value>Delete Marker</value></data>
+  <data name="FindMarker_DeleteConfirmMsg" xml:space="preserve"><value>Do you really want to delete marker '{0}'?</value></data>
+
+  <!-- Find Value Dialog -->
+  <data name="FindVal_BtnPrev" xml:space="preserve"><value>◀ Previous</value></data>
+  <data name="FindVal_BtnNext" xml:space="preserve"><value>Next ▶</value></data>
+  <data name="FindVal_BtnClose" xml:space="preserve"><value>Close</value></data>
+  <data name="FindVal_SwitchToGrid" xml:space="preserve"><value>Spreadsheet</value></data>
+  <data name="FindVal_SwitchToChart" xml:space="preserve"><value>Chart</value></data>
+  <data name="FindVal_IdleHint" xml:space="preserve"><value>Enter the desired value and click Next or Previous.</value></data>
+  <data name="FindVal_Found" xml:space="preserve"><value>Match {0} of {1} found at row #{2} ({3}).</value></data>
+  <data name="FindVal_FoundSingle" xml:space="preserve"><value>Match found at row #{0} ({1}).</value></data>
+  <data name="FindVal_FoundWrapped" xml:space="preserve"><value>Match {0} of {1} found at row #{2} ({3}) — search wrapped.</value></data>
 </root>

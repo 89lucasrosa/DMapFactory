@@ -220,7 +220,7 @@ public sealed class OpcUaDriver : IDriver
             var firstResult = browseResponse.Results[0];
             if (StatusCode.IsBad(firstResult.StatusCode))
             {
-                _logger.LogWarning("Browse OPC UA em {NodeId} retornou status {Status}", nodeToBrowse, firstResult.StatusCode);
+                _logger.LogWarning("{Message}", Loc.Instance.Format("Log_OpcBrowseStatusWarn", nodeToBrowse, firstResult.StatusCode));
             }
 
             if (firstResult.References is not null)
@@ -559,8 +559,8 @@ public sealed class OpcUaDriver : IDriver
             {
                 if (mi.Status?.Error is not null && ServiceResult.IsBad(mi.Status.Error))
                 {
-                    _logger.LogWarning("MonitoredItem '{Name}' ({NodeId}) retornou status {Status}",
-                        mi.DisplayName, mi.StartNodeId, mi.Status.Error);
+                    _logger.LogWarning("{Message}", Loc.Instance.Format("Log_OpcMonitoredItemBadWarn",
+                        mi.DisplayName, mi.StartNodeId, mi.Status.Error));
                 }
                 else
                 {
@@ -568,8 +568,8 @@ public sealed class OpcUaDriver : IDriver
                 }
             }
 
-            _logger.LogInformation("Subscription '{Group}' iniciada em '{Conn}' ({Ok}/{Total} tags ativas).",
-                group.Name, Connection.Name, okCount, group.Tags.Count);
+            _logger.LogInformation("{Message}", Loc.Instance.Format("Log_OpcSubscriptionStarted",
+                group.Name, Connection.Name, okCount, group.Tags.Count));
 
             _groups[group.Id] = new RunningGroup(subscription, null);
         }
@@ -620,8 +620,8 @@ public sealed class OpcUaDriver : IDriver
         using var timer = new PeriodicTimer(interval);
         DateTime? lastBatchSourceTs = null;
 
-        _logger.LogInformation("Aquisição periódica '{Group}' iniciada em '{Conn}' com taxa fixa de {Interval} ms ({Total} tags).",
-            group.Name, Connection.Name, group.SamplingIntervalMs, group.Tags.Count);
+        _logger.LogInformation("{Message}", Loc.Instance.Format("Log_OpcPollingStarted",
+            group.Name, Connection.Name, group.SamplingIntervalMs, group.Tags.Count));
 
         try
         {
@@ -680,7 +680,7 @@ public sealed class OpcUaDriver : IDriver
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro no loop de polling do grupo {Group}", group.Name);
+            _logger.LogError(ex, "{Message}", Loc.Instance.Format("Log_OpcPollingLoopError", group.Name));
         }
     }
 
@@ -768,7 +768,7 @@ public sealed class OpcUaDriver : IDriver
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "Erro ao desconectar sessão {Name} após certificado expirar.", Connection.Name);
+                    _logger.LogWarning(ex, "{Message}", Loc.Instance.Format("Log_CertExpiredDisconnectError", Connection.Name));
                 }
             });
             return;

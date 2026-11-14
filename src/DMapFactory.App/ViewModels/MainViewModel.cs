@@ -189,10 +189,14 @@ public sealed partial class MainViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(IsSamplingIntervalEnabled))]
     private int _selectedAcquisitionModeIndex = 0;
 
+    private readonly SemaphoreSlim _reconfigureLock = new(1, 1);
+    private bool _suppressAcqModeReconfigure;
+
     public bool IsSamplingIntervalEnabled => SelectedAcquisitionModeIndex == 1;
 
     partial void OnSelectedSamplingIntervalMsChanged(int value)
     {
+        if (_suppressAcqModeReconfigure || value <= 0) return;
         if (IsOnline && SelectedAcquisitionModeIndex == 1)
         {
             _ = ReconfigureActiveAcquisitionAsync();
@@ -201,6 +205,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     partial void OnSelectedAcquisitionModeIndexChanged(int value)
     {
+        if (_suppressAcqModeReconfigure || value < 0) return;
         if (IsOnline)
         {
             _ = ReconfigureActiveAcquisitionAsync();
@@ -209,8 +214,10 @@ public sealed partial class MainViewModel : ObservableObject
 
     private async Task ReconfigureActiveAcquisitionAsync()
     {
+        await _reconfigureLock.WaitAsync();
         try
         {
+            if (!IsOnline) return;
             BuildProjectFromViewModels();
             var drivers = Connections.Select(c => (IDriver)c.Driver).ToList();
             await _sessionManager.UpdateGroupsAsync(_project, drivers);
@@ -222,6 +229,10 @@ public sealed partial class MainViewModel : ObservableObject
         catch (Exception ex)
         {
             _logger.LogError(ex, "{Message}", Loc.Instance.Format("Log_OnlineTransitionError", ex.Message));
+        }
+        finally
+        {
+            _reconfigureLock.Release();
         }
     }
 
@@ -2194,9 +2205,17 @@ public sealed partial class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(MarkerButtonToolTip));
         OnPropertyChanged(nameof(ConnectButtonText));
         OnPropertyChanged(nameof(ConnectButtonToolTip));
-        OnPropertyChanged(nameof(AcquisitionModeOptions));
-        SelectedAcquisitionModeIndex = savedAcqIdx;
-        OnPropertyChanged(nameof(SelectedAcquisitionModeIndex));
+        _suppressAcqModeReconfigure = true;
+        try
+        {
+            OnPropertyChanged(nameof(AcquisitionModeOptions));
+            SelectedAcquisitionModeIndex = savedAcqIdx;
+            OnPropertyChanged(nameof(SelectedAcquisitionModeIndex));
+        }
+        finally
+        {
+            _suppressAcqModeReconfigure = false;
+        }
         OnPropertyChanged(nameof(TimestampSourceOptions));
         SelectedTimestampSourceIndex = savedTsIdx;
         OnPropertyChanged(nameof(SelectedTimestampSourceIndex));

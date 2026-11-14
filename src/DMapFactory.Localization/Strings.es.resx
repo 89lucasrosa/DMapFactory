@@ -469,4 +469,107 @@ Plataforma: .NET 8 / WPF (Windows).</value></data>
   <data name="Log_SpreadsheetPngError" xml:space="preserve"><value>Error al guardar la imagen PNG de la hoja de cálculo en '{0}': {1}</value></data>
   <data name="Log_ChartPngSaved" xml:space="preserve"><value>Imagen PNG del gráfico guardada en '{0}' ({1}x{2} px).</value></data>
   <data name="Log_ChartPngError" xml:space="preserve"><value>Error al guardar la imagen PNG del gráfico en '{0}': {1}</value></data>
+  <data name="Log_NewProject" xml:space="preserve"><value>Nuevo proyecto iniciado.</value></data>
+  <data name="Log_OnlineAutoConnectWarn" xml:space="preserve"><value>Error al conectar automáticamente '{0}' al activar el modo En línea: {1}</value></data>
+  <data name="Log_MarkerPlaceModeOn" xml:space="preserve"><value>Modo de inserción de marcador activado. Haga clic en una fila de la hoja o en un punto del gráfico.</value></data>
+  <data name="Log_MarkerPlaceModeOff" xml:space="preserve"><value>Modo de inserción de marcador desactivado.</value></data>
+  <data name="Log_SpreadsheetExportEmptyWarn" xml:space="preserve"><value>No hay filas en la hoja de cálculo para exportar.</value></data>
+  <data name="Log_OpcSubscriptionStarted" xml:space="preserve"><value>Suscripción '{0}' iniciada en '{1}' ({2}/{3} tags activas).</value></data>
+  <data name="Log_OpcPollingStarted" xml:space="preserve"><value>Adquisición periódica '{0}' iniciada en '{1}' con tasa fija de {2} ms ({3} tags).</value></data>
+  <data name="Log_OpcMonitoredItemBadWarn" xml:space="preserve"><value>MonitoredItem '{0}' ({1}) devolvió estado {2}.</value></data>
+  <data name="Log_OpcPollingLoopError" xml:space="preserve"><value>Error en el bucle de sondeo del grupo {0}.</value></data>
+  <data name="Log_OpcBrowseStatusWarn" xml:space="preserve"><value>Exploración OPC UA en {0} devolvió estado {1}.</value></data>
+  <data name="Log_CertExpiredDisconnectError" xml:space="preserve"><value>Error al desconectar la sesión {0} tras la expiración del certificado.</value></data>
+
+  <!-- Menús, Barras, Diálogos y Controles adicionales -->
+  <data name="Menu_ConfigSessionsFolder" xml:space="preserve"><value>Configurar carpeta de guardado de sesiones…</value></data>
+  <data name="Menu_AddMarker" xml:space="preserve"><value>Insertar marcador</value></data>
+  <data name="Menu_DeleteSelectedTag" xml:space="preserve"><value>Eliminar tag seleccionada</value></data>
+  <data name="Menu_DeleteAllTags" xml:space="preserve"><value>Eliminar todas las tags</value></data>
+  <data name="Browser_Ctx_AddNode" xml:space="preserve"><value>+ Agregar a Hoja y Gráfico</value></data>
+  <data name="Grid_GroupSameTimestamp" xml:space="preserve"><value>Agrupar mismo timestamp (P3)</value></data>
+  <data name="Grid_AutoFitHeader" xml:space="preserve"><value>↕ Auto</value></data>
+  <data name="Grid_AutoFitColumns" xml:space="preserve"><value>↔ Autoajustar anchos</value></data>
+  <data name="Grid_SavePng" xml:space="preserve"><value>📷 PNG</value></data>
+  <data name="Grid_SavePng_Tip" xml:space="preserve"><value>Guardar el rango visible actual de la hoja como imagen PNG</value></data>
+  <data name="Chart_Pan" xml:space="preserve"><value>Pan</value></data>
+  <data name="Chart_FitAll" xml:space="preserve"><value>↔ Todo</value></data>
+  <data name="Chart_AutoY" xml:space="preserve"><value>Auto Y</value></data>
+  <data name="Chart_SavePng" xml:space="preserve"><value>📷 PNG</value></data>
+  <data name="Chart_SamplePoints" xml:space="preserve"><value>Puntos (●)</value></data>
+  <data name="Chart_CursorsAB" xml:space="preserve"><value>Cursores A/B</value></data>
+  <data name="Pen_Ctx_Delete" xml:space="preserve"><value>🗑 Eliminar esta tag de la hoja y del gráfico</value></data>
+  <data name="Pen_Ctx_TogglePlot" xml:space="preserve"><value>Alternar visibilidad en el gráfico (Plot)</value></data>
+  <data name="Pen_Ctx_SetCycle" xml:space="preserve"><value>🏷 Definir como Disparador de Ciclo</value></data>
+  <data name="Pen_Ctx_CopyAddress" xml:space="preserve"><value>📋 Copiar Dirección / NodeId</value></data>
+  <data name="Col_Plot" xml:space="preserve"><value>Plot</value></data>
+  <data name="Col_TsOrigin" xml:space="preserve"><value>Fuente Ts</value></data>
+  <data name="Log_Clear" xml:space="preserve"><value>Limpiar</value></data>
+  <data name="Log_OpenFolder" xml:space="preserve"><value>Carpeta de Logs…</value></data>
+  <data name="Conn_Connect" xml:space="preserve"><value>Conectar</value></data>
+  <data name="Conn_Disconnect" xml:space="preserve"><value>Desconectar</value></data>
+  <data name="Conn_Connect_Tip" xml:space="preserve"><value>Conectar al servidor OPC UA seleccionado</value></data>
+  <data name="Conn_Disconnect_Tip" xml:space="preserve"><value>Desconectar del servidor OPC UA seleccionado</value></data>
+  <data name="Conn_CreateAndConnect_Tip" xml:space="preserve"><value>Agregar y conectar a un servidor OPC UA</value></data>
+  <data name="Toolbar_DeleteTag" xml:space="preserve"><value>Eliminar tag</value></data>
+  <data name="Toolbar_DeleteTag_Tip" xml:space="preserve"><value>Eliminar la tag seleccionada de la hoja y del gráfico (Delete)</value></data>
+  <data name="Toolbar_HeaderHeightAuto" xml:space="preserve"><value>Auto</value></data>
+
+  <!-- Diálogo de Certificados -->
+  <data name="CertDlg_Title" xml:space="preserve"><value>Administrador de Certificados OPC UA (PKI)</value></data>
+  <data name="CertDlg_AutoAccept" xml:space="preserve"><value>Aceptar automáticamente certificados de servidor no confiables (solo pruebas)</value></data>
+  <data name="CertDlg_AutoAccept_Tip" xml:space="preserve"><value>Cuando está marcado, los servidores con certificados desconocidos se confían automáticamente al conectar</value></data>
+  <data name="CertDlg_Tab_Servers" xml:space="preserve"><value>Certificados de Servidores (Trusted / Rejected)</value></data>
+  <data name="CertDlg_Tab_Discovery" xml:space="preserve"><value>Descubrir desde Endpoint</value></data>
+  <data name="CertDlg_Tab_Client" xml:space="preserve"><value>Certificado del Cliente (DMapFactory)</value></data>
+  <data name="CertDlg_Filter_All" xml:space="preserve"><value>Todos</value></data>
+  <data name="CertDlg_Filter_Trusted" xml:space="preserve"><value>Confiables (Trusted)</value></data>
+  <data name="CertDlg_Filter_Rejected" xml:space="preserve"><value>Rechazados (Rejected)</value></data>
+  <data name="CertDlg_Btn_Trust" xml:space="preserve"><value>Confiar (Trust)</value></data>
+  <data name="CertDlg_Btn_Reject" xml:space="preserve"><value>Rechazar (Reject)</value></data>
+  <data name="CertDlg_Btn_ImportServer" xml:space="preserve"><value>Importar (.der/.cer)…</value></data>
+  <data name="CertDlg_Btn_ExportServer" xml:space="preserve"><value>Exportar…</value></data>
+  <data name="CertDlg_Btn_DeleteServer" xml:space="preserve"><value>Eliminar</value></data>
+  <data name="CertDlg_Btn_Refresh" xml:space="preserve"><value>Actualizar</value></data>
+  <data name="CertDlg_Btn_Discover" xml:space="preserve"><value>Descubrir Certificados</value></data>
+  <data name="CertDlg_Btn_GenerateClient" xml:space="preserve"><value>Generar Nuevo Certificado</value></data>
+  <data name="CertDlg_Btn_ExportClientDer" xml:space="preserve"><value>Exportar Público (.der)…</value></data>
+  <data name="CertDlg_Btn_ExportClientPfx" xml:space="preserve"><value>Exportar Privado (.pfx)…</value></data>
+  <data name="CertDlg_Btn_ImportClient" xml:space="preserve"><value>Importar (.pfx)…</value></data>
+  <data name="CertDlg_Btn_OpenPki" xml:space="preserve"><value>Abrir Carpeta PKI…</value></data>
+  <data name="CertDlg_Close" xml:space="preserve"><value>Cerrar</value></data>
+  <data name="CertDlg_StatusRefreshed" xml:space="preserve"><value>{0} certificado(s) encontrado(s) en el almacén PKI.</value></data>
+
+  <!-- Diálogo de Marcador -->
+  <data name="MarkerDlg_AddTitle" xml:space="preserve"><value>Insertar Marcador de Evento</value></data>
+  <data name="MarkerDlg_EditTitle" xml:space="preserve"><value>Editar Marcador de Evento</value></data>
+  <data name="MarkerDlg_AddHeader" xml:space="preserve"><value>Nuevo marcador en {0}</value></data>
+  <data name="MarkerDlg_EditHeader" xml:space="preserve"><value>Editando marcador en {0}</value></data>
+  <data name="MarkerDlg_Prompt" xml:space="preserve"><value>Descripción / comentario del marcador:</value></data>
+  <data name="MarkerDlg_BtnAdd" xml:space="preserve"><value>Insertar</value></data>
+  <data name="MarkerDlg_BtnSave" xml:space="preserve"><value>Guardar</value></data>
+  <data name="MarkerDlg_BtnCancel" xml:space="preserve"><value>Cancelar</value></data>
+
+  <!-- Diálogo Buscar Marcadores -->
+  <data name="FindMarker_Col_Timestamp" xml:space="preserve"><value>Timestamp</value></data>
+  <data name="FindMarker_Col_Comment" xml:space="preserve"><value>Comentario</value></data>
+  <data name="FindMarker_BtnClear" xml:space="preserve"><value>Limpiar</value></data>
+  <data name="FindMarker_BtnLocateGrid" xml:space="preserve"><value>Localizar en Hoja</value></data>
+  <data name="FindMarker_BtnFocusChart" xml:space="preserve"><value>Enfocar en Gráfico</value></data>
+  <data name="FindMarker_BtnEdit" xml:space="preserve"><value>Editar…</value></data>
+  <data name="FindMarker_BtnDelete" xml:space="preserve"><value>Eliminar</value></data>
+  <data name="FindMarker_BtnClose" xml:space="preserve"><value>Cerrar</value></data>
+  <data name="FindMarker_DeleteConfirmTitle" xml:space="preserve"><value>Eliminar Marcador</value></data>
+  <data name="FindMarker_DeleteConfirmMsg" xml:space="preserve"><value>¿Desea realmente eliminar el marcador '{0}'?</value></data>
+
+  <!-- Diálogo Buscar Valor -->
+  <data name="FindVal_BtnPrev" xml:space="preserve"><value>◀ Anterior</value></data>
+  <data name="FindVal_BtnNext" xml:space="preserve"><value>Siguiente ▶</value></data>
+  <data name="FindVal_BtnClose" xml:space="preserve"><value>Cerrar</value></data>
+  <data name="FindVal_SwitchToGrid" xml:space="preserve"><value>Hoja</value></data>
+  <data name="FindVal_SwitchToChart" xml:space="preserve"><value>Gráfico</value></data>
+  <data name="FindVal_IdleHint" xml:space="preserve"><value>Ingrese el valor deseado y haga clic en Siguiente o Anterior.</value></data>
+  <data name="FindVal_Found" xml:space="preserve"><value>Coincidencia {0} de {1} encontrada en la fila #{2} ({3}).</value></data>
+  <data name="FindVal_FoundSingle" xml:space="preserve"><value>Coincidencia encontrada en la fila #{0} ({1}).</value></data>
+  <data name="FindVal_FoundWrapped" xml:space="preserve"><value>Coincidencia {0} de {1} encontrada en la fila #{2} ({3}) — búsqueda reiniciada.</value></data>
 </root>
