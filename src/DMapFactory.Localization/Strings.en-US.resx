@@ -572,4 +572,19 @@ Platform: .NET 8 / WPF (Windows).</value></data>
   <data name="FindVal_Found" xml:space="preserve"><value>Match {0} of {1} found at row #{2} ({3}).</value></data>
   <data name="FindVal_FoundSingle" xml:space="preserve"><value>Match found at row #{0} ({1}).</value></data>
   <data name="FindVal_FoundWrapped" xml:space="preserve"><value>Match {0} of {1} found at row #{2} ({3}) — search wrapped.</value></data>
+
+  <!-- Unknown Certificate Confirmation Dialog -->
+  <data name="CertPrompt_Title" xml:space="preserve"><value>Unknown OPC UA Server Certificate</value></data>
+  <data name="CertPrompt_Message" xml:space="preserve"><value>The OPC UA server presented a certificate that is not yet in the Trusted list:
+
+Subject: {0}
+Issuer: {1}{5}
+Thumbprint (SHA-1): {2}
+Validity: {3:yyyy-MM-dd HH:mm} to {4:yyyy-MM-dd HH:mm}
+
+Do you want to TRUST this server certificate (move to Trusted) and continue connecting?
+• Click 'Yes' to Trust and Connect.
+• Click 'No' to Reject the certificate (will be saved to the Rejected list).</value></data>
+  <data name="CertPrompt_UriLine" xml:space="preserve"><value>
+Application URI: {0}</value></data>
 </root>

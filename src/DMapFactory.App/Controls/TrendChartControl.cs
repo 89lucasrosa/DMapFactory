@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Input;
@@ -572,15 +573,29 @@ public sealed class TrendChartControl : FrameworkElement
         double yMin = 0, yMax = 100;
         if (analogSeries.Count > 0)
         {
-            var validValues = analogSeries.SelectMany(s => s.Points)
-                                          .Where(p => !double.IsNaN(p.Value) && !double.IsInfinity(p.Value))
-                                          .Select(p => p.Value)
-                                          .ToList();
+            double min = double.MaxValue;
+            double max = double.MinValue;
+            bool hasValid = false;
 
-            if (validValues.Count > 0)
+            for (int sIdx = 0; sIdx < analogSeries.Count; sIdx++)
             {
-                yMin = validValues.Min();
-                yMax = validValues.Max();
+                var pts = analogSeries[sIdx].Points;
+                for (int pIdx = 0; pIdx < pts.Count; pIdx++)
+                {
+                    double v = pts[pIdx].Value;
+                    if (!double.IsNaN(v) && !double.IsInfinity(v))
+                    {
+                        if (v < min) min = v;
+                        if (v > max) max = v;
+                        hasValid = true;
+                    }
+                }
+            }
+
+            if (hasValid)
+            {
+                yMin = min;
+                yMax = max;
 
                 if (Math.Abs(yMax - yMin) < 1e-6)
                 {
@@ -658,8 +673,7 @@ public sealed class TrendChartControl : FrameworkElement
             foreach (var s in analogSeries)
             {
                 var pen = CreateFrozenPen(s.Color, 2.0);
-                var pointBrush = new SolidColorBrush(s.Color);
-                pointBrush.Freeze();
+                var pointBrush = GetFrozenBrush(s.Color);
 
                 var geom = new StreamGeometry();
                 using (var ctx = geom.Open())
@@ -740,8 +754,7 @@ public sealed class TrendChartControl : FrameworkElement
                 }
 
                 var pen = CreateFrozenPen(s.Color, 2.0);
-                var fillBrush = new SolidColorBrush(Color.FromArgb(65, s.Color.R, s.Color.G, s.Color.B));
-                fillBrush.Freeze();
+                var fillBrush = GetDigitalFillBrush(s.Color);
 
                 // Desenha blocos preenchidos onde o sinal booleano é 1 (True)
                 for (int i = 0; i < s.Points.Count; i++)
@@ -801,8 +814,7 @@ public sealed class TrendChartControl : FrameworkElement
                 geom.Freeze();
                 dc.DrawGeometry(null, pen, geom);
 
-                var lblBrush = new SolidColorBrush(s.Color);
-                lblBrush.Freeze();
+                var lblBrush = GetFrozenBrush(s.Color);
                 var lbl = CreateBoldText($"{s.Alias} [D]", 11, lblBrush, dpi);
                 Rect lblBg = new(digitalRect.Left + 6, rowTop + 2, lbl.Width + 8, lbl.Height + 2);
                 dc.DrawRectangle(LegendBgBrush, null, lblBg);
@@ -875,8 +887,7 @@ public sealed class TrendChartControl : FrameworkElement
 
         foreach (var s in _series)
         {
-            var itemBrush = new SolidColorBrush(s.Color);
-            itemBrush.Freeze();
+            var itemBrush = GetFrozenBrush(s.Color);
 
             string labelText = s.IsBoolean ? $"{s.Alias} [D]" : s.Alias;
             if (s.Points.Count > 0)
@@ -1004,18 +1015,40 @@ public sealed class TrendChartControl : FrameworkElement
         return analogRect.Bottom - Math.Clamp(ratio, 0.0, 1.0) * analogRect.Height;
     }
 
+    private static readonly ConcurrentDictionary<Color, SolidColorBrush> FrozenBrushCache = new();
+    private static readonly ConcurrentDictionary<(Color, double), Pen> FrozenPenCache = new();
+    private static readonly ConcurrentDictionary<string, SolidColorBrush> HexBrushCache = new();
+    private static readonly ConcurrentDictionary<Color, SolidColorBrush> DigitalFillBrushCache = new();
+
     private static FormattedText CreateText(string text, double size, Brush brush, double dpi) =>
         new(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, MonoTypeface, size, brush, dpi);
 
     private static FormattedText CreateBoldText(string text, double size, Brush brush, double dpi) =>
         new(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, BoldTypeface, size, brush, dpi);
 
-    private static SolidColorBrush CreateFrozenBrush(string hex)
-    {
-        var b = (SolidColorBrush)new BrushConverter().ConvertFromInvariantString(hex)!;
-        b.Freeze();
-        return b;
-    }
+    private static SolidColorBrush GetFrozenBrush(Color color) =>
+        FrozenBrushCache.GetOrAdd(color, c =>
+        {
+            var b = new SolidColorBrush(c);
+            b.Freeze();
+            return b;
+        });
+
+    private static SolidColorBrush GetDigitalFillBrush(Color color) =>
+        DigitalFillBrushCache.GetOrAdd(color, c =>
+        {
+            var b = new SolidColorBrush(Color.FromArgb(65, c.R, c.G, c.B));
+            b.Freeze();
+            return b;
+        });
+
+    private static SolidColorBrush CreateFrozenBrush(string hex) =>
+        HexBrushCache.GetOrAdd(hex, h =>
+        {
+            var b = (SolidColorBrush)new BrushConverter().ConvertFromInvariantString(h)!;
+            b.Freeze();
+            return b;
+        });
 
     private static Pen CreateFrozenPen(string hex, double thickness)
     {
@@ -1024,14 +1057,13 @@ public sealed class TrendChartControl : FrameworkElement
         return p;
     }
 
-    private static Pen CreateFrozenPen(Color color, double thickness)
-    {
-        var b = new SolidColorBrush(color);
-        b.Freeze();
-        var p = new Pen(b, thickness);
-        p.Freeze();
-        return p;
-    }
+    private static Pen CreateFrozenPen(Color color, double thickness) =>
+        FrozenPenCache.GetOrAdd((color, thickness), key =>
+        {
+            var p = new Pen(GetFrozenBrush(key.Item1), key.Item2);
+            p.Freeze();
+            return p;
+        });
 
     private static Pen CreateFrozenDashedPen(string hex, double thickness)
     {

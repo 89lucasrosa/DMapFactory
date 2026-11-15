@@ -572,4 +572,19 @@ Plataforma: .NET 8 / WPF (Windows).</value></data>
   <data name="FindVal_Found" xml:space="preserve"><value>Ocorrência {0} de {1} encontrada na linha #{2} ({3}).</value></data>
   <data name="FindVal_FoundSingle" xml:space="preserve"><value>Ocorrência encontrada na linha #{0} ({1}).</value></data>
   <data name="FindVal_FoundWrapped" xml:space="preserve"><value>Ocorrência {0} de {1} encontrada na linha #{2} ({3}) — busca reiniciada.</value></data>
+
+  <!-- Diálogo de Confirmação de Certificado Desconhecido -->
+  <data name="CertPrompt_Title" xml:space="preserve"><value>Certificado de Servidor OPC UA Desconhecido</value></data>
+  <data name="CertPrompt_Message" xml:space="preserve"><value>O servidor OPC UA apresentou um certificado que ainda não está na lista de confiáveis (Trusted):
+
+Requerente (Subject): {0}
+Emissor (Issuer): {1}{5}
+Thumbprint (SHA-1): {2}
+Validade: {3:dd/MM/yyyy HH:mm} até {4:dd/MM/yyyy HH:mm}
+
+Deseja CONFIAR neste certificado de servidor (mover para Trusted) e continuar a conexão?
+• Clique em 'Sim' para Confiar e Conectar.
+• Clique em 'Não' para Rejeitar o certificado (será gravado na lista de Rejeitados).</value></data>
+  <data name="CertPrompt_UriLine" xml:space="preserve"><value>
+URI da Aplicação: {0}</value></data>
 </root>
