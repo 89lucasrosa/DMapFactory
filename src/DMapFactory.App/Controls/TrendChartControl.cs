@@ -27,6 +27,11 @@ public sealed record ChartSeriesData(
 /// </summary>
 public sealed class TrendChartControl : FrameworkElement
 {
+    private static readonly ConcurrentDictionary<Color, SolidColorBrush> FrozenBrushCache = new();
+    private static readonly ConcurrentDictionary<(Color, double), Pen> FrozenPenCache = new();
+    private static readonly ConcurrentDictionary<string, SolidColorBrush> HexBrushCache = new();
+    private static readonly ConcurrentDictionary<Color, SolidColorBrush> DigitalFillBrushCache = new();
+
     private static readonly Typeface MonoTypeface = new(new FontFamily("Consolas, Segoe UI"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
     private static readonly Typeface BoldTypeface = new(new FontFamily("Segoe UI"), FontStyles.Normal, FontWeights.SemiBold, FontStretches.Normal);
 
@@ -1014,11 +1019,6 @@ public sealed class TrendChartControl : FrameworkElement
         double ratio = (val - yMin) / span;
         return analogRect.Bottom - Math.Clamp(ratio, 0.0, 1.0) * analogRect.Height;
     }
-
-    private static readonly ConcurrentDictionary<Color, SolidColorBrush> FrozenBrushCache = new();
-    private static readonly ConcurrentDictionary<(Color, double), Pen> FrozenPenCache = new();
-    private static readonly ConcurrentDictionary<string, SolidColorBrush> HexBrushCache = new();
-    private static readonly ConcurrentDictionary<Color, SolidColorBrush> DigitalFillBrushCache = new();
 
     private static FormattedText CreateText(string text, double size, Brush brush, double dpi) =>
         new(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, MonoTypeface, size, brush, dpi);
