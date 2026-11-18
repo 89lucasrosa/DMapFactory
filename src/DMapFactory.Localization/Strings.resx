@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
@@ -86,9 +86,6 @@
   <data name="Toolbar_Rate_Tip" xml:space="preserve"><value>Taxa de amostragem periódica (ms) — ativa somente no modo 'Por Taxa de Amostragem (ms)'</value></data>
   <data name="Toolbar_ModeLabel" xml:space="preserve"><value>Modo:</value></data>
   <data name="Toolbar_Mode_Tip" xml:space="preserve"><value>Modo de aquisição: 'Upon Change (Mudança de valor)' ou 'Por Taxa de Amostragem (ms)'</value></data>
-  <data name="Toolbar_CycleLabel" xml:space="preserve"><value>Ciclo: </value></data>
-  <data name="Toolbar_CycleDefault" xml:space="preserve"><value>(Padrão: Cycle_Active)</value></data>
-  <data name="Toolbar_Cycle_Tip" xml:space="preserve"><value>Gatilho de ciclo de máquina configurado (clique direito em qualquer tag booleana para alterar)</value></data>
   <data name="Toolbar_ClearCycle_Tip" xml:space="preserve"><value>Desativar gatilho customizado de ciclo</value></data>
 
   <!-- Opções de Modo de Aquisição e Fonte de Timestamp -->
@@ -161,7 +158,6 @@
   <data name="Grid_Ctx_DeleteMarker" xml:space="preserve"><value>🗑️ Excluir Marcador ('{0}')</value></data>
   <data name="Grid_Ctx_InsertMarkerRow" xml:space="preserve"><value>📍 Inserir Marcador na Linha #{0}…</value></data>
   <data name="Grid_Ctx_FocusChart" xml:space="preserve"><value>📈 Focar instante no Gráfico (Cursor A)</value></data>
-  <data name="Grid_Ctx_SetCycleTrigger" xml:space="preserve"><value>🏷 Definir '{0}' como Gatilho de Ciclo</value></data>
   <data name="Grid_Ctx_CopyCellVal" xml:space="preserve"><value>Copiar valor de '{0}' ({1})</value></data>
   <data name="Grid_Ctx_CopyRowTsv" xml:space="preserve"><value>📋 Copiar Linha Inteira (TSV)</value></data>
   <data name="Grid_Ctx_CopyTimestamp" xml:space="preserve"><value>Copiar Horário ({0})</value></data>
@@ -413,8 +409,6 @@ Plataforma: .NET 8 / WPF (Windows).</value></data>
   <data name="Log_OnlineTransitionError" xml:space="preserve"><value>Erro durante transição On-line/Off-line: {0}</value></data>
   <data name="Log_AcqModeChanged" xml:space="preserve"><value>Modo de aquisição atualizado em tempo real: '{0}'.</value></data>
   <data name="Log_TimestampSourceChanged" xml:space="preserve"><value>Fonte do Timestamp alterada para: '{0}'.</value></data>
-  <data name="Log_CycleTriggerSet" xml:space="preserve"><value>Tag booleana '{0}' configurada como gatilho de ciclo de máquina.</value></data>
-  <data name="Log_CycleTriggerCleared" xml:space="preserve"><value>Gatilho customizado de ciclo desativado (usando padrão 'Cycle_Active').</value></data>
   <data name="Log_BrowseRootLoaded" xml:space="preserve"><value>Navegação raiz de '{0}': {1} nós carregados.</value></data>
   <data name="Log_BrowseRootError" xml:space="preserve"><value>Falha ao navegar raiz de '{0}': {1}</value></data>
   <data name="Log_BrowseNodeError" xml:space="preserve"><value>Falha ao expandir o nó '{0}' ({1}): {2}</value></data>
@@ -500,7 +494,6 @@ Plataforma: .NET 8 / WPF (Windows).</value></data>
   <data name="Chart_CursorsAB" xml:space="preserve"><value>Cursores A/B</value></data>
   <data name="Pen_Ctx_Delete" xml:space="preserve"><value>🗑 Deletar esta tag da planilha e do gráfico</value></data>
   <data name="Pen_Ctx_TogglePlot" xml:space="preserve"><value>Alternar visibilidade no gráfico (Plot)</value></data>
-  <data name="Pen_Ctx_SetCycle" xml:space="preserve"><value>🏷 Definir como Gatilho de Ciclo</value></data>
   <data name="Pen_Ctx_CopyAddress" xml:space="preserve"><value>📋 Copiar Endereço / NodeId</value></data>
   <data name="Col_Plot" xml:space="preserve"><value>Plot</value></data>
   <data name="Col_TsOrigin" xml:space="preserve"><value>Fonte Ts</value></data>

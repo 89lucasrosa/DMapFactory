@@ -2074,16 +2074,6 @@ public partial class MainWindow : Window
         {
             ctxMenu.Items.Add(new Separator());
 
-            if (tagVm.IsBoolean)
-            {
-                var cycleTriggerItem = new MenuItem
-                {
-                    Header = $"🏷 Definir '{tagVm.Alias}' como Gatilho de Ciclo"
-                };
-                cycleTriggerItem.Click += (_, _) => _vm.SetAsCycleTrigger(tagVm);
-                ctxMenu.Items.Add(cycleTriggerItem);
-            }
-
             if (row.ValuesByTagId.TryGetValue(tagVm.Config.Id, out var cellVal) && cellVal is not null)
             {
                 var copyCellItem = new MenuItem
@@ -2119,8 +2109,7 @@ public partial class MainWindow : Window
         var sb = new System.Text.StringBuilder();
         sb.Append(row.RowNumber).Append('\t')
           .Append(row.TimestampUtc.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)).Append('\t')
-          .Append(row.CycleDisplay).Append('\t')
-          .Append(row.CycleNumber.HasValue ? row.CycleNumber.Value.ToString() : "");
+          .Append(row.CycleDisplay);
 
         foreach (var tag in _vm.MonitoredTags)
         {
@@ -2289,20 +2278,6 @@ public partial class MainWindow : Window
         }
 
         await _vm.AddFolderVariablesAsTagsCommand.ExecuteAsync(null);
-    }
-
-    private void SetPenAsCycleTriggerMenuItem_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is MenuItem menuItem)
-        {
-            var tagVm = menuItem.DataContext as MonitoredTagViewModel
-                ?? ((menuItem.Parent as ContextMenu)?.PlacementTarget as FrameworkElement)?.DataContext as MonitoredTagViewModel
-                ?? _vm.SelectedMonitoredTag;
-            if (tagVm is not null)
-            {
-                _vm.SetAsCycleTrigger(tagVm);
-            }
-        }
     }
 
     private void CopyNodeId_Click(object sender, RoutedEventArgs e)

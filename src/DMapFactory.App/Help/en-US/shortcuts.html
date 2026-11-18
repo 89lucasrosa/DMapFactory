@@ -212,7 +212,6 @@
               <td>
                 • <strong>📍 Place Marker on this Row</strong><br>
                 • <strong>📈 Focus Timestamp on Chart (Cursor A)</strong> (cross-synchronization)<br>
-                • <strong>🏷 Set as Machine Cycle Trigger</strong> (for boolean tags)<br>
                 • <strong>Copy Cell Value</strong><br>
                 • <strong>📋 Copy Entire Row (TSV)</strong> (ready to paste directly into Excel)<br>
                 • <strong>Copy Timestamp</strong> (full millisecond-accurate ISO timestamp)
@@ -255,7 +254,6 @@
               <td>
                 • <strong>🗑 Delete tag from collection</strong><br>
                 • <strong>Toggle plot visibility (IsPlotted)</strong><br>
-                • <strong>🏷 Set as Cycle Trigger</strong><br>
                 • <strong>📋 Copy Address / NodeId</strong>
               </td>
             </tr>
@@ -507,11 +505,6 @@
               <td><strong>Information</strong></td>
               <td><code>[Tag] Tag renamed from '{old}' to '{new}' ({address}).</code><br><code>Tag removed from collection: '{alias}' ({address}).</code><br><code>All {N} tags were removed from collection.</code><br><code>Spreadsheet history cleared ({N} rows and {M} markers removed from view).</code></td>
               <td><strong>Explanation:</strong> Audit trail for tag renaming, tag deletion, or clearing spreadsheet rows.<br><strong>Action:</strong> No action required.</td>
-            </tr>
-            <tr>
-              <td><strong>Information</strong></td>
-              <td><code>Cycle trigger set to tag '{alias}' (ID={id}).</code><br><code>Custom cycle trigger cleared (using automatic 'Cycle_Active' detection).</code></td>
-              <td><strong>Explanation:</strong> Configures which boolean tag triggers a new machine cycle in the <em>Cycle</em> column.<br><strong>Action:</strong> No action required.</td>
             </tr>
           </tbody>
         </table>

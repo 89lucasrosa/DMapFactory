@@ -1,9 +1,9 @@
 namespace DMapFactory.Core.Models;
 
 /// <summary>
-/// Uma linha da planilha em formato largo (RF-GRD-01/02/03/10):
-/// contém o timestamp da mudança, o snapshot do valor atual de todas as tags naquele instante,
-/// o conjunto de tags que mudaram naquela linha e o número do ciclo de máquina ativo.
+/// Uma linha da planilha em formato largo (RF-GRD-01/02/03):
+/// contém o timestamp da mudança, o snapshot do valor atual de todas as tags naquele instante
+/// e o conjunto de tags que mudaram naquela linha.
 /// </summary>
 public sealed class WideSpreadsheetRow : System.ComponentModel.INotifyPropertyChanged
 {
@@ -16,8 +16,6 @@ public sealed class WideSpreadsheetRow : System.ComponentModel.INotifyPropertyCh
     public DateTime? LocalTimestampUtc { get; init; }
     public required IReadOnlyDictionary<int, object?> ValuesByTagId { get; init; }
     public required IReadOnlySet<int> ChangedTagIds { get; init; }
-    public int? CycleNumber { get; init; }
-    public bool IsCycleStart { get; init; }
     public TimeSpan? DeltaTime { get; set; }
     public string? MarkerText { get; set; }
     public bool IsMarker => !string.IsNullOrEmpty(MarkerText);

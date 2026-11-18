@@ -120,35 +120,9 @@ public sealed class LiveSnapshotTests
     }
 
     [Fact]
-    public void MachineCycle_DetectsMultipleCycles_WithAccurateDuration()
+    public void Reset_ClearsAllWorkingState()
     {
-        var snapshot = new LiveSnapshot { CycleTriggerTagId = 10, GroupSameTimestamp = false };
-        var t = new DateTime(2026, 11, 14, 14, 0, 0, DateTimeKind.Utc);
-
-        // Ciclo 1: inicia em t+0, termina em t+500ms
-        snapshot.ApplyBatch([new Sample(10, t, t, TimestampOrigin.Source, true, 0u)]);
-        snapshot.ApplyBatch([new Sample(10, t.AddMilliseconds(500), t.AddMilliseconds(500), TimestampOrigin.Source, false, 0u)]);
-
-        // Intervalo inativo de 200ms
-        // Ciclo 2: inicia em t+700ms, termina em t+1500ms
-        var t2 = t.AddMilliseconds(700);
-        snapshot.ApplyBatch([new Sample(10, t2, t2, TimestampOrigin.Source, true, 0u)]);
-        snapshot.ApplyBatch([new Sample(10, t.AddMilliseconds(1500), t.AddMilliseconds(1500), TimestampOrigin.Source, false, 0u)]);
-
-        var cycles = snapshot.GetCycles();
-        Assert.Equal(2, cycles.Count);
-
-        Assert.Equal(1, cycles[0].Number);
-        Assert.Equal(500.0, cycles[0].DurationMs, precision: 1);
-
-        Assert.Equal(2, cycles[1].Number);
-        Assert.Equal(800.0, cycles[1].DurationMs, precision: 1);
-    }
-
-    [Fact]
-    public void Reset_ClearsAllWorkingStateAndCycles()
-    {
-        var snapshot = new LiveSnapshot { CycleTriggerTagId = 1 };
+        var snapshot = new LiveSnapshot();
         var t0 = DateTime.UtcNow;
 
         snapshot.ApplyBatch([
@@ -163,6 +137,5 @@ public sealed class LiveSnapshotTests
 
         Assert.Empty(snapshot.GetAllRows());
         Assert.Empty(snapshot.GetLatestSamples());
-        Assert.Empty(snapshot.GetCycles());
     }
 }

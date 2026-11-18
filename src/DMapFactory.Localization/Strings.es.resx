@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
@@ -86,9 +86,6 @@
   <data name="Toolbar_Rate_Tip" xml:space="preserve"><value>Tasa de muestreo periódica (ms) — activa solo en modo 'Por Tasa de Muestreo (ms)'</value></data>
   <data name="Toolbar_ModeLabel" xml:space="preserve"><value>Modo:</value></data>
   <data name="Toolbar_Mode_Tip" xml:space="preserve"><value>Modo de adquisición: 'Upon Change (Cambio de valor)' o 'Por Tasa de Muestreo (ms)'</value></data>
-  <data name="Toolbar_CycleLabel" xml:space="preserve"><value>Ciclo: </value></data>
-  <data name="Toolbar_CycleDefault" xml:space="preserve"><value>(Predeterminado: Cycle_Active)</value></data>
-  <data name="Toolbar_Cycle_Tip" xml:space="preserve"><value>Disparador de ciclo de máquina configurado (clic derecho en cualquier tag booleana para cambiar)</value></data>
   <data name="Toolbar_ClearCycle_Tip" xml:space="preserve"><value>Desactivar disparador de ciclo personalizado</value></data>
 
   <!-- Opciones de Modo de Adquisición y Fuente de Timestamp -->
@@ -161,7 +158,6 @@
   <data name="Grid_Ctx_DeleteMarker" xml:space="preserve"><value>🗑️ Eliminar Marcador ('{0}')</value></data>
   <data name="Grid_Ctx_InsertMarkerRow" xml:space="preserve"><value>📍 Insertar Marcador en la Fila #{0}…</value></data>
   <data name="Grid_Ctx_FocusChart" xml:space="preserve"><value>📈 Enfocar instante en el Gráfico (Cursor A)</value></data>
-  <data name="Grid_Ctx_SetCycleTrigger" xml:space="preserve"><value>🏷 Definir '{0}' como Disparador de Ciclo</value></data>
   <data name="Grid_Ctx_CopyCellVal" xml:space="preserve"><value>Copiar valor de '{0}' ({1})</value></data>
   <data name="Grid_Ctx_CopyRowTsv" xml:space="preserve"><value>📋 Copiar Fila Completa (TSV)</value></data>
   <data name="Grid_Ctx_CopyTimestamp" xml:space="preserve"><value>Copiar Horario ({0})</value></data>
@@ -413,8 +409,6 @@ Plataforma: .NET 8 / WPF (Windows).</value></data>
   <data name="Log_OnlineTransitionError" xml:space="preserve"><value>Error durante la transición En línea/Fuera de línea: {0}</value></data>
   <data name="Log_AcqModeChanged" xml:space="preserve"><value>Modo de adquisición actualizado en tiempo real: '{0}'.</value></data>
   <data name="Log_TimestampSourceChanged" xml:space="preserve"><value>Fuente de Timestamp cambiada a: '{0}'.</value></data>
-  <data name="Log_CycleTriggerSet" xml:space="preserve"><value>Tag booleana '{0}' configurada como disparador de ciclo de máquina.</value></data>
-  <data name="Log_CycleTriggerCleared" xml:space="preserve"><value>Disparador personalizado de ciclo desactivado (usando predeterminado 'Cycle_Active').</value></data>
   <data name="Log_BrowseRootLoaded" xml:space="preserve"><value>Navegación raíz de '{0}': {1} nodos cargados.</value></data>
   <data name="Log_BrowseRootError" xml:space="preserve"><value>Error al navegar la raíz de '{0}': {1}</value></data>
   <data name="Log_BrowseNodeError" xml:space="preserve"><value>Error al expandir el nodo '{0}' ({1}): {2}</value></data>
@@ -500,7 +494,6 @@ Plataforma: .NET 8 / WPF (Windows).</value></data>
   <data name="Chart_CursorsAB" xml:space="preserve"><value>Cursores A/B</value></data>
   <data name="Pen_Ctx_Delete" xml:space="preserve"><value>🗑 Eliminar esta tag de la hoja y del gráfico</value></data>
   <data name="Pen_Ctx_TogglePlot" xml:space="preserve"><value>Alternar visibilidad en el gráfico (Plot)</value></data>
-  <data name="Pen_Ctx_SetCycle" xml:space="preserve"><value>🏷 Definir como Disparador de Ciclo</value></data>
   <data name="Pen_Ctx_CopyAddress" xml:space="preserve"><value>📋 Copiar Dirección / NodeId</value></data>
   <data name="Col_Plot" xml:space="preserve"><value>Plot</value></data>
   <data name="Col_TsOrigin" xml:space="preserve"><value>Fuente Ts</value></data>

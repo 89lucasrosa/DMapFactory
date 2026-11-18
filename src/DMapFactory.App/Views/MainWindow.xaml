@@ -269,18 +269,6 @@
                         <TextBlock Text="{Binding [Toolbar_ModeLabel], Source={x:Static loc:Loc.Instance}}" Style="{StaticResource SecondaryText}" VerticalAlignment="Center" Margin="0,0,4,0" FontSize="11" />
                         <ComboBox ItemsSource="{Binding AcquisitionModeOptions}" SelectedIndex="{Binding SelectedAcquisitionModeIndex, Mode=TwoWay}"
                                   Width="195" VerticalAlignment="Center" />
-
-                        <!-- Indicador de Gatilho de Ciclo Ativo -->
-                        <Border Margin="8,0,0,0" Padding="6,2" CornerRadius="3" Background="{StaticResource SurfaceBrush}"
-                                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding [Toolbar_CycleLabel], Source={x:Static loc:Loc.Instance}}" Style="{StaticResource SecondaryText}" FontSize="11" Margin="0,0,3,0" />
-                                <TextBlock Text="{Binding CycleTriggerTagAlias, TargetNullValue='Cycle_Active'}"
-                                           FontWeight="SemiBold" FontSize="11" Foreground="{StaticResource GoodBrush}" />
-                                <Button Command="{Binding ClearCycleTriggerCommand}" Content="×" Margin="5,0,0,0" Padding="4,0"
-                                        FontWeight="Bold" FontSize="10" />
-                            </StackPanel>
-                        </Border>
                     </StackPanel>
                 </StackPanel>
 
@@ -620,9 +608,6 @@
                                 <DataGrid.RowStyle>
                                     <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsCycleStart}" Value="True">
-                                                <Setter Property="Background" Value="{StaticResource AccentSoftBrush}" />
-                                            </DataTrigger>
                                             <DataTrigger Binding="{Binding IsMarker}" Value="True">
                                                 <Setter Property="Background" Value="{StaticResource MarkerBrush}" />
                                                 <Setter Property="FontWeight" Value="SemiBold" />
@@ -836,8 +821,6 @@
                                                                 <Separator />
                                                                 <MenuItem Header="{Binding [Pen_Ctx_TogglePlot], Source={x:Static loc:Loc.Instance}}"
                                                                           IsCheckable="True" IsChecked="{Binding IsPlotted}" IsEnabled="{Binding CanPlotOnChart}" />
-                                                                <MenuItem Header="{Binding [Pen_Ctx_SetCycle], Source={x:Static loc:Loc.Instance}}"
-                                                                          Click="SetPenAsCycleTriggerMenuItem_Click" />
                                                                 <MenuItem Header="{Binding [Pen_Ctx_CopyAddress], Source={x:Static loc:Loc.Instance}}"
                                                                           Click="CopyPenAddress_Click" />
                                                             </ContextMenu>

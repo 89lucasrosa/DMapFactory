@@ -100,11 +100,6 @@ public sealed class SessionManager : ISampleSink, IAsyncDisposable
         _lastRateCalcUtc = DateTime.UtcNow;
         _eventsPerSecond = 0;
 
-        // Configura gatilho de ciclo de máquina automático se houver tag chamada Cycle_Active
-        var cycleTag = project.AllTags.FirstOrDefault(t =>
-            string.Equals(t.Alias, "Cycle_Active", StringComparison.OrdinalIgnoreCase));
-        Snapshot.CycleTriggerTagId = cycleTag?.Id;
-
         var metadata = new SessionMetadata
         {
             Project = project.Name,
@@ -190,10 +185,6 @@ public sealed class SessionManager : ISampleSink, IAsyncDisposable
         _activeDrivers = drivers;
         _activeGroups = project.Groups.ToList();
 
-        var cycleTag = project.AllTags.FirstOrDefault(t =>
-            string.Equals(t.Alias, "Cycle_Active", StringComparison.OrdinalIgnoreCase));
-        Snapshot.CycleTriggerTagId = cycleTag?.Id;
-
         if (_writer is not null)
         {
             try
@@ -262,7 +253,6 @@ public sealed class SessionManager : ISampleSink, IAsyncDisposable
         if (_writer is not null)
         {
             _writer.Metadata.DroppedSamples = Interlocked.Read(ref _droppedSamples);
-            _writer.Metadata.Cycles = Snapshot.GetCycles().ToList();
             await _writer.DisposeAsync().ConfigureAwait(false);
             _writer = null;
         }

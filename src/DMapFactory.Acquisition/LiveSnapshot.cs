@@ -20,8 +20,6 @@ public sealed class LiveSnapshot
     private DateTime? _pendingLocalTimestampUtc;
     private Dictionary<int, object?>? _pendingSnapshot;
     private HashSet<int>? _pendingChangedTags;
-    private int? _pendingCycleNumber;
-    private bool _pendingIsCycleStart;
     private DateTime? _lastRowTimestampUtc;
 
     /// <summary>Quando true (padrão P3), mudanças com o mesmo SourceTimestamp são agrupadas na mesma linha.</summary>
@@ -32,14 +30,6 @@ public sealed class LiveSnapshot
 
     /// <summary>Número máximo de linhas mantidas em memória para visualização ao vivo (sem limitação artificial).</summary>
     public int MaxRowsInMemory { get; set; } = int.MaxValue;
-
-    /// <summary>Tag booleana opcional cujo valor true/false demarca o ciclo de máquina (RF-STO-08 / RF-GRD-10).</summary>
-    public int? CycleTriggerTagId { get; set; }
-
-    private int _currentCycleNumber;
-    private bool _inCycle;
-    private DateTime _cycleStartUtc;
-    private readonly List<MachineCycle> _completedCycles = new();
 
     public void Reset()
     {
@@ -55,10 +45,7 @@ public sealed class LiveSnapshot
             _pendingLocalTimestampUtc = null;
             _pendingSnapshot = null;
             _pendingChangedTags = null;
-            _currentCycleNumber = 0;
-            _inCycle = false;
             _lastRowTimestampUtc = null;
-            _completedCycles.Clear();
         }
     }
 
@@ -100,14 +87,6 @@ public sealed class LiveSnapshot
         }
     }
 
-    public IReadOnlyList<MachineCycle> GetCycles()
-    {
-        lock (_lock)
-        {
-            return [.. _completedCycles];
-        }
-    }
-
     /// <summary>Processa um lote de amostras e retorna as novas linhas largas geradas.</summary>
     public IReadOnlyList<WideSpreadsheetRow> ApplyBatch(IReadOnlyList<Sample> samples)
     {
@@ -131,9 +110,6 @@ public sealed class LiveSnapshot
                 _latestByTag[s.TagId] = s;
                 _workingState[s.TagId] = displayValue;
 
-                bool isCycleStart = UpdateCycleState(in s);
-                int? activeCycle = _inCycle ? _currentCycleNumber : null;
-
                 DateTime sampleLocalTs = s.LocalTimestampUtc ?? DateTime.SpecifyKind(s.ReceivedUtc.ToLocalTime(), DateTimeKind.Utc);
 
                 if (GroupSameTimestamp &&
@@ -150,8 +126,6 @@ public sealed class LiveSnapshot
                     _pendingLocalTimestampUtc = sampleLocalTs;
                     if (valueChanged)
                         _pendingChangedTags.Add(s.TagId);
-                    if (isCycleStart) _pendingIsCycleStart = true;
-                    _pendingCycleNumber = activeCycle;
                 }
                 else
                 {
@@ -162,8 +136,6 @@ public sealed class LiveSnapshot
                     _pendingLocalTimestampUtc = sampleLocalTs;
                     _pendingSnapshot = new Dictionary<int, object?>(_workingState);
                     _pendingChangedTags = valueChanged ? [s.TagId] : [];
-                    _pendingCycleNumber = activeCycle;
-                    _pendingIsCycleStart = isCycleStart;
 
                     if (!GroupSameTimestamp)
                     {
@@ -208,8 +180,6 @@ public sealed class LiveSnapshot
                 LocalTimestampUtc = timestampUtc ?? localNow,
                 ValuesByTagId = currentValues,
                 ChangedTagIds = new HashSet<int>(),
-                CycleNumber = _currentCycleNumber > 0 ? _currentCycleNumber : null,
-                IsCycleStart = false,
                 DeltaTime = delta,
                 MarkerText = text.Trim()
             };
@@ -290,8 +260,6 @@ public sealed class LiveSnapshot
             LocalTimestampUtc = _pendingLocalTimestampUtc,
             ValuesByTagId = _pendingSnapshot,
             ChangedTagIds = _pendingChangedTags,
-            CycleNumber = _pendingCycleNumber,
-            IsCycleStart = _pendingIsCycleStart,
             DeltaTime = delta
         };
 
@@ -305,39 +273,5 @@ public sealed class LiveSnapshot
         _pendingLocalTimestampUtc = null;
         _pendingSnapshot = null;
         _pendingChangedTags = null;
-        _pendingIsCycleStart = false;
-    }
-
-    private bool UpdateCycleState(in Sample s)
-    {
-        if (CycleTriggerTagId is null || s.TagId != CycleTriggerTagId.Value)
-            return false;
-
-        bool active = s.Value switch
-        {
-            bool b => b,
-            int i => i != 0,
-            long l => l != 0,
-            double d => Math.Abs(d) > double.Epsilon,
-            string str => str == "1" || string.Equals(str, "true", StringComparison.OrdinalIgnoreCase),
-            _ => false
-        };
-
-        if (active && !_inCycle)
-        {
-            _inCycle = true;
-            _currentCycleNumber++;
-            _cycleStartUtc = s.TimestampUtc;
-            return true;
-        }
-
-        if (!active && _inCycle)
-        {
-            _inCycle = false;
-            double durationMs = Math.Max(0, (s.TimestampUtc - _cycleStartUtc).TotalMilliseconds);
-            _completedCycles.Add(new MachineCycle(_currentCycleNumber, _cycleStartUtc, s.TimestampUtc, durationMs));
-        }
-
-        return false;
     }
 }

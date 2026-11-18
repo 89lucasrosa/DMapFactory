@@ -236,9 +236,6 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
-    // FN-02: Gatilho de ciclo de máquina configurável
-    [ObservableProperty] private string? _cycleTriggerTagAlias;
-
     // FN-03: Busca de nós na árvore OPC UA
     [ObservableProperty] private string _browserSearchText = "";
 
@@ -485,24 +482,6 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    public void SetAsCycleTrigger(MonitoredTagViewModel? tagVm = null)
-    {
-        var target = tagVm ?? SelectedMonitoredTag;
-        if (target is null) return;
-        _sessionManager.Snapshot.CycleTriggerTagId = target.Config.Id;
-        CycleTriggerTagAlias = target.Alias;
-        _logger.LogInformation("{Message}", Loc.Instance.Format("Log_CycleTriggerSet", target.Alias, target.Address));
-    }
-
-    [RelayCommand]
-    public void ClearCycleTrigger()
-    {
-        _sessionManager.Snapshot.CycleTriggerTagId = null;
-        CycleTriggerTagAlias = null;
-        _logger.LogInformation("{Message}", Loc.Instance["Log_CycleTriggerCleared"]);
-    }
-
-    [RelayCommand]
     private void ClearLogs()
     {
         LogEntries.Clear();
@@ -681,15 +660,6 @@ public sealed partial class MainViewModel : ObservableObject
             var loaded = await CsvSessionReader.LoadAsync(ofd.FileName);
             _sessionManager.Snapshot.Reset();
             SessionMarkers.Clear();
-
-            // FN-02: Identifica gatilho de ciclo configurado ou fallback para Cycle_Active
-            var cycleTag = loaded.Metadata.Tags.FirstOrDefault(t =>
-                string.Equals(t.Alias, "Cycle_Active", StringComparison.OrdinalIgnoreCase));
-            if (cycleTag is not null)
-            {
-                _sessionManager.Snapshot.CycleTriggerTagId = cycleTag.Id;
-                CycleTriggerTagAlias = cycleTag.Alias;
-            }
 
             var rows = _sessionManager.Snapshot.ApplyBatch(loaded.Samples);
 
