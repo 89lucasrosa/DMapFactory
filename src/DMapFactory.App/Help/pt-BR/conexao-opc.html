@@ -121,11 +121,11 @@
         </div>
 
         <h2>Taxa de Amostragem e Modo de Aquisição (FN-01)</h2>
-        <p>Na barra de ferramentas superior, você pode definir como o DMapFactory requisita os dados ao servidor OPC UA:</p>
+        <p>Na barra de ferramentas superior, você pode definir como o DMapFactory requisita os dados ao servidor OPC UA (com atualização imediata mesmo durante uma coleta On-line):</p>
         <ul>
-          <li><strong>Taxa de Coleta (10 ms a 1000 ms)</strong>: define o intervalo de amostragem no CLP (ex: <code>10 ms</code> para sinais ultrarrápidos de posicionamento ou <code>1000 ms</code> para monitoramento térmico geral).</li>
-          <li><strong>Modo Assinatura (Subscription)</strong>: método recomendado padrão onde o servidor envia pacotes apenas quando ocorrem alterações de valor (<em>Report by Exception</em>), otimizando o tráfego de rede.</li>
-          <li><strong>Modo Varredura (Polling)</strong>: realiza leituras cíclicas forçadas em cada intervalo, garantindo leitura contínua mesmo em servidores com suporte limitado a notificações OPC UA.</li>
+          <li><strong>Taxa de Coleta (10 ms a 5000 ms)</strong>: define o intervalo fixo de varredura periódica (<code>10</code>, <code>20</code>, <code>50</code>, <code>100</code>, <code>250</code>, <code>500</code>, <code>1000</code>, <code>2000</code> ou <code>5000 ms</code>). Esse campo fica habilitado apenas no modo <em>Taxa de Amostragem</em>.</li>
+          <li><strong>Upon Change (Subscription)</strong>: método padrão em que o servidor envia notificações apenas quando ocorrem alterações de valor (<em>Report by Exception</em>). A seleção de taxa em ms é desconsiderada/desabilitada, evitando linhas repetidas quando os valores estão estáveis.</li>
+          <li><strong>Taxa de Amostragem (Polling)</strong>: realiza leituras cíclicas periódicas no intervalo exato configurado em ms, gerando registros contínuos na planilha e no gráfico mesmo que os valores das variáveis não mudem.</li>
         </ul>
 
         <h2 id="navegador-tags">Navegador da Árvore de Nós OPC UA</h2>

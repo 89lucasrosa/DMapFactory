@@ -492,6 +492,21 @@
               <td><strong>Explicação:</strong> O operador alterou o modo de aquisição (<em>Upon Change</em> vs <em>Taxa Fixa</em>) ou a origem do horário (<em>Auto</em>, <em>Source/CLP</em>, <em>Server</em> ou <em>Local/PC</em>).<br><strong>Ação:</strong> Nenhuma ação necessária; se estiver On-line, a alteração é aplicada imediatamente.</td>
             </tr>
             <tr>
+              <td><strong>Information</strong></td>
+              <td><code>Subscription '{grupo}' iniciada em '{conn}' ({ok}/{total} tags ativas).</code><br><code>Aquisição periódica '{grupo}' iniciada em '{conn}' com taxa fixa de {ms} ms ({total} tags).</code></td>
+              <td><strong>Explicação:</strong> Confirma que o motor de coleta iniciou no servidor OPC UA no modo selecionado (<em>Upon Change</em> ou <em>Taxa de Amostragem</em>).<br><strong>Ação:</strong> Nenhuma ação necessária; verifique se <code>{ok}/{total}</code> corresponde às tags esperadas.</td>
+            </tr>
+            <tr>
+              <td><strong>Warning</strong></td>
+              <td><code>MonitoredItem '{nome}' ({nodeId}) retornou status {status}.</code><br><code>Browse OPC UA em {nodeId} retornou status {status}.</code></td>
+              <td><strong>Explicação:</strong> O servidor OPC UA recusou ou retornou status ruim para um item monitorado ou navegação de nó.<br><strong>Verificar / Ação:</strong> Confira se o <code>NodeId</code> ainda existe no CLP e se o usuário tem permissão de leitura.</td>
+            </tr>
+            <tr>
+              <td><strong>Warning / Error</strong></td>
+              <td><code>Erro no loop de polling do grupo {grupo}.</code><br><code>Falha ao ler snapshot inicial das tags na conexão {conn}</code><br><code>Erro ao parar grupo {id} no driver {conn}</code><br><code>Falha ao gravar/atualizar/remover marcador nos metadados da sessão</code><br><code>Erro no loop consumidor de amostras da sessão</code></td>
+              <td><strong>Explicação:</strong> Falha durante leitura cíclica, parada de grupo ou gravação do arquivo <code>.session.json</code>.<br><strong>Verificar / Ação:</strong> Verifique a estabilidade da conexão OPC UA e permissões de escrita na pasta de sessões.</td>
+            </tr>
+            <tr>
               <td><strong>Error / Debug</strong></td>
               <td><code>Falha ao navegar raiz OPC UA: {erro}</code><br><code>Falha ao expandir nó {id}: {erro}</code><br><code>Não foi possível ler atributos de {id}: {erro}</code></td>
               <td><strong>Explicação:</strong> O servidor OPC UA recusou a navegação ou leitura de atributos de um nó específico.<br><strong>Verificar / Ação:</strong> Verifique permissões do usuário OPC UA no servidor ou se a sessão ainda está conectada.</td>
@@ -586,6 +601,11 @@
               <td><strong>Information / Error</strong></td>
               <td><code>[Certificados] Novo certificado de cliente (Application Instance) gerado: Assunto='{subject}', Thumbprint={thumb}</code><br><code>[Certificados] Certificado público do cliente exportado (.der) para '{caminho}'.</code><br><code>[Certificados] Certificado do cliente com chave privada exportado (.pfx) para '{caminho}'.</code><br><code>[Certificados] Certificado do cliente importado de '{caminho}': ...</code><br><code>[Certificados] Falha na operação de certificado ({op}): {erro}</code></td>
               <td><strong>Explicação:</strong> Auditoria do ciclo de vida do certificado de aplicação cliente.<br><strong>Verificar / Ação:</strong> Sempre que gerar ou importar um novo certificado cliente, exporte a chave pública (<code>.der</code>) e adicione-a na lista de <em>Trusted Clients</em> do servidor OPC UA / CLP.</td>
+            </tr>
+            <tr>
+              <td><strong>Warning</strong></td>
+              <td><code>Erro ao desconectar sessão {nome} após expiração de certificado.</code></td>
+              <td><strong>Explicação:</strong> O certificado do servidor expirou durante uma sessão ativa e houve erro ao fechar a conexão OPC UA.<br><strong>Verificar / Ação:</strong> Renove o certificado do servidor e reconecte manualmente.</td>
             </tr>
           </tbody>
         </table>

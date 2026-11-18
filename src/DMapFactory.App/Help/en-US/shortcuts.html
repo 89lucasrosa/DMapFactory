@@ -492,6 +492,21 @@
               <td><strong>Explanation:</strong> The operator changed the acquisition mode (<em>Upon Change</em> vs <em>Sampling Rate</em>) or timestamp source (<em>Auto</em>, <em>Source/PLC</em>, <em>Server</em>, or <em>Local/OS</em>).<br><strong>Action:</strong> No action required; changes take effect immediately.</td>
             </tr>
             <tr>
+              <td><strong>Information</strong></td>
+              <td><code>Subscription '{group}' started on '{conn}' ({ok}/{total} active tags).</code><br><code>Periodic acquisition '{group}' started on '{conn}' at fixed rate {ms} ms ({total} tags).</code></td>
+              <td><strong>Explanation:</strong> Confirms the acquisition engine started on the OPC UA server in the selected mode (<em>Upon Change</em> or <em>Sampling Rate</em>).<br><strong>Action:</strong> No action required; verify <code>{ok}/{total}</code> matches the expected tags.</td>
+            </tr>
+            <tr>
+              <td><strong>Warning</strong></td>
+              <td><code>MonitoredItem '{name}' ({nodeId}) returned status {status}.</code><br><code>OPC UA browse at {nodeId} returned status {status}.</code></td>
+              <td><strong>Explanation:</strong> The OPC UA server rejected or returned a bad status for a monitored item or node browse.<br><strong>Verify / Action:</strong> Verify the <code>NodeId</code> exists on the PLC and the user has read permissions.</td>
+            </tr>
+            <tr>
+              <td><strong>Warning / Error</strong></td>
+              <td><code>Error in polling loop for group {group}.</code><br><code>Failed to read initial tag snapshot on connection {conn}</code><br><code>Error stopping group {id} on driver {conn}</code><br><code>Failed to save/update/remove marker in session metadata</code><br><code>Error in session sample consumer loop</code></td>
+              <td><strong>Explanation:</strong> Failure during cyclic polling, group shutdown, or writing <code>.session.json</code> metadata.<br><strong>Verify / Action:</strong> Check OPC UA connection stability and write permissions on the sessions folder.</td>
+            </tr>
+            <tr>
               <td><strong>Error / Debug</strong></td>
               <td><code>Failed to browse OPC UA root: {error}</code><br><code>Failed to expand node {id}: {error}</code><br><code>Could not read attributes for {id}: {error}</code></td>
               <td><strong>Explanation:</strong> The OPC UA server rejected browsing or attribute reading for a node.<br><strong>Verify / Action:</strong> Check user permissions on the OPC UA server or verify the session is still connected.</td>
@@ -586,6 +601,11 @@
               <td><strong>Information / Error</strong></td>
               <td><code>[Certificates] New client certificate (Application Instance) generated: Subject='{subject}', Thumbprint={thumb}</code><br><code>[Certificates] Client public certificate exported (.der) to '{path}'.</code><br><code>[Certificates] Client certificate with private key exported (.pfx) to '{path}'.</code><br><code>[Certificates] Client certificate imported from '{path}': ...</code><br><code>[Certificates] Certificate operation failed ({op}): {error}</code></td>
               <td><strong>Explanation:</strong> Audit trail for the DMapFactory client application certificate.<br><strong>Verify / Action:</strong> Whenever generating or importing a new client certificate, export the public key (<code>.der</code>) and add it to the <em>Trusted Clients</em> list on the OPC UA server / PLC.</td>
+            </tr>
+            <tr>
+              <td><strong>Warning</strong></td>
+              <td><code>Error disconnecting session {name} after certificate expiration.</code></td>
+              <td><strong>Explanation:</strong> The server certificate expired during an active session and an error occurred while closing the OPC UA connection.<br><strong>Verify / Action:</strong> Renew the server certificate and reconnect manually.</td>
             </tr>
           </tbody>
         </table>
