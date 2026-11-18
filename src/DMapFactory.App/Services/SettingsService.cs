@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using DMapFactory.Core.Models;
 
 namespace DMapFactory.App.Services;
 
@@ -14,6 +15,7 @@ public sealed class AppSettings
     public double SpreadsheetHeaderHeight { get; set; }
     public bool AutoAcceptUntrustedCertificates { get; set; }
     public bool ShowMarkerColumn { get; set; } = true;
+    public TimestampSourceMode TimestampSource { get; set; } = TimestampSourceMode.Auto;
 }
 
 /// <summary>Carrega e salva <see cref="AppSettings"/> em %APPDATA%\DMapFactory\settings.json.</summary>

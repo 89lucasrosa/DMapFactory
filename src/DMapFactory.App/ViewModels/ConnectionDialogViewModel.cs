@@ -5,6 +5,8 @@ using CommunityToolkit.Mvvm.Input;
 using DMapFactory.Core.Models;
 using DMapFactory.Core.Security;
 using DMapFactory.Drivers.OpcUa;
+using DMapFactory.Localization;
+using Microsoft.Extensions.Logging;
 using Opc.Ua;
 
 namespace DMapFactory.App.ViewModels;
@@ -12,10 +14,15 @@ namespace DMapFactory.App.ViewModels;
 public sealed partial class ConnectionDialogViewModel : ObservableObject
 {
     private readonly OpcUaSecurityManager _securityManager;
+    private readonly ILogger? _logger;
 
-    public ConnectionDialogViewModel(OpcUaSecurityManager securityManager, ConnectionConfig? existing = null)
+    public ConnectionDialogViewModel(
+        OpcUaSecurityManager securityManager,
+        ConnectionConfig? existing = null,
+        ILogger? logger = null)
     {
         _securityManager = securityManager;
+        _logger = logger;
 
         if (existing is not null)
         {
@@ -97,7 +104,7 @@ public sealed partial class ConnectionDialogViewModel : ObservableObject
     private async Task DiscoverAsync()
     {
         IsBusy = true;
-        StatusText = "Consultando endpoints…";
+        StatusText = Loc.Instance["ConnDialog_Discovering"];
         DiscoveredEndpoints.Clear();
 
         try
@@ -108,11 +115,13 @@ public sealed partial class ConnectionDialogViewModel : ObservableObject
                 DiscoveredEndpoints.Add(ep);
             }
             SelectedDiscoveredEndpoint = DiscoveredEndpoints.FirstOrDefault();
-            StatusText = $"{list.Count} endpoint(s) encontrado(s).";
+            StatusText = Loc.Instance.Format("ConnDialog_DiscoveredCount", list.Count);
+            _logger?.LogInformation("{Message}", Loc.Instance.Format("Log_ConnDiscoverSuccess", EndpointUrl.Trim(), list.Count));
         }
         catch (Exception ex)
         {
-            StatusText = $"Erro na descoberta: {ex.Message}";
+            StatusText = Loc.Instance.Format("ConnDialog_TestFailed", ex.Message);
+            _logger?.LogError(ex, "{Message}", Loc.Instance.Format("Log_ConnDiscoverError", EndpointUrl.Trim(), ex.Message));
         }
         finally
         {
@@ -124,19 +133,22 @@ public sealed partial class ConnectionDialogViewModel : ObservableObject
     private async Task TestConnectionAsync()
     {
         IsBusy = true;
-        StatusText = "Testando conexão…";
+        StatusText = Loc.Instance["ConnDialog_Discovering"];
 
         try
         {
             var cfg = BuildConfig(0);
             await using var driver = new OpcUaDriver(cfg, _securityManager);
+            driver.StateChanged += (_, _) => { }; // suprime log duplicado de SetState durante teste rápido
             await driver.ConnectAsync();
-            await driver.DisconnectAsync();
-            StatusText = "✓ Conexão bem-sucedida!";
+            await driver.DisconnectAsync(isUserRequested: true);
+            StatusText = $"✓ {Loc.Instance["ConnDialog_TestSuccess"]}";
+            _logger?.LogInformation("{Message}", Loc.Instance.Format("Log_ConnTestSuccess", cfg.Name, cfg.EndpointUrl));
         }
         catch (Exception ex)
         {
-            StatusText = $"✗ Falha: {ex.Message}";
+            StatusText = $"✗ {Loc.Instance.Format("ConnDialog_TestFailed", ex.Message)}";
+            _logger?.LogError(ex, "{Message}", Loc.Instance.Format("Log_ConnTestError", Name.Trim(), EndpointUrl.Trim(), ex.Message));
         }
         finally
         {

@@ -6,13 +6,6 @@ public sealed record SessionMarker(
     string Text,
     string Kind = "User");
 
-/// <summary>Ciclo de máquina detectado por borda de gatilho (RF-STO-08).</summary>
-public sealed record MachineCycle(
-    int Number,
-    DateTime StartUtc,
-    DateTime? EndUtc,
-    double DurationMs);
-
 /// <summary>Associação de lote/batelada à sessão ou faixa de tempo (RF-STO-07).</summary>
 public sealed record BatchRecord(
     string Code,
@@ -55,6 +48,5 @@ public sealed class SessionMetadata
     public List<SessionConnectionSummary> Connections { get; set; } = [];
     public List<SessionTagSummary> Tags { get; set; } = [];
     public List<SessionMarker> Markers { get; set; } = [];
-    public List<MachineCycle> Cycles { get; set; } = [];
     public List<BatchRecord> Batches { get; set; } = [];
 }

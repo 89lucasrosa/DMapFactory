@@ -26,6 +26,7 @@ public sealed class CsvSessionWriter : IAsyncDisposable
     private readonly StreamWriter _csvWriter;
     private readonly StringBuilder _batchBuilder = new(4096);
     private readonly SemaphoreSlim _writeLock = new(1, 1);
+    private readonly SemaphoreSlim _metadataLock = new(1, 1);
     private long _seq;
     private bool _disposed;
 
@@ -115,6 +116,37 @@ public sealed class CsvSessionWriter : IAsyncDisposable
 
     public async Task SaveMetadataAsync(CancellationToken ct = default)
     {
+        await _metadataLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await SaveMetadataInternalAsync(ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _metadataLock.Release();
+        }
+    }
+
+    /// <summary>
+    /// Executa uma mutação atômica e thread-safe no objeto de metadados da sessão e persiste em disco.
+    /// </summary>
+    public async Task ModifyMetadataAsync(Action<SessionMetadata> modifier, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(modifier);
+        await _metadataLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            modifier(Metadata);
+            await SaveMetadataInternalAsync(ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _metadataLock.Release();
+        }
+    }
+
+    private async Task SaveMetadataInternalAsync(CancellationToken ct)
+    {
         Metadata.TotalSamples = Interlocked.Read(ref _seq);
         string tempPath = JsonFilePath + ".tmp";
         await using (var fs = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
@@ -134,7 +166,15 @@ public sealed class CsvSessionWriter : IAsyncDisposable
         await _csvWriter.DisposeAsync().ConfigureAwait(false);
         await _csvStream.DisposeAsync().ConfigureAwait(false);
         _writeLock.Dispose();
-        await SaveMetadataAsync().ConfigureAwait(false);
+
+        try
+        {
+            await SaveMetadataAsync().ConfigureAwait(false);
+        }
+        finally
+        {
+            _metadataLock.Dispose();
+        }
     }
 
     internal static void AppendCsvLine(StringBuilder sb, long seq, in Sample s)

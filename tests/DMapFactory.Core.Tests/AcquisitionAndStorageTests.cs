@@ -63,12 +63,11 @@ public sealed class AcquisitionAndStorageTests
     }
 
     [Fact]
-    public void LiveSnapshot_GroupsSameTimestamp_And_DetectsMachineCycles()
+    public void LiveSnapshot_GroupsSameTimestamp_Correctly()
     {
         var snapshot = new LiveSnapshot
         {
-            GroupSameTimestamp = true,
-            CycleTriggerTagId = 1
+            GroupSameTimestamp = true
         };
 
         DateTime t0 = new(2026, 10, 23, 12, 0, 0, DateTimeKind.Utc);
@@ -82,7 +81,7 @@ public sealed class AcquisitionAndStorageTests
             new(2, t0, t0, TimestampOrigin.Source, 100.0, 0u),
             // Timestamp t1: segunda linha mantendo Tag 1 = true e atualizando Tag 2 = 150.0
             new(2, t1, t1, TimestampOrigin.Source, 150.0, 0u),
-            // Timestamp t2: fim do ciclo (Tag 1 -> false)
+            // Timestamp t2: Tag 1 -> false
             new(1, t2, t2, TimestampOrigin.Source, false, 0u),
         ];
 
@@ -90,23 +89,17 @@ public sealed class AcquisitionAndStorageTests
 
         Assert.Equal(3, rows.Count);
 
-        // Linha 1 (t0): início do ciclo #1, mudou tags 1 e 2
-        Assert.Equal(1, rows[0].CycleNumber);
-        Assert.True(rows[0].IsCycleStart);
+        // Linha 1 (t0): mudou tags 1 e 2
         Assert.Contains(1, rows[0].ChangedTagIds);
         Assert.Contains(2, rows[0].ChangedTagIds);
         Assert.Equal(100.0, rows[0].ValuesByTagId[2]);
 
-        // Linha 2 (t1): dentro do ciclo #1, preserva Tag 1 = true e atualiza Tag 2 = 150.0
-        Assert.Equal(1, rows[1].CycleNumber);
-        Assert.False(rows[1].IsCycleStart);
+        // Linha 2 (t1): preserva Tag 1 = true e atualiza Tag 2 = 150.0
         Assert.Equal(true, rows[1].ValuesByTagId[1]);
         Assert.Equal(150.0, rows[1].ValuesByTagId[2]);
 
-        // Ciclo completo registrado com duração de 400 ms
-        var cycle = Assert.Single(snapshot.GetCycles());
-        Assert.Equal(1, cycle.Number);
-        Assert.Equal(400.0, cycle.DurationMs, precision: 1);
+        // Linha 3 (t2): atualiza Tag 1 = false
+        Assert.Equal(false, rows[2].ValuesByTagId[1]);
     }
 
     [Fact]
@@ -170,7 +163,7 @@ public sealed class AcquisitionAndStorageTests
                 new() { Id = 2, ConnectionId = 1, Address = "ns=2;s=Tag_001", Alias = "Pressao", DataType = "Double", Unit = "bar" }
             ];
 
-            var snapshot = new LiveSnapshot { GroupSameTimestamp = true, CycleTriggerTagId = 1 };
+            var snapshot = new LiveSnapshot { GroupSameTimestamp = true };
             DateTime t0 = new(2026, 10, 23, 12, 0, 0, DateTimeKind.Utc);
             var rows = snapshot.ApplyBatch(
             [

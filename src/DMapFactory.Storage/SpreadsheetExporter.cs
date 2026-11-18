@@ -67,14 +67,13 @@ public static class SpreadsheetExporter
         await using var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Read);
         await using var sw = new StreamWriter(fs, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
 
-        await sw.WriteLineAsync(string.Join(separator, "RowNumber", "TimestampUtc", "Cycle", "TagId", "TagAlias", "Value"));
+        await sw.WriteLineAsync(string.Join(separator, "RowNumber", "TimestampUtc", "TagId", "TagAlias", "Value"));
 
         var sb = new StringBuilder(128);
         foreach (var row in rows)
         {
             cancellationToken.ThrowIfCancellationRequested();
             string ts = row.TimestampUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture);
-            string cycle = row.CycleNumber?.ToString(CultureInfo.InvariantCulture) ?? "";
 
             foreach (int changedTagId in row.ChangedTagIds.OrderBy(id => id))
             {
@@ -82,7 +81,6 @@ public static class SpreadsheetExporter
                 sb.Clear();
                 sb.Append(row.RowNumber.ToString(CultureInfo.InvariantCulture)).Append(separator)
                   .Append(ts).Append(separator)
-                  .Append(cycle).Append(separator)
                   .Append(changedTagId.ToString(CultureInfo.InvariantCulture)).Append(separator)
                   .Append(EscapeCsv(alias, separator)).Append(separator)
                   .Append(EscapeCsv(row[changedTagId], separator));
@@ -118,7 +116,6 @@ public static class SpreadsheetExporter
         headerRange.Style.Font.Bold = true;
         ws.SheetView.FreezeRows(1);
 
-        var cycleRowColor = XLColor.FromHtml("#E3ECF5");
         var changedCellColor = XLColor.FromHtml("#FFF4C2");
 
         for (int r = 0; r < rows.Count; r++)
@@ -137,11 +134,6 @@ public static class SpreadsheetExporter
             else
             {
                 ws.Cell(excelRow, 4).Value = "";
-            }
-
-            if (row.IsCycleStart)
-            {
-                ws.Range(excelRow, 1, excelRow, 4 + tags.Count).Style.Fill.BackgroundColor = cycleRowColor;
             }
 
             for (int c = 0; c < tags.Count; c++)

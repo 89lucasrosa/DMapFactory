@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using DMapFactory.App.Services;
 using DMapFactory.Drivers.OpcUa;
+using DMapFactory.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 
@@ -87,14 +88,14 @@ public partial class CertificateManagerDialog : Window
                 ClientUriBox.Text = string.IsNullOrWhiteSpace(appCert.ApplicationUri) ? "—" : appCert.ApplicationUri;
                 ClientThumbprintBox.Text = appCert.Thumbprint;
                 ClientValidityText.Text =
-                    $"{appCert.NotBeforeLocal:dd/MM/yyyy HH:mm}  até  {appCert.NotAfterLocal:dd/MM/yyyy HH:mm}  —  {appCert.ValidityStatusText}";
+                    $"{appCert.NotBeforeLocal:dd/MM/yyyy HH:mm}  ..  {appCert.NotAfterLocal:dd/MM/yyyy HH:mm}  —  {appCert.ValidityStatusText}";
                 ClientKeyInfoText.Text = appCert.KeySize > 0
                     ? $"RSA {appCert.KeySize} bits ({appCert.SignatureAlgorithm})"
                     : appCert.SignatureAlgorithm;
             }
             else
             {
-                ClientSubjectBox.Text = "(Nenhum certificado encontrado)";
+                ClientSubjectBox.Text = "—";
                 ClientUriBox.Text = "—";
                 ClientThumbprintBox.Text = "—";
                 ClientValidityText.Text = "—";
@@ -105,17 +106,18 @@ public partial class CertificateManagerDialog : Window
             _rejectedCerts = await _securityManager.GetRejectedServerCertificatesAsync();
             _allServerCerts = await _securityManager.GetAllServerCertificatesAsync();
 
-            FilterAllRadio.Content = $"Todos ({_allServerCerts.Count})";
-            FilterTrustedRadio.Content = $"Confiáveis ({_trustedCerts.Count})";
-            FilterRejectedRadio.Content = $"Rejeitados ({_rejectedCerts.Count})";
+            FilterAllRadio.Content = Loc.Instance.Format("CertDlg_Filter_All", _allServerCerts.Count);
+            FilterTrustedRadio.Content = Loc.Instance.Format("CertDlg_Filter_Trusted", _trustedCerts.Count);
+            FilterRejectedRadio.Content = Loc.Instance.Format("CertDlg_Filter_Rejected", _rejectedCerts.Count);
 
             ApplyServerFilter();
             SyncDiscoveredStatusesWithStores();
         }
         catch (Exception ex)
         {
-            StatusText.Text = $"Erro ao carregar certificados: {ex.Message}";
-            _logger.LogError(ex, "Erro ao atualizar gerenciador de certificados");
+            string msg = Loc.Instance.Format("Log_CertOperationError", ex.Message);
+            StatusText.Text = msg;
+            _logger.LogError(ex, "{Message}", msg);
         }
     }
 
@@ -189,7 +191,7 @@ public partial class CertificateManagerDialog : Window
     private async void RefreshServers_Click(object sender, RoutedEventArgs e)
     {
         await RefreshAllAsync();
-        StatusText.Text = "Lista de certificados atualizada.";
+        StatusText.Text = Loc.Instance["CertDlg_StatusRefreshed"];
     }
 
     private void ServersGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -203,7 +205,7 @@ public partial class CertificateManagerDialog : Window
 
         if (ServersGrid.SelectedItem is CertificateInfo selected)
         {
-            SelectedServerSubjectBox.Text = $"{selected.Subject} (Emissor: {selected.Issuer})";
+            SelectedServerSubjectBox.Text = $"{selected.Subject} (Issuer: {selected.Issuer})";
             SelectedServerUriBox.Text = string.IsNullOrWhiteSpace(selected.ApplicationUri) ? "—" : selected.ApplicationUri;
             SelectedServerThumbBox.Text = selected.Thumbprint;
             string keyPart = selected.KeySize > 0 ? $"RSA {selected.KeySize} bits — " : "";
@@ -216,7 +218,7 @@ public partial class CertificateManagerDialog : Window
         }
         else
         {
-            SelectedServerSubjectBox.Text = "Selecione um certificado na lista acima";
+            SelectedServerSubjectBox.Text = "—";
             SelectedServerUriBox.Text = "—";
             SelectedServerThumbBox.Text = "—";
             SelectedServerValidityBox.Text = "—";
@@ -263,9 +265,18 @@ public partial class CertificateManagerDialog : Window
             _settings.Save();
         }
 
-        StatusText.Text = autoAccept
-            ? "Aceitação automática de certificados de servidores ativada."
-            : "Aceitação automática desativada (apenas servidores na lista Confiáveis serão aceitos sem confirmação).";
+        if (autoAccept)
+        {
+            string msg = Loc.Instance["Log_CertAutoAcceptEnabled"];
+            StatusText.Text = msg;
+            _logger.LogWarning("{Message}", msg);
+        }
+        else
+        {
+            string msg = Loc.Instance["Log_CertAutoAcceptDisabled"];
+            StatusText.Text = msg;
+            _logger.LogInformation("{Message}", msg);
+        }
     }
 
     // =========================================================================
@@ -275,48 +286,42 @@ public partial class CertificateManagerDialog : Window
     private async void TrustSelectedServer_Click(object sender, RoutedEventArgs e)
     {
         if (ServersGrid.SelectedItem is not CertificateInfo selected)
-        {
-            StatusText.Text = "Selecione um certificado na lista para confiar nele.";
             return;
-        }
 
         try
         {
-            bool ok = await _securityManager.TrustRejectedCertificateAsync(selected.Thumbprint);
+            await _securityManager.TrustRejectedCertificateAsync(selected.Thumbprint);
             await RefreshAllAsync();
-            StatusText.Text = ok
-                ? $"✔ Certificado '{selected.Subject}' movido para Servidores Confiáveis (Trusted)."
-                : "O certificado selecionado já está na lista de confiáveis ou não pôde ser movido.";
-            _logger.LogInformation("Certificado de servidor '{Subject}' ({Thumb}) marcado como Confiável (Trusted).", selected.Subject, selected.Thumbprint);
+            string msg = Loc.Instance.Format("Log_CertServerTrusted", selected.Subject, selected.Thumbprint);
+            StatusText.Text = $"✔ {msg}";
+            _logger.LogInformation("{Message}", msg);
         }
         catch (Exception ex)
         {
-            StatusText.Text = $"Erro ao confiar no certificado: {ex.Message}";
-            _logger.LogError(ex, "Erro ao mover certificado para Confiáveis");
+            string err = Loc.Instance.Format("Log_CertOperationError", ex.Message);
+            StatusText.Text = err;
+            _logger.LogError(ex, "{Message}", err);
         }
     }
 
     private async void RejectSelectedServer_Click(object sender, RoutedEventArgs e)
     {
         if (ServersGrid.SelectedItem is not CertificateInfo selected)
-        {
-            StatusText.Text = "Selecione um certificado na lista para rejeitá-lo.";
             return;
-        }
 
         try
         {
-            bool ok = await _securityManager.RejectTrustedCertificateAsync(selected.Thumbprint);
+            await _securityManager.RejectTrustedCertificateAsync(selected.Thumbprint);
             await RefreshAllAsync();
-            StatusText.Text = ok
-                ? $"✖ Certificado '{selected.Subject}' movido para Servidores Rejeitados (Rejected)."
-                : "O certificado selecionado já está na lista de rejeitados ou não pôde ser movido.";
-            _logger.LogInformation("Certificado de servidor '{Subject}' ({Thumb}) marcado como Rejeitado (Rejected).", selected.Subject, selected.Thumbprint);
+            string msg = Loc.Instance.Format("Log_CertServerRejected", selected.Subject, selected.Thumbprint);
+            StatusText.Text = $"✖ {msg}";
+            _logger.LogWarning("{Message}", msg);
         }
         catch (Exception ex)
         {
-            StatusText.Text = $"Erro ao rejeitar certificado: {ex.Message}";
-            _logger.LogError(ex, "Erro ao mover certificado para Rejeitados");
+            string err = Loc.Instance.Format("Log_CertOperationError", ex.Message);
+            StatusText.Text = err;
+            _logger.LogError(ex, "{Message}", err);
         }
     }
 
@@ -324,45 +329,43 @@ public partial class CertificateManagerDialog : Window
     {
         var ofd = new OpenFileDialog
         {
-            Title = "Importar Certificado de Servidor OPC UA (.der, .cer, .crt)",
-            Filter = "Certificados de Servidor (*.der;*.cer;*.crt;*.pem)|*.der;*.cer;*.crt;*.pem|Todos os arquivos (*.*)|*.*",
+            Title = Loc.Instance["CertDlg_Btn_ImportServer"],
+            Filter = "Server Certificates (*.der;*.cer;*.crt;*.pem)|*.der;*.cer;*.crt;*.pem|All files (*.*)|*.*",
             Multiselect = true
         };
         if (ofd.ShowDialog(this) != true) return;
 
         try
         {
-            int count = 0;
+            string lastMsg = "";
             foreach (var file in ofd.FileNames)
             {
                 var info = await _securityManager.ImportTrustedServerCertificateAsync(file);
-                count++;
-                _logger.LogInformation("Certificado do servidor '{Subject}' ({Thumb}) importado para Confiáveis.", info.Subject, info.Thumbprint);
+                lastMsg = Loc.Instance.Format("Log_CertServerImported", info.Subject, info.Thumbprint);
+                _logger.LogInformation("{Message}", lastMsg);
             }
 
             await RefreshAllAsync();
-            StatusText.Text = $"{count} certificado(s) de servidor importado(s) para a lista de Servidores Confiáveis (Trusted).";
+            StatusText.Text = lastMsg;
         }
         catch (Exception ex)
         {
-            StatusText.Text = $"Falha ao importar certificado do servidor: {ex.Message}";
-            _logger.LogError(ex, "Falha ao importar certificado do servidor");
+            string err = Loc.Instance.Format("Log_CertOperationError", ex.Message);
+            StatusText.Text = err;
+            _logger.LogError(ex, "{Message}", err);
         }
     }
 
     private async void ExportSelectedServerCert_Click(object sender, RoutedEventArgs e)
     {
         if (ServersGrid.SelectedItem is not CertificateInfo selected)
-        {
-            StatusText.Text = "Selecione um certificado de servidor para exportar.";
             return;
-        }
 
         var sfd = new SaveFileDialog
         {
-            Title = "Exportar Certificado de Servidor (.der)",
+            Title = Loc.Instance["CertDlg_Btn_ExportServer"],
             FileName = $"Server-{selected.Thumbprint[..Math.Min(8, selected.Thumbprint.Length)]}.der",
-            Filter = "Certificado DER (*.der;*.cer)|*.der;*.cer|Todos os arquivos (*.*)|*.*"
+            Filter = "DER Certificate (*.der;*.cer)|*.der;*.cer|All files (*.*)|*.*"
         };
         if (sfd.ShowDialog(this) != true) return;
 
@@ -370,31 +373,27 @@ public partial class CertificateManagerDialog : Window
         {
             bool fromTrusted = selected.TrustStatus == CertificateTrustStatus.Trusted;
             await _securityManager.ExportServerCertificateDerAsync(selected.Thumbprint, fromTrusted, sfd.FileName);
-            StatusText.Text = $"Certificado de servidor exportado para: {sfd.FileName}";
-            _logger.LogInformation("Certificado de servidor '{Subject}' exportado para {Path}", selected.Subject, sfd.FileName);
+            string msg = Loc.Instance.Format("Log_CertServerExported", selected.Subject, sfd.FileName);
+            StatusText.Text = msg;
+            _logger.LogInformation("{Message}", msg);
         }
         catch (Exception ex)
         {
-            StatusText.Text = $"Falha ao exportar certificado de servidor: {ex.Message}";
-            _logger.LogError(ex, "Falha ao exportar certificado de servidor");
+            string err = Loc.Instance.Format("Log_CertOperationError", ex.Message);
+            StatusText.Text = err;
+            _logger.LogError(ex, "{Message}", err);
         }
     }
 
     private async void RemoveSelectedServerCert_Click(object sender, RoutedEventArgs e)
     {
         if (ServersGrid.SelectedItem is not CertificateInfo selected)
-        {
-            StatusText.Text = "Selecione um certificado de servidor na tabela para excluí-lo.";
             return;
-        }
 
         var confirm = MessageBox.Show(
             this,
-            $"Deseja excluir permanentemente o certificado de servidor abaixo?\n\n" +
-            $"Sujeito: {selected.Subject}\n" +
-            $"Thumbprint: {selected.Thumbprint}\n" +
-            $"Status atual: {selected.TrustStatusText}",
-            "Excluir Certificado de Servidor",
+            $"{selected.Subject}\nThumbprint: {selected.Thumbprint}\nStatus: {selected.TrustStatusText}",
+            Loc.Instance["CertDlg_Btn_DeleteServer"],
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
 
@@ -405,13 +404,15 @@ public partial class CertificateManagerDialog : Window
             bool fromTrusted = selected.TrustStatus == CertificateTrustStatus.Trusted;
             await _securityManager.RemoveServerCertificateAsync(selected.Thumbprint, fromTrusted);
             await RefreshAllAsync();
-            StatusText.Text = $"Certificado '{selected.Subject}' excluído.";
-            _logger.LogInformation("Certificado de servidor '{Subject}' ({Thumb}) excluído.", selected.Subject, selected.Thumbprint);
+            string msg = Loc.Instance.Format("Log_CertServerDeleted", selected.Subject, selected.Thumbprint);
+            StatusText.Text = msg;
+            _logger.LogInformation("{Message}", msg);
         }
         catch (Exception ex)
         {
-            StatusText.Text = $"Erro ao excluir certificado: {ex.Message}";
-            _logger.LogError(ex, "Erro ao excluir certificado de servidor");
+            string err = Loc.Instance.Format("Log_CertOperationError", ex.Message);
+            StatusText.Text = err;
+            _logger.LogError(ex, "{Message}", err);
         }
     }
 
@@ -423,15 +424,12 @@ public partial class CertificateManagerDialog : Window
     {
         string url = DiscoveryUrlCombo.Text?.Trim() ?? "";
         if (string.IsNullOrWhiteSpace(url))
-        {
-            StatusText.Text = "Informe a URL do servidor OPC UA (ex.: opc.tcp://localhost:4840).";
             return;
-        }
 
         try
         {
             DiscoverBtn.IsEnabled = false;
-            StatusText.Text = $"Consultando endpoints e certificados em {url}...";
+            StatusText.Text = $"{url}...";
 
             var discovered = await _securityManager.DiscoverServerCertificatesAsync(url, timeoutMs: 10_000);
             _discoveredCerts = discovered.ToList();
@@ -440,18 +438,22 @@ public partial class CertificateManagerDialog : Window
             if (_discoveredCerts.Count > 0)
             {
                 DiscoveredCertsGrid.SelectedIndex = 0;
-                StatusText.Text = $"{_discoveredCerts.Count} certificado(s) de servidor encontrado(s) em {url}. Selecione e clique em Confiar ou Rejeitar.";
-                _logger.LogInformation("Descoberta de certificados em {Url}: {Count} certificado(s) obtido(s).", url, _discoveredCerts.Count);
+                string msg = Loc.Instance.Format("Log_CertDiscoverySuccess", url, _discoveredCerts.Count);
+                StatusText.Text = msg;
+                _logger.LogInformation("{Message}", msg);
             }
             else
             {
-                StatusText.Text = $"O servidor em {url} respondeu, mas não apresentou nenhum certificado X.509 nos endpoints retornados.";
+                string msg = Loc.Instance.Format("Log_CertDiscoveryNoneWarn", url);
+                StatusText.Text = msg;
+                _logger.LogWarning("{Message}", msg);
             }
         }
         catch (Exception ex)
         {
-            StatusText.Text = $"Falha ao descobrir certificados em '{url}': {ex.Message}";
-            _logger.LogWarning(ex, "Falha na descoberta de certificados em {Url}", url);
+            string err = Loc.Instance.Format("Log_CertDiscoveryError", url, ex.Message);
+            StatusText.Text = err;
+            _logger.LogError(ex, "{Message}", err);
         }
         finally
         {
@@ -463,71 +465,70 @@ public partial class CertificateManagerDialog : Window
     private async void TrustDiscoveredCert_Click(object sender, RoutedEventArgs e)
     {
         if (DiscoveredCertsGrid.SelectedItem is not DiscoveredServerCertificate item)
-        {
-            StatusText.Text = "Selecione um certificado descoberto na tabela acima.";
             return;
-        }
 
         try
         {
             var info = await _securityManager.TrustServerCertificateAsync(item.RawData);
             await RefreshAllAsync();
-            StatusText.Text = $"✔ Certificado descoberto '{info.Subject}' adicionado à lista de Servidores Confiáveis (Trusted).";
-            _logger.LogInformation("Certificado descoberto '{Subject}' ({Thumb}) salvo em Confiáveis.", info.Subject, info.Thumbprint);
+            string msg = Loc.Instance.Format("Log_CertServerTrusted", info.Subject, info.Thumbprint);
+            StatusText.Text = $"✔ {msg}";
+            _logger.LogInformation("{Message}", msg);
         }
         catch (Exception ex)
         {
-            StatusText.Text = $"Erro ao confiar no certificado descoberto: {ex.Message}";
-            _logger.LogError(ex, "Erro ao confiar no certificado descoberto");
+            string err = Loc.Instance.Format("Log_CertOperationError", ex.Message);
+            StatusText.Text = err;
+            _logger.LogError(ex, "{Message}", err);
         }
     }
 
     private async void RejectDiscoveredCert_Click(object sender, RoutedEventArgs e)
     {
         if (DiscoveredCertsGrid.SelectedItem is not DiscoveredServerCertificate item)
-        {
-            StatusText.Text = "Selecione um certificado descoberto na tabela acima.";
             return;
-        }
 
         try
         {
             var info = await _securityManager.RejectServerCertificateAsync(item.RawData);
             await RefreshAllAsync();
-            StatusText.Text = $"✖ Certificado descoberto '{info.Subject}' movido para a lista de Servidores Rejeitados (Rejected).";
-            _logger.LogInformation("Certificado descoberto '{Subject}' ({Thumb}) salvo em Rejeitados.", info.Subject, info.Thumbprint);
+            string msg = Loc.Instance.Format("Log_CertServerRejected", info.Subject, info.Thumbprint);
+            StatusText.Text = $"✖ {msg}";
+            _logger.LogWarning("{Message}", msg);
         }
         catch (Exception ex)
         {
-            StatusText.Text = $"Erro ao rejeitar certificado descoberto: {ex.Message}";
-            _logger.LogError(ex, "Erro ao rejeitar certificado descoberto");
+            string err = Loc.Instance.Format("Log_CertOperationError", ex.Message);
+            StatusText.Text = err;
+            _logger.LogError(ex, "{Message}", err);
         }
     }
 
     private async void ExportDiscoveredCert_Click(object sender, RoutedEventArgs e)
     {
         if (DiscoveredCertsGrid.SelectedItem is not DiscoveredServerCertificate item)
-        {
-            StatusText.Text = "Selecione um certificado descoberto para exportar.";
             return;
-        }
 
         var sfd = new SaveFileDialog
         {
-            Title = "Exportar Certificado Descoberto (.der)",
+            Title = Loc.Instance["CertDlg_Btn_ExportServer"],
             FileName = $"DiscoveredServer-{item.Certificate.Thumbprint[..Math.Min(8, item.Certificate.Thumbprint.Length)]}.der",
-            Filter = "Certificado DER (*.der;*.cer)|*.der;*.cer"
+            Filter = "DER Certificate (*.der;*.cer)|*.der;*.cer"
         };
         if (sfd.ShowDialog(this) != true) return;
 
         try
         {
             await File.WriteAllBytesAsync(sfd.FileName, item.RawData);
-            StatusText.Text = $"Certificado descoberto exportado para: {sfd.FileName}";
+            string msg = Loc.Instance.Format("Log_CertServerExported", item.Certificate.Subject, sfd.FileName);
+            StatusText.Text = msg;
+            _logger.LogInformation("{Message}", msg);
         }
         catch (Exception ex)
         {
-            StatusText.Text = $"Erro ao exportar certificado descoberto: {ex.Message}";
+            string err = Loc.Instance.Format("Log_CertOperationError", ex.Message);
+            StatusText.Text = err;
+            _logger.LogError(ex, "{Message}", err);
         }
     }
 
@@ -542,7 +543,7 @@ public partial class CertificateManagerDialog : Window
             var startDate = GenNotBeforePicker.SelectedDate ?? DateTime.Today;
             GenNotBeforePicker.SelectedDate = startDate;
             GenNotAfterPicker.SelectedDate = startDate.AddYears(years);
-            StatusText.Text = $"Validade ajustada para {years} ano(s): de {startDate:dd/MM/yyyy} até {startDate.AddYears(years):dd/MM/yyyy}.";
+            StatusText.Text = $"{startDate:dd/MM/yyyy} .. {startDate.AddYears(years):dd/MM/yyyy}";
         }
     }
 
@@ -559,15 +560,7 @@ public partial class CertificateManagerDialog : Window
         DateTime endDate = (GenNotAfterPicker.SelectedDate ?? startDate.AddYears(2)).Date;
 
         if (endDate <= startDate)
-        {
-            MessageBox.Show(
-                this,
-                "A data de expiração deve ser posterior à data de início da validade.",
-                "Data de Validade Inválida",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
             return;
-        }
 
         ushort keySize = 2048;
         if (GenKeySizeCombo.SelectedItem is ComboBoxItem { Tag: string ksStr } &&
@@ -578,13 +571,8 @@ public partial class CertificateManagerDialog : Window
 
         var confirm = MessageBox.Show(
             this,
-            $"Deseja gerar e ativar um novo certificado de cliente OPC UA com os parâmetros abaixo?\n\n" +
-            $"• Nome Comum (CN): {cn}\n" +
-            $"• Organização (O): {org}\n" +
-            $"• Tamanho da Chave: RSA {keySize} bits\n" +
-            $"• Validade: {startDate:dd/MM/yyyy} até {endDate:dd/MM/yyyy}\n\n" +
-            "Observação: se você já havia importado o certificado anterior manualmente em algum servidor OPC UA com segurança Sign/SignAndEncrypt, será necessário exportar o novo certificado (.der) e importá-lo no servidor.",
-            "Gerar Novo Certificado de Cliente OPC UA",
+            $"CN={cn}, O={org}\nRSA {keySize} bits\n{startDate:dd/MM/yyyy} .. {endDate:dd/MM/yyyy}",
+            Loc.Instance["CertDlg_Btn_GenerateClient"],
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
 
@@ -592,7 +580,6 @@ public partial class CertificateManagerDialog : Window
 
         try
         {
-            StatusText.Text = $"Gerando novo certificado de cliente RSA {keySize} bits (válido até {endDate:dd/MM/yyyy})...";
             var options = new ClientCertificateGenerationOptions(
                 CommonName: cn,
                 Organization: org,
@@ -603,16 +590,21 @@ public partial class CertificateManagerDialog : Window
             var info = await _securityManager.GenerateApplicationCertificateAsync(options);
             await RefreshAllAsync();
 
-            StatusText.Text =
-                $"✔ Novo certificado de cliente gerado! Thumbprint: {info.Thumbprint} | Validade: {info.NotBeforeLocal:dd/MM/yyyy} a {info.NotAfterLocal:dd/MM/yyyy}";
-            _logger.LogInformation(
-                "Novo certificado de cliente OPC UA gerado: Subject='{Subject}', Thumbprint={Thumb}, Validade={Start:yyyy-MM-dd}..{End:yyyy-MM-dd}, KeySize={KeySize}",
-                info.Subject, info.Thumbprint, info.NotBeforeLocal, info.NotAfterLocal, info.KeySize);
+            string msg = Loc.Instance.Format(
+                "Log_CertClientGenerated",
+                info.Subject,
+                info.Thumbprint,
+                info.KeySize,
+                info.NotBeforeLocal.ToString("yyyy-MM-dd"),
+                info.NotAfterLocal.ToString("yyyy-MM-dd"));
+            StatusText.Text = $"✔ {msg}";
+            _logger.LogInformation("{Message}", msg);
         }
         catch (Exception ex)
         {
-            StatusText.Text = $"Falha ao gerar novo certificado: {ex.Message}";
-            _logger.LogError(ex, "Falha ao gerar certificado do cliente");
+            string err = Loc.Instance.Format("Log_CertOperationError", ex.Message);
+            StatusText.Text = err;
+            _logger.LogError(ex, "{Message}", err);
         }
     }
 
@@ -620,22 +612,24 @@ public partial class CertificateManagerDialog : Window
     {
         var sfd = new SaveFileDialog
         {
-            Title = "Exportar Certificado Público do Cliente (.der / .cer)",
+            Title = Loc.Instance["CertDlg_Btn_ExportClientDer"],
             FileName = "DMapFactory-Client.der",
-            Filter = "Certificado DER (*.der;*.cer)|*.der;*.cer|Todos os arquivos (*.*)|*.*"
+            Filter = "DER Certificate (*.der;*.cer)|*.der;*.cer|All files (*.*)|*.*"
         };
         if (sfd.ShowDialog(this) != true) return;
 
         try
         {
             await _securityManager.ExportApplicationCertificateDerAsync(sfd.FileName);
-            StatusText.Text = $"Certificado público do cliente exportado com sucesso para: {sfd.FileName}";
-            _logger.LogInformation("Certificado público do cliente exportado para {Path}", sfd.FileName);
+            string msg = Loc.Instance.Format("Log_CertClientExportedDer", sfd.FileName);
+            StatusText.Text = msg;
+            _logger.LogInformation("{Message}", msg);
         }
         catch (Exception ex)
         {
-            StatusText.Text = $"Falha ao exportar certificado: {ex.Message}";
-            _logger.LogError(ex, "Falha ao exportar certificado .der");
+            string err = Loc.Instance.Format("Log_CertOperationError", ex.Message);
+            StatusText.Text = err;
+            _logger.LogError(ex, "{Message}", err);
         }
     }
 
@@ -643,22 +637,24 @@ public partial class CertificateManagerDialog : Window
     {
         var sfd = new SaveFileDialog
         {
-            Title = "Exportar Certificado do Cliente com Chave Privada (.pfx)",
+            Title = Loc.Instance["CertDlg_Btn_ExportClientPfx"],
             FileName = "DMapFactory-Client.pfx",
-            Filter = "Arquivo PKCS#12 (*.pfx;*.p12)|*.pfx;*.p12"
+            Filter = "PKCS#12 (*.pfx;*.p12)|*.pfx;*.p12"
         };
         if (sfd.ShowDialog(this) != true) return;
 
         try
         {
             await _securityManager.ExportApplicationCertificatePfxAsync(sfd.FileName, password: null);
-            StatusText.Text = $"Certificado completo (.pfx) exportado para: {sfd.FileName}";
-            _logger.LogInformation("Certificado .pfx do cliente exportado para {Path}", sfd.FileName);
+            string msg = Loc.Instance.Format("Log_CertClientExportedPfx", sfd.FileName);
+            StatusText.Text = msg;
+            _logger.LogInformation("{Message}", msg);
         }
         catch (Exception ex)
         {
-            StatusText.Text = $"Falha ao exportar .pfx: {ex.Message}";
-            _logger.LogError(ex, "Falha ao exportar certificado .pfx");
+            string err = Loc.Instance.Format("Log_CertOperationError", ex.Message);
+            StatusText.Text = err;
+            _logger.LogError(ex, "{Message}", err);
         }
     }
 
@@ -666,8 +662,8 @@ public partial class CertificateManagerDialog : Window
     {
         var ofd = new OpenFileDialog
         {
-            Title = "Importar Certificado do Cliente (.pfx, .p12, .der, .cer)",
-            Filter = "Certificados (*.pfx;*.p12;*.der;*.cer;*.crt)|*.pfx;*.p12;*.der;*.cer;*.crt|Todos os arquivos (*.*)|*.*"
+            Title = Loc.Instance["CertDlg_Btn_ImportClient"],
+            Filter = "Certificates (*.pfx;*.p12;*.der;*.cer;*.crt)|*.pfx;*.p12;*.der;*.cer;*.crt|All files (*.*)|*.*"
         };
         if (ofd.ShowDialog(this) != true) return;
 
@@ -675,13 +671,15 @@ public partial class CertificateManagerDialog : Window
         {
             var info = await _securityManager.ImportApplicationCertificateAsync(ofd.FileName, password: null);
             await RefreshAllAsync();
-            StatusText.Text = $"Certificado do cliente importado: {info.Subject} (Thumbprint: {info.Thumbprint})";
-            _logger.LogInformation("Certificado do cliente importado de {Path} ({Thumbprint})", ofd.FileName, info.Thumbprint);
+            string msg = Loc.Instance.Format("Log_CertClientImported", ofd.FileName, info.Thumbprint);
+            StatusText.Text = msg;
+            _logger.LogInformation("{Message}", msg);
         }
         catch (Exception ex)
         {
-            StatusText.Text = $"Falha ao importar certificado do cliente: {ex.Message}";
-            _logger.LogError(ex, "Falha ao importar certificado do cliente");
+            string err = Loc.Instance.Format("Log_CertOperationError", ex.Message);
+            StatusText.Text = err;
+            _logger.LogError(ex, "{Message}", err);
         }
     }
 
@@ -698,7 +696,9 @@ public partial class CertificateManagerDialog : Window
         }
         catch (Exception ex)
         {
-            StatusText.Text = $"Não foi possível abrir a pasta PKI: {ex.Message}";
+            string err = Loc.Instance.Format("Log_CertOperationError", ex.Message);
+            StatusText.Text = err;
+            _logger.LogError(ex, "{Message}", err);
         }
     }
 }

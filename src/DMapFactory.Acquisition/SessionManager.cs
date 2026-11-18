@@ -3,6 +3,8 @@ using System.Threading.Channels;
 using DMapFactory.Core.Abstractions;
 using DMapFactory.Core.Models;
 using DMapFactory.Storage;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace DMapFactory.Acquisition;
 
@@ -28,6 +30,7 @@ public readonly record struct AcquisitionStats(
 public sealed class SessionManager : ISampleSink, IAsyncDisposable
 {
     private readonly int _bufferCapacity;
+    private readonly ILogger<SessionManager> _logger;
     private Channel<Sample>? _channel;
     private CsvSessionWriter? _writer;
     private CancellationTokenSource? _consumerCts;
@@ -43,10 +46,14 @@ public sealed class SessionManager : ISampleSink, IAsyncDisposable
     private int _bufferedCount;
     private bool _isOnline;
 
-    public SessionManager(LiveSnapshot? snapshot = null, int bufferCapacity = 50_000)
+    public SessionManager(
+        LiveSnapshot? snapshot = null,
+        int bufferCapacity = 500_000,
+        ILogger<SessionManager>? logger = null)
     {
         Snapshot = snapshot ?? new LiveSnapshot();
-        _bufferCapacity = Math.Max(15_000, bufferCapacity);
+        _bufferCapacity = Math.Max(50_000, bufferCapacity);
+        _logger = logger ?? NullLogger<SessionManager>.Instance;
     }
 
     public LiveSnapshot Snapshot { get; }
@@ -92,11 +99,6 @@ public sealed class SessionManager : ISampleSink, IAsyncDisposable
         Interlocked.Exchange(ref _bufferedCount, 0);
         _lastRateCalcUtc = DateTime.UtcNow;
         _eventsPerSecond = 0;
-
-        // Configura gatilho de ciclo de máquina automático se houver tag chamada Cycle_Active
-        var cycleTag = project.AllTags.FirstOrDefault(t =>
-            string.Equals(t.Alias, "Cycle_Active", StringComparison.OrdinalIgnoreCase));
-        Snapshot.CycleTriggerTagId = cycleTag?.Id;
 
         var metadata = new SessionMetadata
         {
@@ -145,9 +147,9 @@ public sealed class SessionManager : ISampleSink, IAsyncDisposable
                         TryPublish(in s);
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Continua mesmo se uma leitura inicial falhar
+                    _logger.LogWarning(ex, "Falha ao ler snapshot inicial das tags na conexão {Conn}", drv.Connection.Name);
                 }
             }
 
@@ -173,28 +175,32 @@ public sealed class SessionManager : ISampleSink, IAsyncDisposable
                 {
                     await drv.StopGroupAsync(grp.Id, ct).ConfigureAwait(false);
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Erro ao parar grupo {GroupId} no driver {Conn}", grp.Id, drv.Connection.Name);
+                }
             }
         }
 
         _activeDrivers = drivers;
         _activeGroups = project.Groups.ToList();
 
-        var cycleTag = project.AllTags.FirstOrDefault(t =>
-            string.Equals(t.Alias, "Cycle_Active", StringComparison.OrdinalIgnoreCase));
-        Snapshot.CycleTriggerTagId = cycleTag?.Id;
-
         if (_writer is not null)
         {
-            _writer.Metadata.Tags = project.AllTags
-                .Where(t => t.Historize)
-                .Select(t => new SessionTagSummary(t.Id, t.ConnectionId, t.Address, t.Alias, t.DataType, t.Unit))
-                .ToList();
             try
             {
-                await _writer.SaveMetadataAsync(ct).ConfigureAwait(false);
+                await _writer.ModifyMetadataAsync(m =>
+                {
+                    m.Tags = project.AllTags
+                        .Where(t => t.Historize)
+                        .Select(t => new SessionTagSummary(t.Id, t.ConnectionId, t.Address, t.Alias, t.DataType, t.Unit))
+                        .ToList();
+                }, ct).ConfigureAwait(false);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Falha ao atualizar lista de tags nos metadados da sessão");
+            }
         }
 
         foreach (var drv in drivers.Where(d => d.State == ConnectionState.Connected))
@@ -219,7 +225,10 @@ public sealed class SessionManager : ISampleSink, IAsyncDisposable
                 {
                     await drv.StopGroupAsync(grp.Id, ct).ConfigureAwait(false);
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Erro ao parar grupo {GroupId} no driver {Conn}", grp.Id, drv.Connection.Name);
+                }
             }
         }
 
@@ -231,7 +240,10 @@ public sealed class SessionManager : ISampleSink, IAsyncDisposable
             {
                 await _consumerTask.ConfigureAwait(false);
             }
-            catch { }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogError(ex, "Erro no loop consumidor de amostras da sessão");
+            }
         }
 
         _consumerCts?.Dispose();
@@ -241,7 +253,6 @@ public sealed class SessionManager : ISampleSink, IAsyncDisposable
         if (_writer is not null)
         {
             _writer.Metadata.DroppedSamples = Interlocked.Read(ref _droppedSamples);
-            _writer.Metadata.Cycles = Snapshot.GetCycles().ToList();
             await _writer.DisposeAsync().ConfigureAwait(false);
             _writer = null;
         }
@@ -266,12 +277,14 @@ public sealed class SessionManager : ISampleSink, IAsyncDisposable
 
         if (_writer is not null)
         {
-            _writer.Metadata.Markers.Add(marker);
             try
             {
-                await _writer.SaveMetadataAsync(ct).ConfigureAwait(false);
+                await _writer.ModifyMetadataAsync(m => m.Markers.Add(marker), ct).ConfigureAwait(false);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Falha ao gravar marcador nos metadados da sessão");
+            }
         }
 
         return marker;
@@ -290,24 +303,29 @@ public sealed class SessionManager : ISampleSink, IAsyncDisposable
 
         if (_writer is not null)
         {
-            var markers = _writer.Metadata.Markers;
-            int idx = markers.FindIndex(m =>
-                Math.Abs((m.TimestampUtc - timestampUtc).TotalMilliseconds) < 5 &&
-                (string.IsNullOrEmpty(oldText) || string.Equals(m.Text, oldText, StringComparison.Ordinal)));
-
-            if (idx < 0)
+            try
             {
-                idx = markers.FindIndex(m => Math.Abs((m.TimestampUtc - timestampUtc).TotalMilliseconds) < 50);
-            }
-
-            if (idx >= 0)
-            {
-                markers[idx] = new SessionMarker(markers[idx].TimestampUtc, trimmed);
-                try
+                await _writer.ModifyMetadataAsync(m =>
                 {
-                    await _writer.SaveMetadataAsync(ct).ConfigureAwait(false);
-                }
-                catch { }
+                    var markers = m.Markers;
+                    int idx = markers.FindIndex(item =>
+                        Math.Abs((item.TimestampUtc - timestampUtc).TotalMilliseconds) < 5 &&
+                        (string.IsNullOrEmpty(oldText) || string.Equals(item.Text, oldText, StringComparison.Ordinal)));
+
+                    if (idx < 0)
+                    {
+                        idx = markers.FindIndex(item => Math.Abs((item.TimestampUtc - timestampUtc).TotalMilliseconds) < 50);
+                    }
+
+                    if (idx >= 0)
+                    {
+                        markers[idx] = new SessionMarker(markers[idx].TimestampUtc, trimmed);
+                    }
+                }, ct).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Falha ao atualizar marcador nos metadados da sessão");
             }
         }
     }
@@ -321,23 +339,24 @@ public sealed class SessionManager : ISampleSink, IAsyncDisposable
 
         if (_writer is not null)
         {
-            var markers = _writer.Metadata.Markers;
-            int removed = markers.RemoveAll(m =>
-                Math.Abs((m.TimestampUtc - timestampUtc).TotalMilliseconds) < 5 &&
-                (string.IsNullOrEmpty(oldText) || string.Equals(m.Text, oldText, StringComparison.Ordinal)));
-
-            if (removed == 0)
+            try
             {
-                removed = markers.RemoveAll(m => Math.Abs((m.TimestampUtc - timestampUtc).TotalMilliseconds) < 50);
-            }
-
-            if (removed > 0)
-            {
-                try
+                await _writer.ModifyMetadataAsync(m =>
                 {
-                    await _writer.SaveMetadataAsync(ct).ConfigureAwait(false);
-                }
-                catch { }
+                    var markers = m.Markers;
+                    int removed = markers.RemoveAll(item =>
+                        Math.Abs((item.TimestampUtc - timestampUtc).TotalMilliseconds) < 5 &&
+                        (string.IsNullOrEmpty(oldText) || string.Equals(item.Text, oldText, StringComparison.Ordinal)));
+
+                    if (removed == 0)
+                    {
+                        markers.RemoveAll(item => Math.Abs((item.TimestampUtc - timestampUtc).TotalMilliseconds) < 50);
+                    }
+                }, ct).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Falha ao remover marcador nos metadados da sessão");
             }
         }
     }
@@ -380,8 +399,8 @@ public sealed class SessionManager : ISampleSink, IAsyncDisposable
         {
             while (await reader.WaitToReadAsync(ct).ConfigureAwait(false))
             {
-                // Agrupa amostras por até ~200 ms ou 5.000 itens para escrita eficiente em lote
-                var deadline = DateTime.UtcNow.AddMilliseconds(200);
+                // Agrupa amostras por até ~40 ms ou 5.000 itens para escrita eficiente em lote sem atrasar taxas rápidas
+                var deadline = DateTime.UtcNow.AddMilliseconds(40);
                 while (batch.Count < 5_000)
                 {
                     if (reader.TryRead(out var item))
@@ -391,7 +410,7 @@ public sealed class SessionManager : ISampleSink, IAsyncDisposable
                     }
                     else if (DateTime.UtcNow < deadline && !reader.Completion.IsCompleted)
                     {
-                        await Task.Delay(25, ct).ConfigureAwait(false);
+                        await Task.Delay(10, ct).ConfigureAwait(false);
                     }
                     else
                     {

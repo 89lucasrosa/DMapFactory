@@ -4,6 +4,7 @@ using System.Text;
 using DMapFactory.Core.Abstractions;
 using DMapFactory.Core.Models;
 using DMapFactory.Core.Security;
+using DMapFactory.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Opc.Ua;
@@ -57,6 +58,28 @@ public sealed class OpcUaDriver : IDriver
     public string Protocol => "OPCUA";
     public ConnectionConfig Connection { get; }
     public ConnectionState State => _state;
+    public TimestampSourceMode PreferredTimestampSource { get; set; } = TimestampSourceMode.Auto;
+
+    private X509Certificate2? GetCurrentServerCertificate()
+    {
+        var raw = _session?.ConfiguredEndpoint?.Description?.ServerCertificate;
+        if (raw is not { Length: > 0 }) return null;
+        try
+        {
+            return X509CertificateLoader.LoadCertificate(raw);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public bool IsUsingServerCertificate(string thumbprint)
+    {
+        using var serverCert = GetCurrentServerCertificate();
+        if (serverCert is null) return false;
+        return string.Equals(serverCert.Thumbprint, thumbprint, StringComparison.OrdinalIgnoreCase);
+    }
 
     public event EventHandler<ConnectionStateChangedEventArgs>? StateChanged;
 
@@ -125,21 +148,17 @@ public sealed class OpcUaDriver : IDriver
 
             _session = session;
             SetState(ConnectionState.Connected, "OK");
-            _logger.LogInformation("Conectado a {Name} ({Endpoint}) [{Policy}/{Mode}] — Namespaces: {Namespaces}",
-                Connection.Name, Connection.EndpointUrl,
-                OpcUaSecurityManager.GetPolicyShortName(endpointDescription.SecurityPolicyUri),
-                endpointDescription.SecurityMode,
-                session.NamespaceUris.Count);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Falha ao conectar a {Name} ({Endpoint})", Connection.Name, Connection.EndpointUrl);
             SetState(ConnectionState.Faulted, ex.Message);
             throw;
         }
     }
 
-    public async Task DisconnectAsync(CancellationToken ct = default)
+    public Task DisconnectAsync(CancellationToken ct = default) => DisconnectAsync(isUserRequested: false, ct);
+
+    public async Task DisconnectAsync(bool isUserRequested, CancellationToken ct = default)
     {
         foreach (var groupId in _groups.Keys.ToArray())
         {
@@ -167,7 +186,8 @@ public sealed class OpcUaDriver : IDriver
             }
         }
 
-        SetState(Connection.Enabled ? ConnectionState.Disconnected : ConnectionState.Disabled, null);
+        string disconnectReason = isUserRequested ? "Desconectado pelo usuário" : "Desconectado";
+        SetState(Connection.Enabled ? ConnectionState.Disconnected : ConnectionState.Disabled, disconnectReason);
     }
 
     public async Task<IReadOnlyList<BrowseNode>> BrowseAsync(string? parentId, CancellationToken ct = default)
@@ -200,7 +220,7 @@ public sealed class OpcUaDriver : IDriver
             var firstResult = browseResponse.Results[0];
             if (StatusCode.IsBad(firstResult.StatusCode))
             {
-                _logger.LogWarning("Browse OPC UA em {NodeId} retornou status {Status}", nodeToBrowse, firstResult.StatusCode);
+                _logger.LogWarning("{Message}", Loc.Instance.Format("Log_OpcBrowseStatusWarn", nodeToBrowse, firstResult.StatusCode));
             }
 
             if (firstResult.References is not null)
@@ -443,7 +463,7 @@ public sealed class OpcUaDriver : IDriver
             description,
             safeCurrentValue,
             sample.Quality,
-            valDv.SourceTimestamp != DateTime.MinValue ? valDv.SourceTimestamp : null);
+            sample.TimestampUtc);
     }
 
     public async Task<IReadOnlyList<Sample>> ReadAsync(IReadOnlyList<TagConfig> tags, CancellationToken ct = default)
@@ -465,10 +485,17 @@ public sealed class OpcUaDriver : IDriver
             null, 0, TimestampsToReturn.Both, nodesToRead, ct).ConfigureAwait(false);
 
         DateTime receivedUtc = DateTime.UtcNow;
+        DateTime localOsTime = DateTime.SpecifyKind(receivedUtc.ToLocalTime(), DateTimeKind.Utc);
+        DateTime? responseServerTs = response.ResponseHeader is not null &&
+                                     response.ResponseHeader.Timestamp != DateTime.MinValue &&
+                                     response.ResponseHeader.Timestamp.Year > 1970
+            ? DateTime.SpecifyKind(response.ResponseHeader.Timestamp, DateTimeKind.Utc)
+            : null;
+
         var results = new List<Sample>(tags.Count);
         for (int i = 0; i < tags.Count && i < response.Results.Count; i++)
         {
-            results.Add(ToSample(tags[i].Id, response.Results[i], receivedUtc));
+            results.Add(ToSample(tags[i].Id, response.Results[i], receivedUtc, localOsTime, responseServerTs));
         }
 
         return results;
@@ -532,8 +559,8 @@ public sealed class OpcUaDriver : IDriver
             {
                 if (mi.Status?.Error is not null && ServiceResult.IsBad(mi.Status.Error))
                 {
-                    _logger.LogWarning("MonitoredItem '{Name}' ({NodeId}) retornou status {Status}",
-                        mi.DisplayName, mi.StartNodeId, mi.Status.Error);
+                    _logger.LogWarning("{Message}", Loc.Instance.Format("Log_OpcMonitoredItemBadWarn",
+                        mi.DisplayName, mi.StartNodeId, mi.Status.Error));
                 }
                 else
                 {
@@ -541,8 +568,8 @@ public sealed class OpcUaDriver : IDriver
                 }
             }
 
-            _logger.LogInformation("Subscription '{Group}' iniciada em '{Conn}' ({Ok}/{Total} tags ativas).",
-                group.Name, Connection.Name, okCount, group.Tags.Count);
+            _logger.LogInformation("{Message}", Loc.Instance.Format("Log_OpcSubscriptionStarted",
+                group.Name, Connection.Name, okCount, group.Tags.Count));
 
             _groups[group.Id] = new RunningGroup(subscription, null);
         }
@@ -589,95 +616,169 @@ public sealed class OpcUaDriver : IDriver
 
     private async Task RunPollingLoopAsync(AcquisitionGroup group, ISampleSink sink, CancellationToken ct)
     {
-        var lastValues = new Dictionary<int, (object? Value, uint Status)>();
         var interval = TimeSpan.FromMilliseconds(Math.Max(10, group.SamplingIntervalMs));
         using var timer = new PeriodicTimer(interval);
+        DateTime? lastBatchSourceTs = null;
+
+        _logger.LogInformation("{Message}", Loc.Instance.Format("Log_OpcPollingStarted",
+            group.Name, Connection.Name, group.SamplingIntervalMs, group.Tags.Count));
 
         try
         {
-            do
+            while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false))
             {
                 if (_session is not { Connected: true }) continue;
 
                 var samples = await ReadAsync(group.Tags, ct).ConfigureAwait(false);
+                if (samples.Count == 0) continue;
+
+                DateTime? batchSourceTs = null;
+                DateTime? batchServerTs = null;
+                DateTime batchLocalTs = samples[0].LocalTimestampUtc ?? DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+
                 foreach (var s in samples)
                 {
-                    if (lastValues.TryGetValue(s.TagId, out var prev) &&
-                        prev.Status == s.StatusCode &&
-                        Equals(prev.Value, s.Value))
-                    {
-                        continue;
-                    }
+                    if (s.SourceTimestampUtc.HasValue && (!batchSourceTs.HasValue || s.SourceTimestampUtc.Value > batchSourceTs.Value))
+                        batchSourceTs = s.SourceTimestampUtc.Value;
+                    if (s.ServerTimestampUtc.HasValue && (!batchServerTs.HasValue || s.ServerTimestampUtc.Value > batchServerTs.Value))
+                        batchServerTs = s.ServerTimestampUtc.Value;
+                }
 
-                    lastValues[s.TagId] = (s.Value, s.StatusCode);
-                    sink.TryPublish(in s);
+                // Se estiver em modo Automático no polling e nenhuma variável mudou o SourceTimestamp desde o ciclo anterior,
+                // usa o ServerTimestamp (ou Local) como timestamp efetivo do ciclo periódico para que o relógio avance na taxa escolhida.
+                DateTime? effectiveSourceForAuto = batchSourceTs;
+                if (PreferredTimestampSource == TimestampSourceMode.Auto &&
+                    batchSourceTs.HasValue &&
+                    lastBatchSourceTs.HasValue &&
+                    batchSourceTs.Value <= lastBatchSourceTs.Value)
+                {
+                    effectiveSourceForAuto = batchServerTs ?? batchLocalTs;
+                }
+                if (batchSourceTs.HasValue)
+                    lastBatchSourceTs = batchSourceTs;
+
+                foreach (var s in samples)
+                {
+                    var normalized = s with
+                    {
+                        SourceTimestampUtc = PreferredTimestampSource == TimestampSourceMode.Auto
+                            ? effectiveSourceForAuto
+                            : (batchSourceTs ?? s.SourceTimestampUtc),
+                        ServerTimestampUtc = batchServerTs ?? s.ServerTimestampUtc,
+                        LocalTimestampUtc = batchLocalTs
+                    };
+                    DateTime resolvedTs = normalized.ResolveTimestamp(PreferredTimestampSource, out var resolvedOrigin);
+                    var periodicSample = normalized with
+                    {
+                        TimestampUtc = resolvedTs,
+                        Origin = resolvedOrigin
+                    };
+                    sink.TryPublish(in periodicSample);
                 }
             }
-            while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false));
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro no loop de polling do grupo {Group}", group.Name);
+            _logger.LogError(ex, "{Message}", Loc.Instance.Format("Log_OpcPollingLoopError", group.Name));
         }
     }
 
-    private static void OnMonitoredItemNotification(
+    private void OnMonitoredItemNotification(
         MonitoredItem item,
         MonitoredItemNotificationEventArgs e,
         ISampleSink sink)
     {
         if (item.Handle is not TagConfig tag) return;
         DateTime receivedUtc = DateTime.UtcNow;
+        DateTime localOsTime = DateTime.SpecifyKind(receivedUtc.ToLocalTime(), DateTimeKind.Utc);
+        DateTime? publishServerTs = e?.NotificationValue is MonitoredItemNotification minMsg &&
+                                    minMsg.Message is not null &&
+                                    minMsg.Message.PublishTime != DateTime.MinValue &&
+                                    minMsg.Message.PublishTime.Year > 1970
+            ? DateTime.SpecifyKind(minMsg.Message.PublishTime, DateTimeKind.Utc)
+            : null;
 
         var values = item.DequeueValues();
         if (values is { Count: > 0 })
         {
             foreach (var dv in values)
             {
-                var sample = ToSample(tag.Id, dv, receivedUtc);
+                var sample = ToSample(tag.Id, dv, receivedUtc, localOsTime, publishServerTs);
                 sink.TryPublish(in sample);
             }
         }
         else if (e?.NotificationValue is MonitoredItemNotification min && min.Value is not null)
         {
-            var sample = ToSample(tag.Id, min.Value, receivedUtc);
+            var sample = ToSample(tag.Id, min.Value, receivedUtc, localOsTime, publishServerTs);
             sink.TryPublish(in sample);
         }
     }
 
-    private static Sample ToSample(int tagId, DataValue dv, DateTime receivedUtc)
+    private Sample ToSample(
+        int tagId,
+        DataValue dv,
+        DateTime receivedUtc,
+        DateTime? localOsTime = null,
+        DateTime? fallbackServerUtc = null)
     {
-        DateTime ts;
-        TimestampOrigin origin;
+        DateTime localTs = localOsTime ?? DateTime.SpecifyKind(receivedUtc.ToLocalTime(), DateTimeKind.Utc);
 
-        if (dv.SourceTimestamp != DateTime.MinValue && dv.SourceTimestamp.Year > 1970)
-        {
-            ts = DateTime.SpecifyKind(dv.SourceTimestamp, DateTimeKind.Utc);
-            origin = TimestampOrigin.Source;
-        }
-        else if (dv.ServerTimestamp != DateTime.MinValue && dv.ServerTimestamp.Year > 1970)
-        {
-            ts = DateTime.SpecifyKind(dv.ServerTimestamp, DateTimeKind.Utc);
-            origin = TimestampOrigin.Server;
-        }
-        else
-        {
-            ts = receivedUtc;
-            origin = TimestampOrigin.Local;
-        }
+        bool hasSource = dv.SourceTimestamp != DateTime.MinValue && dv.SourceTimestamp.Year > 1970;
+        bool hasServer = dv.ServerTimestamp != DateTime.MinValue && dv.ServerTimestamp.Year > 1970;
 
-        return new Sample(tagId, ts, receivedUtc, origin, dv.Value, dv.StatusCode.Code);
+        DateTime? sourceTs = hasSource ? DateTime.SpecifyKind(dv.SourceTimestamp, DateTimeKind.Utc) : null;
+        DateTime? serverTs = hasServer
+            ? DateTime.SpecifyKind(dv.ServerTimestamp, DateTimeKind.Utc)
+            : fallbackServerUtc;
+
+        var candidate = new Sample(
+            tagId,
+            localTs,
+            receivedUtc,
+            TimestampOrigin.Local,
+            dv.Value,
+            dv.StatusCode.Code,
+            sourceTs,
+            serverTs,
+            localTs);
+
+        DateTime resolvedTs = candidate.ResolveTimestamp(PreferredTimestampSource, out var resolvedOrigin);
+        return candidate with
+        {
+            TimestampUtc = resolvedTs,
+            Origin = resolvedOrigin
+        };
     }
 
     private void OnSessionKeepAlive(ISession session, KeepAliveEventArgs e)
     {
+        using var serverCert = GetCurrentServerCertificate();
+        if (serverCert is not null && DateTime.UtcNow > serverCert.NotAfter)
+        {
+            string expiredAt = $"{serverCert.NotAfter:yyyy-MM-dd HH:mm:ss} UTC";
+            string expiredMsg = Loc.Instance.Format("Log_CertExpiredActiveDisconnect", Connection.Name, serverCert.Subject, expiredAt);
+            _logger.LogError("{Message}", expiredMsg);
+            SetState(ConnectionState.Faulted, expiredMsg);
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await DisconnectAsync().ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "{Message}", Loc.Instance.Format("Log_CertExpiredDisconnectError", Connection.Name));
+                }
+            });
+            return;
+        }
+
         if (!ServiceResult.IsBad(e.Status)) return;
         if (_reconnectHandler is not null) return;
 
         string statusText = e.Status?.ToString() ?? "Bad";
-        _logger.LogWarning("KeepAlive falhou em {Name}: {Status}. Iniciando reconexão...",
-            Connection.Name, statusText);
+        _logger.LogWarning("{Message}", Loc.Instance.Format("Log_ConnKeepAliveFailed", Connection.Name, Connection.EndpointUrl, statusText));
         SetState(ConnectionState.Reconnecting, statusText);
 
 #pragma warning disable CS0618
@@ -698,8 +799,8 @@ public sealed class OpcUaDriver : IDriver
         _reconnectHandler?.Dispose();
         _reconnectHandler = null;
 
-        SetState(ConnectionState.Connected, "Reconectado");
-        _logger.LogInformation("Sessão OPC UA {Name} reconectada.", Connection.Name);
+        SetState(ConnectionState.Connected, "Reconnected");
+        _logger.LogInformation("{Message}", Loc.Instance.Format("Log_ConnReconnectedSuccess", Connection.Name, Connection.EndpointUrl));
     }
 
     private static async Task<EndpointDescription> SelectEndpointAsync(ConnectionConfig conn, CancellationToken ct)
@@ -782,7 +883,29 @@ public sealed class OpcUaDriver : IDriver
     private void SetState(ConnectionState state, string? reason)
     {
         _state = state;
-        StateChanged?.Invoke(this, new ConnectionStateChangedEventArgs(state, reason));
+        var handler = StateChanged;
+        if (handler is not null)
+        {
+            handler.Invoke(this, new ConnectionStateChangedEventArgs(state, reason));
+            return;
+        }
+
+        if (state == ConnectionState.Faulted)
+        {
+            _logger.LogError("{Message}", Loc.Instance.Format("Log_ConnFaulted", Connection.Name, Connection.EndpointUrl, reason ?? "Faulted"));
+        }
+        else if (state == ConnectionState.Reconnecting)
+        {
+            _logger.LogWarning("{Message}", Loc.Instance.Format("Log_ConnReconnecting", Connection.Name, Connection.EndpointUrl, reason ?? "KeepAlive"));
+        }
+        else if (state == ConnectionState.Disconnected)
+        {
+            _logger.LogInformation("{Message}", Loc.Instance.Format("Log_ConnDisconnected", Connection.Name, Connection.EndpointUrl, reason ?? "Disconnected"));
+        }
+        else if (state == ConnectionState.Connected)
+        {
+            _logger.LogInformation("{Message}", Loc.Instance.Format("Log_ConnConnected", Connection.Name, Connection.EndpointUrl, reason ?? "OK"));
+        }
     }
 
     private sealed record RunningGroup(Subscription? Subscription, CancellationTokenSource? PollingCts);

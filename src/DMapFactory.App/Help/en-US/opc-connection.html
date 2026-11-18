@@ -121,11 +121,11 @@
         </div>
 
         <h2>Sampling Rate &amp; Acquisition Modes (FN-01)</h2>
-        <p>The top toolbar provides immediate control over how DMapFactory polls or receives data from the OPC UA server:</p>
+        <p>The top toolbar provides immediate control over how DMapFactory acquires data from the OPC UA server (applied live even while an Online session is running):</p>
         <ul>
-          <li><strong>Sampling Rate (10 ms to 1000 ms)</strong>: adjusts the hardware inspection interval (e.g. <code>10 ms</code> for high-speed servo positioning or <code>1000 ms</code> for general thermal monitoring).</li>
-          <li><strong>Subscription Mode</strong>: the default, recommended event-driven pattern where the server only transmits data packets when variable transitions occur (<em>Report by Exception</em>), optimizing network bandwidth.</li>
-          <li><strong>Polling Mode</strong>: executes active cyclic batch reads at each elapsed interval, ensuring persistent data points on legacy servers with limited notification capabilities.</li>
+          <li><strong>Sampling Rate (10 ms to 5000 ms)</strong>: sets the fixed cyclic polling interval (<code>10</code>, <code>20</code>, <code>50</code>, <code>100</code>, <code>250</code>, <code>500</code>, <code>1000</code>, <code>2000</code>, or <code>5000 ms</code>). This selector is enabled only when <em>Sampling Rate</em> mode is active.</li>
+          <li><strong>Upon Change (Subscription)</strong>: default event-driven mode where the server only sends notifications when tag values change (<em>Report by Exception</em>). The ms rate selector is disabled and ignored, avoiding redundant rows while values remain steady.</li>
+          <li><strong>Sampling Rate (Polling)</strong>: executes periodic cyclic reads at the exact configured ms interval, recording continuous rows in the spreadsheet and chart even when variable values do not change.</li>
         </ul>
 
         <h2 id="tag-browser">OPC UA Node Tree Browser</h2>

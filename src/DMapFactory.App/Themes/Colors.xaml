@@ -16,9 +16,14 @@
     <Color x:Key="AccentColor">#6E8398</Color>
     <Color x:Key="AccentSoftColor">#DCE3EA</Color>
     <Color x:Key="ChangedColor">#E3E8EE</Color>
-    <Color x:Key="GoodColor">#7A9E7E</Color>
-    <Color x:Key="UncertainColor">#C4A866</Color>
-    <Color x:Key="BadColor">#B87A7E</Color>
+    <Color x:Key="GoodColor">#16A34A</Color>
+    <Color x:Key="GoodStrokeColor">#15803D</Color>
+    <Color x:Key="UncertainColor">#F59E0B</Color>
+    <Color x:Key="UncertainStrokeColor">#B45309</Color>
+    <Color x:Key="BadColor">#EF4444</Color>
+    <Color x:Key="BadStrokeColor">#B91C1C</Color>
+    <Color x:Key="DisconnectedColor">#94A3B8</Color>
+    <Color x:Key="DisconnectedStrokeColor">#475569</Color>
     <Color x:Key="MarkerColor">#FEF3C7</Color>
     <Color x:Key="MarkerBorderColor">#D97706</Color>
 
@@ -35,8 +40,13 @@
     <SolidColorBrush x:Key="AccentSoftBrush" Color="{StaticResource AccentSoftColor}" />
     <SolidColorBrush x:Key="ChangedBrush" Color="{StaticResource ChangedColor}" />
     <SolidColorBrush x:Key="GoodBrush" Color="{StaticResource GoodColor}" />
+    <SolidColorBrush x:Key="GoodStrokeBrush" Color="{StaticResource GoodStrokeColor}" />
     <SolidColorBrush x:Key="UncertainBrush" Color="{StaticResource UncertainColor}" />
+    <SolidColorBrush x:Key="UncertainStrokeBrush" Color="{StaticResource UncertainStrokeColor}" />
     <SolidColorBrush x:Key="BadBrush" Color="{StaticResource BadColor}" />
+    <SolidColorBrush x:Key="BadStrokeBrush" Color="{StaticResource BadStrokeColor}" />
+    <SolidColorBrush x:Key="DisconnectedBrush" Color="{StaticResource DisconnectedColor}" />
+    <SolidColorBrush x:Key="DisconnectedStrokeBrush" Color="{StaticResource DisconnectedStrokeColor}" />
     <SolidColorBrush x:Key="MarkerBrush" Color="{StaticResource MarkerColor}" />
     <SolidColorBrush x:Key="MarkerBorderBrush" Color="{StaticResource MarkerBorderColor}" />
 

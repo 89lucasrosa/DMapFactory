@@ -212,7 +212,6 @@
               <td>
                 • <strong>📍 Place Marker on this Row</strong><br>
                 • <strong>📈 Focus Timestamp on Chart (Cursor A)</strong> (cross-synchronization)<br>
-                • <strong>🏷 Set as Machine Cycle Trigger</strong> (for boolean tags)<br>
                 • <strong>Copy Cell Value</strong><br>
                 • <strong>📋 Copy Entire Row (TSV)</strong> (ready to paste directly into Excel)<br>
                 • <strong>Copy Timestamp</strong> (full millisecond-accurate ISO timestamp)
@@ -255,7 +254,6 @@
               <td>
                 • <strong>🗑 Delete tag from collection</strong><br>
                 • <strong>Toggle plot visibility (IsPlotted)</strong><br>
-                • <strong>🏷 Set as Cycle Trigger</strong><br>
                 • <strong>📋 Copy Address / NodeId</strong>
               </td>
             </tr>
@@ -280,6 +278,365 @@
           <li><strong>Session Duration</strong>: running chronometer tracking the duration of the current industrial run.</li>
           <li><strong>Operational Event Log</strong>: categorized log stream (<em>Information</em>, <em>Warning</em>, <em>Error</em>, <em>Debug</em>) with dedicated <strong>Clear</strong> and <strong>Log Folder…</strong> buttons.</li>
         </ul>
+
+        <h2>Log Severity Levels</h2>
+        <table class="help-table">
+          <thead>
+            <tr>
+              <th style="width: 140px;">Level</th>
+              <th style="width: 240px;">Meaning</th>
+              <th>When to Check / General Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge-success">Information</span></td>
+              <td>Normal operational events and user action audit trail.</td>
+              <td>No corrective action required. Confirms that connections, Online/Offline transitions, markers, certificates, and exports completed successfully.</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-warn">Warning</span></td>
+              <td>Operational alerts, automatic reconnections, or partial conditions.</td>
+              <td>Check network stability, verify that connections/tags exist before starting Online mode, or review certificate revocation/auto-accept settings.</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-danger">Error</span></td>
+              <td>Critical connectivity, PKI security, or disk I/O failures.</td>
+              <td>Requires immediate attention: verify the OPC UA Endpoint URL, credentials, X.509 certificate trust/expiration, or folder write permissions.</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-info">Debug</span></td>
+              <td>Detailed internal tracing (attribute reads, stack diagnostics).</td>
+              <td>Used for engineering diagnostics. Keep unchecked during normal operation and enable the <em>Debug</em> filter when investigating specific OPC UA node behavior.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2>Complete Log Message Reference &amp; Troubleshooting Guide</h2>
+        <p>Below is the complete list of log messages emitted by DMapFactory, grouped by subsystem, including their explanation, what to check, and recommended corrective actions:</p>
+
+        <h3>1. Startup, Project &amp; Sessions</h3>
+        <table class="help-table">
+          <thead>
+            <tr>
+              <th style="width: 110px;">Level</th>
+              <th style="width: 310px;">Log Message Pattern</th>
+              <th>Explanation, What to Verify &amp; Recommended Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>DMapFactory started. Ready to configure OPC UA connections.</code></td>
+              <td><strong>Explanation:</strong> Application initialized and acquisition engine ready.<br><strong>Action:</strong> Add an OPC UA connection or open an existing project (<code>Ctrl+O</code>).</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>New project started.</code></td>
+              <td><strong>Explanation:</strong> Current workspace cleared to begin a fresh configuration.<br><strong>Action:</strong> Configure connections and tags, then save with <code>Ctrl+S</code>.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>Project loaded: '{path}' ({N} connections, {M} tags).</code></td>
+              <td><strong>Explanation:</strong> Project file (<code>.dmproj</code>) loaded successfully.<br><strong>Action:</strong> Connect to your server or press <code>F5</code> to start Online acquisition.</td>
+            </tr>
+            <tr>
+              <td><strong>Error</strong></td>
+              <td><code>Failed to open project '{path}'.</code></td>
+              <td><strong>Explanation:</strong> The <code>.dmproj</code> file is corrupted, inaccessible, or contains invalid JSON.<br><strong>Verify / Action:</strong> Check file permissions and verify the file was not manually edited with invalid JSON syntax.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>Project saved to '{path}'.</code></td>
+              <td><strong>Explanation:</strong> All connections, tags, and sampling settings were saved to disk.<br><strong>Action:</strong> No action required.</td>
+            </tr>
+            <tr>
+              <td><strong>Error</strong></td>
+              <td><code>Failed to save project to '{path}'.</code></td>
+              <td><strong>Explanation:</strong> Disk I/O error while writing the project file.<br><strong>Verify / Action:</strong> Check free disk space, folder write permissions, or whether the file is marked read-only.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>Session loaded: '{name}' ({rows} rows, {tags} tags, {markers} markers).</code></td>
+              <td><strong>Explanation:</strong> Recorded session (<code>.csv</code> or <code>.session.json</code>) restored into the spreadsheet and trend chart.<br><strong>Action:</strong> Use cursors A/B and search tools for offline analysis.</td>
+            </tr>
+            <tr>
+              <td><strong>Error</strong></td>
+              <td><code>Failed to open session '{path}'.</code></td>
+              <td><strong>Explanation:</strong> The session file could not be parsed or accessed.<br><strong>Verify / Action:</strong> Ensure the file is not locked exclusively by Excel and is a valid DMapFactory session file.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>Sessions save location changed to: '{folder}'.</code></td>
+              <td><strong>Explanation:</strong> The directory where automatic Online session files are stored was updated.<br><strong>Action:</strong> Subsequent Online sessions will be written to this folder.</td>
+            </tr>
+            <tr>
+              <td><strong>Error</strong></td>
+              <td><code>Failed to configure/open sessions folder '{folder}': {error}</code></td>
+              <td><strong>Explanation:</strong> The configured session directory could not be created or opened.<br><strong>Verify / Action:</strong> Use <em>File &gt; Configure sessions save location…</em> and select a valid local folder with write access.</td>
+            </tr>
+            <tr>
+              <td><strong>Error</strong></td>
+              <td><code>Failed to open logs folder '{folder}': {error}</code></td>
+              <td><strong>Explanation:</strong> Could not launch Windows Explorer for the logs directory.<br><strong>Verify / Action:</strong> Check permissions on <code>%LOCALAPPDATA%\DMapFactory\logs</code>.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>Interface language changed to '{language} ({culture})'.</code></td>
+              <td><strong>Explanation:</strong> UI and operational log language switched dynamically.<br><strong>Action:</strong> No action required.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>2. OPC UA Connectivity</h3>
+        <table class="help-table">
+          <thead>
+            <tr>
+              <th style="width: 110px;">Level</th>
+              <th style="width: 310px;">Log Message Pattern</th>
+              <th>Explanation, What to Verify &amp; Recommended Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>Connection '{name}' ({endpoint}) added.</code><br><code>Connection '{name}' ({endpoint}) updated.</code><br><code>Connection '{name}' ({endpoint}) removed.</code></td>
+              <td><strong>Explanation:</strong> Audit record of adding, editing, or removing an OPC UA connection.<br><strong>Action:</strong> Save the project (<code>Ctrl+S</code>) to persist changes.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>[Connection] '{name}' ({endpoint}) CONNECTED successfully.</code></td>
+              <td><strong>Explanation:</strong> OPC UA session and secure channel established.<br><strong>Action:</strong> Browse the OPC UA node tree or press <code>F5</code> to start Online mode.</td>
+            </tr>
+            <tr>
+              <td><strong>Error</strong></td>
+              <td><code>[Connection] Failed to connect to '{name}' ({endpoint}). Reason: {error}</code></td>
+              <td><strong>Explanation:</strong> Could not establish an OPC UA session with the server.<br><strong>Verify / Action:</strong> 1) Verify IP/port reachability; 2) Check security policy and user credentials; 3) If the reason mentions <code>BadCertificateUntrusted</code>, open the <strong>Certificate Manager</strong> and trust the server certificate (and trust the client certificate on the PLC/server).</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>[Connection] '{name}' ({endpoint}) disconnected by user.</code></td>
+              <td><strong>Explanation:</strong> The operator intentionally clicked the Disconnect button.<br><strong>Action:</strong> No action required.</td>
+            </tr>
+            <tr>
+              <td><strong>Warning</strong></td>
+              <td><code>[Connection] '{name}' ({endpoint}) disconnected (closed by server or session ended).</code></td>
+              <td><strong>Explanation:</strong> The session closed without direct user request.<br><strong>Verify / Action:</strong> Check if the OPC UA server/PLC restarted or if the session timeout expired.</td>
+            </tr>
+            <tr>
+              <td><strong>Warning</strong></td>
+              <td><code>[Connection] '{name}' ({endpoint}) lost communication. Attempting automatic reconnection...</code><br><code>KeepAlive failed on {name}: {status}. Starting reconnection...</code></td>
+              <td><strong>Explanation:</strong> The OPC UA Keep-Alive request failed. The driver automatically started reconnecting.<br><strong>Verify / Action:</strong> Check Ethernet cabling, industrial switches, and PLC CPU load. DMapFactory will automatically resume once the server responds.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>Successfully reconnected to {name}.</code></td>
+              <td><strong>Explanation:</strong> The OPC UA session and subscriptions were automatically restored.<br><strong>Action:</strong> No action required; live acquisition resumed automatically.</td>
+            </tr>
+            <tr>
+              <td><strong>Error</strong></td>
+              <td><code>[Connection] '{name}' ({endpoint}) entered FAULTED state (connectivity error with OPC UA server).</code></td>
+              <td><strong>Explanation:</strong> The connection entered a faulted state after communication loss.<br><strong>Verify / Action:</strong> Verify the OPC UA server is online and click Connect to re-establish the session.</td>
+            </tr>
+            <tr>
+              <td><strong>Warning</strong></td>
+              <td><code>[Connectivity] {N} tag(s) from connection '{name}' assumed Bad status due to connection loss ({state}).</code></td>
+              <td><strong>Explanation:</strong> Because the connection dropped while Online, all associated tags were marked <code>Bad</code> and stopped plotting stale values on the chart.<br><strong>Verify / Action:</strong> Restore the OPC UA connection so the tags return to <code>Good</code> status.</td>
+            </tr>
+            <tr>
+              <td><strong>Information / Error</strong></td>
+              <td><code>[OPC UA Discovery] {N} endpoint(s) found at '{url}'.</code><br><code>[OPC UA Discovery] Failed to discover endpoints at '{url}': {error}</code><br><code>[Connection Test] Test succeeded for '{name}' ({url}).</code><br><code>[Connection Test] Failed to test connection '{name}' ({url}): {error}</code></td>
+              <td><strong>Explanation:</strong> Endpoint discovery and connection test results from the <em>Connection Dialog</em>.<br><strong>Verify / Action:</strong> On failure, verify the <code>opc.tcp://host:port</code> syntax and firewall rules.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>3. Online / Offline Acquisition &amp; Tag Browsing</h3>
+        <table class="help-table">
+          <thead>
+            <tr>
+              <th style="width: 110px;">Level</th>
+              <th style="width: 310px;">Log Message Pattern</th>
+              <th>Explanation, What to Verify &amp; Recommended Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Warning</strong></td>
+              <td><code>[Online] No OPC UA connections configured. Add a connection before starting Online acquisition.</code><br><code>[Online] No tags configured for monitoring. Add tags to the spreadsheet before going Online.</code></td>
+              <td><strong>Explanation:</strong> Online mode was triggered without any connections or monitored tags.<br><strong>Action:</strong> Add at least one connection and add variables to the spreadsheet before pressing <code>F5</code>.</td>
+            </tr>
+            <tr>
+              <td><strong>Warning</strong></td>
+              <td><code>[Online] Failed to auto-connect '{name}' while activating Online mode: {error}</code></td>
+              <td><strong>Explanation:</strong> When entering Online mode, DMapFactory attempted to connect a disconnected server automatically, which failed.<br><strong>Verify / Action:</strong> Check the target server connectivity or remove unused connections.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>[Online] ONLINE acquisition started ({N} tags, mode={mode}, rate={ms} ms). Recording session to '{file}'.</code></td>
+              <td><strong>Explanation:</strong> OPC UA subscriptions created and continuous session recording started.<br><strong>Action:</strong> Monitor live data in the Spreadsheet or Trend Chart.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>[Offline] OFFLINE acquisition stopped ({rows} rows collected, {markers} markers).</code></td>
+              <td><strong>Explanation:</strong> Live acquisition stopped and session files (<code>.csv</code> and <code>.session.json</code>) were finalized.<br><strong>Action:</strong> Export the spreadsheet (<code>Ctrl+E</code>) or inspect the recorded history.</td>
+            </tr>
+            <tr>
+              <td><strong>Error</strong></td>
+              <td><code>[Online/Offline] Error during acquisition state transition: {error}</code></td>
+              <td><strong>Explanation:</strong> An unexpected exception occurred while starting or stopping acquisition.<br><strong>Verify / Action:</strong> Check write permissions on the sessions folder and verify server health.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>Acquisition mode changed to '{mode}' (rate={ms} ms).</code><br><code>Timestamp source changed to '{source}'.</code></td>
+              <td><strong>Explanation:</strong> The operator changed the acquisition mode (<em>Upon Change</em> vs <em>Sampling Rate</em>) or timestamp source (<em>Auto</em>, <em>Source/PLC</em>, <em>Server</em>, or <em>Local/OS</em>).<br><strong>Action:</strong> No action required; changes take effect immediately.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>Subscription '{group}' started on '{conn}' ({ok}/{total} active tags).</code><br><code>Periodic acquisition '{group}' started on '{conn}' at fixed rate {ms} ms ({total} tags).</code></td>
+              <td><strong>Explanation:</strong> Confirms the acquisition engine started on the OPC UA server in the selected mode (<em>Upon Change</em> or <em>Sampling Rate</em>).<br><strong>Action:</strong> No action required; verify <code>{ok}/{total}</code> matches the expected tags.</td>
+            </tr>
+            <tr>
+              <td><strong>Warning</strong></td>
+              <td><code>MonitoredItem '{name}' ({nodeId}) returned status {status}.</code><br><code>OPC UA browse at {nodeId} returned status {status}.</code></td>
+              <td><strong>Explanation:</strong> The OPC UA server rejected or returned a bad status for a monitored item or node browse.<br><strong>Verify / Action:</strong> Verify the <code>NodeId</code> exists on the PLC and the user has read permissions.</td>
+            </tr>
+            <tr>
+              <td><strong>Warning / Error</strong></td>
+              <td><code>Error in polling loop for group {group}.</code><br><code>Failed to read initial tag snapshot on connection {conn}</code><br><code>Error stopping group {id} on driver {conn}</code><br><code>Failed to save/update/remove marker in session metadata</code><br><code>Error in session sample consumer loop</code></td>
+              <td><strong>Explanation:</strong> Failure during cyclic polling, group shutdown, or writing <code>.session.json</code> metadata.<br><strong>Verify / Action:</strong> Check OPC UA connection stability and write permissions on the sessions folder.</td>
+            </tr>
+            <tr>
+              <td><strong>Error / Debug</strong></td>
+              <td><code>Failed to browse OPC UA root: {error}</code><br><code>Failed to expand node {id}: {error}</code><br><code>Could not read attributes for {id}: {error}</code></td>
+              <td><strong>Explanation:</strong> The OPC UA server rejected browsing or attribute reading for a node.<br><strong>Verify / Action:</strong> Check user permissions on the OPC UA server or verify the session is still connected.</td>
+            </tr>
+            <tr>
+              <td><strong>Information / Warning</strong></td>
+              <td><code>Tag added: {alias} ({nodeId}) [{type}]</code><br><code>{N} tags batch-added to spreadsheet and chart.</code><br><code>Manual tag added: {alias} ({nodeId}) [{type}]</code><br><code>No variables found in the selected items to add.</code></td>
+              <td><strong>Explanation:</strong> Audit of tags added to collection or warning when a selected folder contains no variable nodes.<br><strong>Action:</strong> Expand the folder in the browser tree to select <em>Variable</em> nodes.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>[Tag] Tag renamed from '{old}' to '{new}' ({address}).</code><br><code>Tag removed from collection: '{alias}' ({address}).</code><br><code>All {N} tags were removed from collection.</code><br><code>Spreadsheet history cleared ({N} rows and {M} markers removed from view).</code></td>
+              <td><strong>Explanation:</strong> Audit trail for tag renaming, tag deletion, or clearing spreadsheet rows.<br><strong>Action:</strong> No action required.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>4. Event Markers</h3>
+        <table class="help-table">
+          <thead>
+            <tr>
+              <th style="width: 110px;">Level</th>
+              <th style="width: 310px;">Log Message Pattern</th>
+              <th>Explanation, What to Verify &amp; Recommended Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>[Marker] Marker placement mode enabled. Click a spreadsheet row or a chart point.</code><br><code>[Marker] Marker placement mode disabled.</code></td>
+              <td><strong>Explanation:</strong> Indicates that marker placement mode (<code>Ctrl+M</code>) was enabled or cancelled (<code>Esc</code>).<br><strong>Action:</strong> While enabled, click any spreadsheet row or chart point to insert an annotation.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>[Marker] Marker added on row #{row} ({time}): '{text}'</code><br><code>[Marker] Marker added on chart at {time}: '{text}'</code></td>
+              <td><strong>Explanation:</strong> A new event marker was recorded in the session and persisted to <code>.session.json</code>.<br><strong>Action:</strong> Press <code>Ctrl+Shift+M</code> to search and jump to markers.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>[Marker] Marker edited on row #{row} ({time}): '{old}' -> '{new}'</code><br><code>[Marker] Marker edited at {time}: '{old}' -> '{new}'</code></td>
+              <td><strong>Explanation:</strong> An existing marker's label was renamed/edited.<br><strong>Action:</strong> No action required.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>[Marker] Marker removed from row #{row} ({time}): '{text}'</code><br><code>[Marker] Marker removed at {time}: '{text}'</code></td>
+              <td><strong>Explanation:</strong> The selected marker was deleted from the spreadsheet and chart.<br><strong>Action:</strong> No action required.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>5. PKI Security Certificates (OPC UA X.509)</h3>
+        <table class="help-table">
+          <thead>
+            <tr>
+              <th style="width: 110px;">Level</th>
+              <th style="width: 310px;">Log Message Pattern</th>
+              <th>Explanation, What to Verify &amp; Recommended Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Warning / Information</strong></td>
+              <td><code>[Certificates] Auto-accept untrusted certificates ENABLED by user.</code><br><code>[Certificates] Auto-accept untrusted certificates DISABLED by user.</code></td>
+              <td><strong>Explanation:</strong> Changes the global server certificate validation policy.<br><strong>Verify / Action:</strong> In production environments, keep auto-accept <strong>disabled</strong> and manually trust only verified PLC certificates.</td>
+            </tr>
+            <tr>
+              <td><strong>Warning / Information</strong></td>
+              <td><code>[Certificates] Untrusted certificate auto-accepted (AutoAccept): Subject='{subject}', Thumbprint={thumb}</code><br><code>[Certificates] Certificate accepted by user and moved to Trusted: Subject='{subject}', Thumbprint={thumb}</code></td>
+              <td><strong>Explanation:</strong> An untrusted server certificate was accepted during connection.<br><strong>Action:</strong> No action required.</td>
+            </tr>
+            <tr>
+              <td><strong>Error</strong></td>
+              <td><code>[Certificates] Certificate rejected by user (stored in Rejected): Subject='{subject}', Thumbprint={thumb}, Reason={status}</code></td>
+              <td><strong>Explanation:</strong> The server certificate was untrusted and rejected. Connection was blocked.<br><strong>Verify / Action:</strong> If rejected by mistake, open the <strong>Certificate Manager</strong>, select the certificate in <em>Rejected</em> status, and click <strong>Trust</strong>.</td>
+            </tr>
+            <tr>
+              <td><strong>Information / Warning</strong></td>
+              <td><code>[Certificates] Server certificate marked as TRUSTED: Subject='{subject}', Thumbprint={thumb}</code><br><code>[Certificates] Server certificate marked as REJECTED: Subject='{subject}', Thumbprint={thumb}</code><br><code>[Certificates] Server certificate imported as trusted: ...</code><br><code>[Certificates] Server certificate exported: ...</code><br><code>[Certificates] Server certificate deleted from store: ...</code></td>
+              <td><strong>Explanation:</strong> Audit trail of server certificate operations in the PKI store.<br><strong>Action:</strong> No action required.</td>
+            </tr>
+            <tr>
+              <td><strong>Warning / Error</strong></td>
+              <td><code>[Certificates] Active connection '{name}' automatically disconnected because server certificate ({thumb}) was rejected/revoked.</code><br><code>[Certificates] Connection '{name}' automatically disconnected/blocked: server certificate '{subject}' ({thumb}) is EXPIRED (expired on {date}).</code></td>
+              <td><strong>Explanation:</strong> For security compliance, DMapFactory immediately terminates any active session whose server certificate is revoked or expired.<br><strong>Verify / Action:</strong> Renew the expired X.509 certificate on the OPC UA server/PLC and trust the new certificate in the Certificate Manager.</td>
+            </tr>
+            <tr>
+              <td><strong>Information / Warning / Error</strong></td>
+              <td><code>[Certificates] {N} server certificate(s) retrieved from '{url}' and saved to store.</code><br><code>[Certificates] No server certificates returned by endpoint '{url}'.</code><br><code>[Certificates] Failed to fetch server certificate from '{url}': {error}</code></td>
+              <td><strong>Explanation:</strong> Results of fetching server certificates via endpoint discovery.<br><strong>Verify / Action:</strong> If no certificates are returned, verify the server has encrypted security policies enabled.</td>
+            </tr>
+            <tr>
+              <td><strong>Information / Error</strong></td>
+              <td><code>[Certificates] New client certificate (Application Instance) generated: Subject='{subject}', Thumbprint={thumb}</code><br><code>[Certificates] Client public certificate exported (.der) to '{path}'.</code><br><code>[Certificates] Client certificate with private key exported (.pfx) to '{path}'.</code><br><code>[Certificates] Client certificate imported from '{path}': ...</code><br><code>[Certificates] Certificate operation failed ({op}): {error}</code></td>
+              <td><strong>Explanation:</strong> Audit trail for the DMapFactory client application certificate.<br><strong>Verify / Action:</strong> Whenever generating or importing a new client certificate, export the public key (<code>.der</code>) and add it to the <em>Trusted Clients</em> list on the OPC UA server / PLC.</td>
+            </tr>
+            <tr>
+              <td><strong>Warning</strong></td>
+              <td><code>Error disconnecting session {name} after certificate expiration.</code></td>
+              <td><strong>Explanation:</strong> The server certificate expired during an active session and an error occurred while closing the OPC UA connection.<br><strong>Verify / Action:</strong> Renew the server certificate and reconnect manually.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>6. Spreadsheet &amp; PNG Image Exports</h3>
+        <table class="help-table">
+          <thead>
+            <tr>
+              <th style="width: 110px;">Level</th>
+              <th style="width: 310px;">Log Message Pattern</th>
+              <th>Explanation, What to Verify &amp; Recommended Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Warning</strong></td>
+              <td><code>[Export] There are no rows in the spreadsheet to export.</code></td>
+              <td><strong>Explanation:</strong> Export (<code>Ctrl+E</code>) was triggered while the spreadsheet was empty.<br><strong>Action:</strong> Collect live data Online or open a recorded session before exporting.</td>
+            </tr>
+            <tr>
+              <td><strong>Information</strong></td>
+              <td><code>Spreadsheet exported to '{path}' ({N} rows).</code><br><code>[Export] Spreadsheet PNG image saved to '{path}' ({W}x{H} px).</code><br><code>[Export] Chart PNG image saved to '{path}' ({W}x{H} px).</code></td>
+              <td><strong>Explanation:</strong> The Excel/CSV/TSV file or PNG snapshot was saved successfully.<br><strong>Action:</strong> No action required.</td>
+            </tr>
+            <tr>
+              <td><strong>Error</strong></td>
+              <td><code>Failed to export spreadsheet to '{path}'.</code><br><code>[Export] Failed to save spreadsheet PNG image to '{path}': {error}</code><br><code>[Export] Failed to save chart PNG image to '{path}': {error}</code></td>
+              <td><strong>Explanation:</strong> Disk write failure while exporting data or image.<br><strong>Verify / Action:</strong> Check whether the destination file is already open in Excel/image viewer or if the target folder requires administrator permissions.</td>
+            </tr>
+          </tbody>
+        </table>
       </section>
 
       <footer class="topic-footer">

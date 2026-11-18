@@ -13,6 +13,7 @@ using DMapFactory.App.Controls;
 using DMapFactory.App.Services;
 using DMapFactory.App.ViewModels;
 using DMapFactory.Core.Models;
+using DMapFactory.Localization;
 using Microsoft.Win32;
 
 namespace DMapFactory.App.Views;
@@ -24,12 +25,17 @@ public partial class MainWindow : Window
     private readonly List<TextBlock> _verticalHeaderTextBlocks = [];
     private readonly IReadOnlyList<ChartInspectorRowViewModel> _chartInspectorRows =
     [
-        new ChartInspectorRowViewModel("Cursor A", CreateFrozenBrush("#2B6CB0")),
-        new ChartInspectorRowViewModel("Cursor B", CreateFrozenBrush("#C53030")),
-        new ChartInspectorRowViewModel("Mira", CreateFrozenBrush("#68707A"))
+        new ChartInspectorRowViewModel("Chart_Inspector_CursorA", CreateFrozenBrush("#2B6CB0")),
+        new ChartInspectorRowViewModel("Chart_Inspector_CursorB", CreateFrozenBrush("#C53030")),
+        new ChartInspectorRowViewModel("Chart_Inspector_Crosshair", CreateFrozenBrush("#68707A"))
     ];
     private long _lastRenderedRowNumber = -1;
     private int _lastRenderedRowCount = -1;
+    private DateTime? _frozenChartMaxUtc;
+    private DateTime _lastRowArrivalWallUtc = DateTime.UtcNow;
+    private bool _isAutoScrollingSpreadsheet;
+    private double _savedPensPanelWidth = 260;
+    private FindMarkerDialog? _findMarkerDialog;
 
     private bool _isResizingHeaderHeight;
     private double _headerResizeStartY;
@@ -82,13 +88,33 @@ public partial class MainWindow : Window
             _vm.FitAllChartRange = false;
             _vm.AutoFollowChart = false;
             double deltaSec = deltaRatio * _vm.ChartWindowSeconds;
-            _vm.ChartTimeOffsetSeconds = Math.Max(0, _vm.ChartTimeOffsetSeconds - deltaSec);
+            double winSec = Math.Max(1, _vm.ChartWindowSeconds);
+            double maxOffset = 3600.0 * 24.0;
+            if (_vm.SpreadsheetRows.Count > 1)
+            {
+                var rows = _vm.SpreadsheetRows;
+                maxOffset = Math.Max(0.0, (rows[^1].TimestampUtc - rows[0].TimestampUtc).TotalSeconds);
+            }
+            _vm.ChartTimeOffsetSeconds = Math.Clamp(_vm.ChartTimeOffsetSeconds - deltaSec, -winSec * 0.5, maxOffset + winSec * 0.5);
+            RenderChart(force: true);
         };
+        TrendPlot.IsPanMode = _vm.IsChartPanMode;
         TrendPlot.PlotRightClicked += OnTrendPlotRightClicked;
 
         SpreadsheetGrid.AddHandler(ScrollViewer.ScrollChangedEvent, new ScrollChangedEventHandler(SpreadsheetGrid_ScrollChanged));
 
         PreviewKeyDown += MainWindow_PreviewKeyDown;
+        Closed += (_, _) =>
+        {
+            _findValueDialog?.Close();
+            _findMarkerDialog?.Close();
+        };
+        _vm.RequestOpenFindDialog = OpenFindValueDialog;
+        _vm.RequestOpenFindMarkerDialog = OpenFindMarkerDialog;
+
+        SpreadsheetGrid.SelectionChanged += (_, _) => UpdateMarkerSelectionState();
+        MainTabControl.SelectionChanged += (_, _) => UpdateMarkerSelectionState();
+        TrendPlot.MarkerSelected += _ => UpdateMarkerSelectionState();
 
         RebuildSpreadsheetColumns();
         RebuildChartInspectorColumns();
@@ -104,9 +130,39 @@ public partial class MainWindow : Window
         {
             switch (e.PropertyName)
             {
+                case nameof(MainViewModel.AutoScrollSpreadsheet):
+                    if (_vm.AutoScrollSpreadsheet && _vm.SpreadsheetRows.Count > 0 && SpreadsheetGrid.IsVisible)
+                    {
+                        ScrollSpreadsheetToBottom();
+                    }
+                    break;
+                case nameof(MainViewModel.TimestampSource):
+                    UpdateTimestampColumnHeader();
+                    SpreadsheetGrid.Items.Refresh();
+                    _frozenChartMaxUtc = null;
+                    RenderChart(force: true);
+                    break;
+                case nameof(MainViewModel.ShowChartPensPanel):
+                    if (_vm.ShowChartPensPanel)
+                    {
+                        ChartPensColumn.MinWidth = 150;
+                        ChartPensColumn.Width = new GridLength(_savedPensPanelWidth >= 150 ? _savedPensPanelWidth : 260);
+                    }
+                    else
+                    {
+                        if (ChartPensColumn.ActualWidth >= 150)
+                            _savedPensPanelWidth = ChartPensColumn.ActualWidth;
+                        ChartPensColumn.MinWidth = 0;
+                        ChartPensColumn.Width = new GridLength(0);
+                    }
+                    break;
+                case nameof(MainViewModel.AutoFollowChart):
+                    if (_vm.AutoFollowChart)
+                        _frozenChartMaxUtc = null;
+                    RenderChart(force: true);
+                    break;
                 case nameof(MainViewModel.ChartWindowSeconds):
                 case nameof(MainViewModel.ShowChartCursors):
-                case nameof(MainViewModel.AutoFollowChart):
                 case nameof(MainViewModel.FitAllChartRange):
                 case nameof(MainViewModel.ChartTimeOffsetSeconds):
                     RenderChart(force: true);
@@ -142,9 +198,32 @@ public partial class MainWindow : Window
                 case nameof(MainViewModel.IsPlacingMarker):
                     var markerCursor = _vm.IsPlacingMarker ? Cursors.Cross : null;
                     SpreadsheetGrid.Cursor = markerCursor;
-                    TrendPlot.Cursor = markerCursor;
+                    if (_vm.IsPlacingMarker)
+                    {
+                        TrendPlot.Cursor = Cursors.Cross;
+                    }
+                    else
+                    {
+                        TrendPlot.Cursor = _vm.IsChartPanMode ? Cursors.Hand : null;
+                    }
+                    break;
+                case nameof(MainViewModel.IsChartPanMode):
+                    TrendPlot.IsPanMode = _vm.IsChartPanMode;
+                    if (!_vm.IsPlacingMarker)
+                    {
+                        TrendPlot.Cursor = _vm.IsChartPanMode ? Cursors.Hand : null;
+                    }
                     break;
             }
+        };
+
+        Loc.Instance.PropertyChanged += (_, _) =>
+        {
+            foreach (var row in _chartInspectorRows)
+                row.RefreshLocalization();
+            RebuildSpreadsheetColumns();
+            RebuildChartInspectorColumns();
+            TrendPlot.InvalidateVisual();
         };
 
         _uiRefreshTimer = new DispatcherTimer(
@@ -263,9 +342,9 @@ public partial class MainWindow : Window
 
         var sfd = new SaveFileDialog
         {
-            Title = "Salvar Imagem do Gráfico (PNG)",
-            FileName = $"Grafico_DMapFactory_{DateTime.Now:yyyyMMdd_HHmmss}.png",
-            Filter = "Imagem PNG (*.png)|*.png"
+            Title = Loc.Instance["Chart_SavePng"],
+            FileName = $"Chart_DMapFactory_{DateTime.Now:yyyyMMdd_HHmmss}.png",
+            Filter = "PNG (*.png)|*.png"
         };
 
         if (sfd.ShowDialog() != true)
@@ -281,10 +360,12 @@ public partial class MainWindow : Window
 
             using var fs = File.Create(sfd.FileName);
             encoder.Save(fs);
+            _vm.LogChartPngSaved(sfd.FileName, width, height);
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Não foi possível salvar a imagem PNG:\n{ex.Message}", "DMapFactory", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _vm.LogChartPngError(sfd.FileName, ex);
+            MessageBox.Show(ex.Message, "DMapFactory", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
@@ -583,8 +664,8 @@ public partial class MainWindow : Window
 
         double dpi = VisualTreeHelper.GetDpi(this).PixelsPerDip;
         var headerFont = (FontFamily)TryFindResource("UiFont") ?? SystemFonts.MessageFontFamily;
-        double maxTextWidth = MeasureTextWidth("Marcador", headerFont, 13, FontWeights.SemiBold, dpi);
-        double cycleW = MeasureTextWidth("Cycle", headerFont, 13, FontWeights.SemiBold, dpi);
+        double maxTextWidth = MeasureTextWidth(Loc.Instance["Grid_Col_Marker"], headerFont, 13, FontWeights.SemiBold, dpi);
+        double cycleW = MeasureTextWidth(Loc.Instance["Grid_Col_Cycle"], headerFont, 13, FontWeights.SemiBold, dpi);
         if (cycleW > maxTextWidth) maxTextWidth = cycleW;
 
         foreach (var tag in _vm.MonitoredTags)
@@ -640,7 +721,7 @@ public partial class MainWindow : Window
 
         SpreadsheetGrid.Columns.Add(new DataGridTextColumn
         {
-            Header = CreateFixedHeader("Timestamp (UTC)", rotateVertical: false, columnIndex: 1),
+            Header = CreateFixedHeader(_vm.TimestampColumnHeaderText, rotateVertical: false, columnIndex: 1),
             Width = new DataGridLength(CalculateColumnAutoWidth(1)),
             MinWidth = 110,
             Binding = new Binding(nameof(WideSpreadsheetRow.TimestampUtc))
@@ -651,7 +732,7 @@ public partial class MainWindow : Window
 
         SpreadsheetGrid.Columns.Add(new DataGridTextColumn
         {
-            Header = CreateFixedHeader("Cycle", rotateVertical: isVertical, columnIndex: 2),
+            Header = CreateFixedHeader(Loc.Instance["Grid_Col_Cycle"], rotateVertical: isVertical, columnIndex: 2),
             Width = new DataGridLength(CalculateColumnAutoWidth(2)),
             MinWidth = 38,
             Binding = new Binding(nameof(WideSpreadsheetRow.CycleDisplay))
@@ -659,7 +740,7 @@ public partial class MainWindow : Window
 
         SpreadsheetGrid.Columns.Add(new DataGridTextColumn
         {
-            Header = CreateFixedHeader("Marcador", rotateVertical: isVertical, columnIndex: 3),
+            Header = CreateFixedHeader(Loc.Instance["Grid_Col_Marker"], rotateVertical: isVertical, columnIndex: 3),
             Width = new DataGridLength(CalculateColumnAutoWidth(3)),
             MinWidth = 42,
             Visibility = _vm.ShowMarkerColumn ? Visibility.Visible : Visibility.Collapsed,
@@ -792,6 +873,15 @@ public partial class MainWindow : Window
         ApplySpreadsheetHeaderHeight(effectiveHeaderHeight);
     }
 
+    private void UpdateTimestampColumnHeader()
+    {
+        if (SpreadsheetGrid.Columns.Count > 1)
+        {
+            SpreadsheetGrid.Columns[1].Header = CreateFixedHeader(_vm.TimestampColumnHeaderText, rotateVertical: false, columnIndex: 1);
+            AutoFitSingleColumn(1);
+        }
+    }
+
     private FrameworkElement CreateFixedHeader(string text, bool rotateVertical, int columnIndex)
     {
         var tb = new TextBlock
@@ -916,8 +1006,9 @@ public partial class MainWindow : Window
 
         if (columnIndex == 1)
         {
-            // Coluna 'Timestamp (UTC)'
-            double headerWidth = MeasureTextWidth("Timestamp (UTC)", headerFont, 12, FontWeights.SemiBold, dpi) + 24;
+            // Coluna 'Timestamp'
+            string tsHeader = _vm.TimestampColumnHeaderText;
+            double headerWidth = MeasureTextWidth(tsHeader, headerFont, 12, FontWeights.SemiBold, dpi) + 24;
             double cellWidth = MeasureTextWidth("2026-10-24 23:59:59.999", cellFont, 12, FontWeights.Normal, dpi) + 22;
             return Math.Ceiling(Math.Max(headerWidth, cellWidth));
         }
@@ -1022,6 +1113,22 @@ public partial class MainWindow : Window
         return ft.WidthIncludingTrailingWhitespace;
     }
 
+    private void ScrollSpreadsheetToBottom()
+    {
+        if (_vm.SpreadsheetRows.Count == 0)
+            return;
+
+        _isAutoScrollingSpreadsheet = true;
+        try
+        {
+            SpreadsheetGrid.ScrollIntoView(_vm.SpreadsheetRows[^1]);
+        }
+        finally
+        {
+            Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => _isAutoScrollingSpreadsheet = false));
+        }
+    }
+
     private void RefreshSpreadsheetAndChart()
     {
         int count = _vm.SpreadsheetRows.Count;
@@ -1032,10 +1139,11 @@ public partial class MainWindow : Window
         {
             _lastRenderedRowCount = count;
             _lastRenderedRowNumber = lastRowNum;
+            _lastRowArrivalWallUtc = DateTime.UtcNow;
 
             if (_vm.AutoScrollSpreadsheet && count > 0 && SpreadsheetGrid.IsVisible)
             {
-                SpreadsheetGrid.ScrollIntoView(_vm.SpreadsheetRows[^1]);
+                ScrollSpreadsheetToBottom();
             }
         }
 
@@ -1051,18 +1159,24 @@ public partial class MainWindow : Window
             return;
 
         var rows = _vm.SpreadsheetRows;
-        var plottedTags = _vm.MonitoredTags.Where(t => t.IsPlotted).ToList();
+        var plottedTags = _vm.MonitoredTags.Where(t => t.IsPlotted && t.CanPlotOnChart).ToList();
 
         if (plottedTags.Count == 0)
         {
-            TrendPlot.UpdateChart([], DateTime.UtcNow.AddSeconds(-_vm.ChartWindowSeconds), DateTime.UtcNow, _vm.ShowChartCursors);
+            DateTime emptyNow = _vm.TimestampSource == TimestampSourceMode.Local
+                ? DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc)
+                : DateTime.UtcNow;
+            TrendPlot.UpdateChart([], emptyNow.AddSeconds(-_vm.ChartWindowSeconds), emptyNow, _vm.ShowChartCursors);
             return;
         }
 
         if (rows.Count == 0)
         {
             // Se ainda não há linhas na planilha, mas alguma tag já possui valor lido, plota o ponto atual
-            DateTime nowUtc = DateTime.UtcNow;
+            DateTime nowUtc = plottedTags.FirstOrDefault(t => t.TimestampUtc.HasValue)?.TimestampUtc
+                ?? (_vm.TimestampSource == TimestampSourceMode.Local
+                    ? DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc)
+                    : DateTime.UtcNow);
             DateTime fallbackMinUtc = nowUtc.AddSeconds(-Math.Max(5, _vm.ChartWindowSeconds));
             var liveSeries = new List<ChartSeriesData>();
 
@@ -1093,20 +1207,29 @@ public partial class MainWindow : Window
 
         if (_vm.FitAllChartRange)
         {
+            _frozenChartMaxUtc = null;
             minWindowUtc = earliestDataUtc;
-            maxWindowUtc = latestDataUtc > earliestDataUtc ? latestDataUtc : earliestDataUtc.AddSeconds(5);
+            double spanSec = (latestDataUtc - earliestDataUtc).TotalSeconds;
+            maxWindowUtc = spanSec >= 1.0 ? latestDataUtc : earliestDataUtc.AddSeconds(1.0);
         }
         else if (_vm.AutoFollowChart)
         {
-            maxWindowUtc = latestDataUtc;
+            _frozenChartMaxUtc = null;
+            double elapsedSinceLastRowSec = _vm.IsOnline
+                ? Math.Clamp((DateTime.UtcNow - _lastRowArrivalWallUtc).TotalSeconds, 0.0, Math.Max(1.0, _vm.ChartWindowSeconds))
+                : 0.0;
+            maxWindowUtc = latestDataUtc.AddSeconds(elapsedSinceLastRowSec);
             minWindowUtc = maxWindowUtc.AddSeconds(-Math.Max(1, _vm.ChartWindowSeconds));
         }
         else
         {
             double winSec = Math.Max(1, _vm.ChartWindowSeconds);
-            maxWindowUtc = latestDataUtc.AddSeconds(-_vm.ChartTimeOffsetSeconds);
-            if (maxWindowUtc < earliestDataUtc.AddSeconds(winSec * 0.5))
-                maxWindowUtc = earliestDataUtc.AddSeconds(winSec * 0.5);
+            _frozenChartMaxUtc ??= latestDataUtc;
+            maxWindowUtc = _frozenChartMaxUtc.Value.AddSeconds(-_vm.ChartTimeOffsetSeconds);
+            if (maxWindowUtc < earliestDataUtc.AddSeconds(Math.Min(winSec, 5.0)))
+                maxWindowUtc = earliestDataUtc.AddSeconds(Math.Min(winSec, 5.0));
+            if (_vm.ChartTimeOffsetSeconds <= 0 && maxWindowUtc > latestDataUtc)
+                maxWindowUtc = latestDataUtc;
             minWindowUtc = maxWindowUtc.AddSeconds(-winSec);
         }
 
@@ -1163,13 +1286,25 @@ public partial class MainWindow : Window
                         lastVal = v;
                         hasVal = true;
                     }
+                    else
+                    {
+                        hasVal = false;
+                        if (r.TimestampUtc >= minWindowUtc)
+                        {
+                            points.Add(new ChartSeriesPoint(r.TimestampUtc, double.NaN));
+                        }
+                    }
+                }
+                else
+                {
+                    // A tag não estava presente nesta linha (ainda não iniciou ou valor mantido).
                 }
 
                 if (r.TimestampUtc >= minWindowUtc && hasVal)
                 {
-                    if (points.Count == 0 && r.TimestampUtc > minWindowUtc)
+                    if (points.Count == 0 && r.TimestampUtc > minWindowUtc && startIdx > 0)
                     {
-                        // Propaga o valor anterior no início da janela (Sample-and-Hold)
+                        // Propaga o valor anterior no início da janela (Sample-and-Hold) apenas se veio de antes da janela
                         points.Add(new ChartSeriesPoint(minWindowUtc, lastVal));
                     }
 
@@ -1179,7 +1314,9 @@ public partial class MainWindow : Window
                 }
             }
 
-            DateTime holdUntilUtc = maxWindowUtc < latestDataUtc ? maxWindowUtc : latestDataUtc;
+            DateTime holdUntilUtc = (_vm.IsOnline && _vm.AutoFollowChart && tagVm.Quality == QualityClass.Good)
+                ? maxWindowUtc
+                : (maxWindowUtc < latestDataUtc ? maxWindowUtc : latestDataUtc);
 
             // Se a tag tinha valor antes de minWindowUtc e não teve novas linhas dentro da janela, mantém linha constante
             if (points.Count == 0 && hasVal && holdUntilUtc >= minWindowUtc)
@@ -1189,13 +1326,13 @@ public partial class MainWindow : Window
                 minVal = lastVal;
                 maxVal = lastVal;
             }
-            else if (points.Count > 0 && points[^1].TimestampUtc < holdUntilUtc)
+            else if (points.Count > 0 && hasVal && points[^1].TimestampUtc < holdUntilUtc && !double.IsNaN(points[^1].Value))
             {
                 // Estende o último valor conhecido até a borda direita dos dados na janela (Sample-and-Hold)
                 points.Add(new ChartSeriesPoint(holdUntilUtc, lastVal));
             }
 
-            if (points.Count > 0)
+            if (points.Count > 0 && minVal <= maxVal)
             {
                 tagVm.MinValueText = isBoolTag ? (minVal != 0 ? "1" : "0") : minVal.ToString("G5", CultureInfo.InvariantCulture);
                 tagVm.MaxValueText = isBoolTag ? (maxVal != 0 ? "1" : "0") : maxVal.ToString("G5", CultureInfo.InvariantCulture);
@@ -1207,7 +1344,7 @@ public partial class MainWindow : Window
             }
 
             // PF-01: Reduz densidade excessiva para manter o DrawingContext suave em janelas longas
-            var renderedPoints = DownsampleSeries(points, 3000);
+            var renderedPoints = DownsampleSeries(points, 5000, isBoolTag);
             seriesList.Add(new ChartSeriesData(tagId, tagVm.Alias, isBoolTag, tagVm.PenColor, renderedPoints));
         }
 
@@ -1237,10 +1374,42 @@ public partial class MainWindow : Window
         return result;
     }
 
-    private static IReadOnlyList<ChartSeriesPoint> DownsampleSeries(List<ChartSeriesPoint> points, int targetMaxPoints)
+    private static IReadOnlyList<ChartSeriesPoint> DownsampleSeries(List<ChartSeriesPoint> points, int targetMaxPoints, bool isBoolean)
     {
         if (points.Count <= targetMaxPoints)
             return points;
+
+        if (isBoolean)
+        {
+            // Compacta valores consecutivos idênticos preservando todas as bordas de transição (0->1, 1->0 e NaN)
+            var compacted = new List<ChartSeriesPoint>(Math.Min(points.Count, targetMaxPoints * 2))
+            {
+                points[0]
+            };
+
+            for (int i = 1; i < points.Count - 1; i++)
+            {
+                var prev = points[i - 1];
+                var curr = points[i];
+                var next = points[i + 1];
+
+                bool diffFromPrev = double.IsNaN(curr.Value) != double.IsNaN(prev.Value) ||
+                                    (!double.IsNaN(curr.Value) && curr.Value != prev.Value);
+                bool diffFromNext = double.IsNaN(curr.Value) != double.IsNaN(next.Value) ||
+                                    (!double.IsNaN(curr.Value) && curr.Value != next.Value);
+
+                if (diffFromPrev || diffFromNext)
+                {
+                    compacted.Add(curr);
+                }
+            }
+
+            compacted.Add(points[^1]);
+            if (compacted.Count <= targetMaxPoints * 2)
+                return compacted;
+
+            points = compacted;
+        }
 
         var result = new List<ChartSeriesPoint>(targetMaxPoints + 2)
         {
@@ -1251,23 +1420,31 @@ public partial class MainWindow : Window
         for (int i = 1; i < points.Count - 1; i += step)
         {
             int end = Math.Min(i + step, points.Count - 1);
-            int minIdx = i;
-            int maxIdx = i;
+            int minIdx = -1;
+            int maxIdx = -1;
             for (int k = i; k < end; k++)
             {
-                if (points[k].Value < points[minIdx].Value) minIdx = k;
-                if (points[k].Value > points[maxIdx].Value) maxIdx = k;
+                if (double.IsNaN(points[k].Value)) continue;
+                if (minIdx < 0 || points[k].Value < points[minIdx].Value) minIdx = k;
+                if (maxIdx < 0 || points[k].Value > points[maxIdx].Value) maxIdx = k;
             }
 
-            if (minIdx <= maxIdx)
+            if (minIdx >= 0 && maxIdx >= 0)
             {
-                result.Add(points[minIdx]);
-                if (minIdx != maxIdx) result.Add(points[maxIdx]);
+                if (minIdx <= maxIdx)
+                {
+                    result.Add(points[minIdx]);
+                    if (minIdx != maxIdx) result.Add(points[maxIdx]);
+                }
+                else
+                {
+                    result.Add(points[maxIdx]);
+                    result.Add(points[minIdx]);
+                }
             }
             else
             {
-                result.Add(points[maxIdx]);
-                result.Add(points[minIdx]);
+                result.Add(points[i]);
             }
         }
 
@@ -1491,7 +1668,7 @@ public partial class MainWindow : Window
 
         ChartInspectorGrid.Columns.Add(new DataGridTextColumn
         {
-            Header = "Cursor / Mira",
+            Header = Loc.Instance["Chart_Inspector_CursorCol"],
             Width = 105,
             Binding = new Binding(nameof(ChartInspectorRowViewModel.CursorLabel)),
             CellStyle = cursorHeaderStyle
@@ -1499,7 +1676,7 @@ public partial class MainWindow : Window
 
         ChartInspectorGrid.Columns.Add(new DataGridTextColumn
         {
-            Header = "Timestamp (UTC)",
+            Header = Loc.Instance["Col_Timestamp"],
             Width = 175,
             Binding = new Binding(nameof(ChartInspectorRowViewModel.TimestampText))
         });
@@ -1539,10 +1716,7 @@ public partial class MainWindow : Window
                 Header = headerStack,
                 MinWidth = 90,
                 Width = new DataGridLength(1, DataGridLengthUnitType.Auto),
-                Binding = new Binding(".")
-                {
-                    Converter = new ChartInspectorCellConverter(tagId)
-                }
+                Binding = new Binding($"[{tagId}]")
             });
         }
 
@@ -1559,6 +1733,8 @@ public partial class MainWindow : Window
         UpdateSingleInspectorRow(_chartInspectorRows[0], TrendPlot.CursorATimeUtc, plottedTags);
         UpdateSingleInspectorRow(_chartInspectorRows[1], TrendPlot.CursorBTimeUtc, plottedTags);
         UpdateSingleInspectorRow(_chartInspectorRows[2], TrendPlot.HoverTimeUtc, plottedTags);
+
+        ChartInspectorGrid.Items.Refresh();
     }
 
     private void UpdateSingleInspectorRow(
@@ -1581,21 +1757,15 @@ public partial class MainWindow : Window
 
     private void SpreadsheetGrid_ScrollChanged(object sender, ScrollChangedEventArgs e)
     {
-        if (Math.Abs(e.VerticalChange) < 0.01) return;
+        if (_isAutoScrollingSpreadsheet)
+            return;
 
-        // FN-04: Pausa automática de auto-scroll ao rolar para cima para inspecionar histórico
-        if (e.VerticalOffset < e.ExtentHeight - e.ViewportHeight - 2.0)
+        // FN-04: Pausa automática de auto-scroll apenas quando o usuário rola manualmente para cima
+        if (e.VerticalChange < -0.5 && e.VerticalOffset < e.ExtentHeight - e.ViewportHeight - 4.0)
         {
             if (_vm.AutoScrollSpreadsheet)
             {
                 _vm.AutoScrollSpreadsheet = false;
-            }
-        }
-        else if (e.VerticalOffset >= e.ExtentHeight - e.ViewportHeight - 1.0)
-        {
-            if (!_vm.AutoScrollSpreadsheet && _vm.IsOnline)
-            {
-                _vm.AutoScrollSpreadsheet = true;
             }
         }
     }
@@ -1705,7 +1875,7 @@ public partial class MainWindow : Window
         ctxMenu.IsOpen = true;
     }
 
-    private void FocusTimestampOnChartWithCursorA(DateTime targetTimestampUtc)
+    public void FocusTimestampOnChartWithCursorA(DateTime targetTimestampUtc, bool switchTab = true)
     {
         _vm.ShowChartCursors = true;
         _vm.FitAllChartRange = false;
@@ -1718,15 +1888,81 @@ public partial class MainWindow : Window
             _vm.ChartTimeOffsetSeconds = (latestDataUtc - targetTimestampUtc).TotalSeconds - halfWindowSec;
         }
 
-        MainTabControl.SelectedIndex = 1;
+        if (switchTab)
+        {
+            MainTabControl.SelectedIndex = 1;
+        }
         RenderChart(force: true);
         TrendPlot.SetCursorAPosition(targetTimestampUtc);
     }
 
-    private void HighlightSpreadsheetRowNearTimestamp(DateTime targetUtc)
+    private FindValueDialog? _findValueDialog;
+
+    public void OpenFindValueDialog()
+    {
+        // A função auto-scroll deverá desabilitar automaticamente
+        _vm.AutoScrollSpreadsheet = false;
+        _vm.AutoFollowChart = false;
+        _vm.FitAllChartRange = false;
+
+        if (_findValueDialog is null || !_findValueDialog.IsLoaded)
+        {
+            _findValueDialog = new FindValueDialog(this, _vm)
+            {
+                Owner = this
+            };
+            _findValueDialog.Closed += (_, _) => _findValueDialog = null;
+            _findValueDialog.Show();
+        }
+        else
+        {
+            _findValueDialog.Activate();
+            _findValueDialog.FocusSearchInput();
+        }
+    }
+
+    public void OpenFindMarkerDialog()
+    {
+        if (_findMarkerDialog is null || !_findMarkerDialog.IsLoaded)
+        {
+            _findMarkerDialog = new FindMarkerDialog(this, _vm)
+            {
+                Owner = this
+            };
+            _findMarkerDialog.Closed += (_, _) => _findMarkerDialog = null;
+            _findMarkerDialog.Show();
+        }
+        else
+        {
+            _findMarkerDialog.Activate();
+            _findMarkerDialog.FocusSearchInput();
+        }
+    }
+
+    public int GetActiveTabIndex() => MainTabControl.SelectedIndex;
+    public void SetActiveTabIndex(int index) => MainTabControl.SelectedIndex = index;
+    public int GetSpreadsheetSelectedIndex() => SpreadsheetGrid.SelectedIndex;
+    public DateTime? GetChartCursorATimestamp() => TrendPlot.CursorATimeUtc;
+
+    public DataGridColumn? FindColumnForTag(int tagId)
+    {
+        for (int i = 0; i < _vm.MonitoredTags.Count; i++)
+        {
+            if (_vm.MonitoredTags[i].Config.Id == tagId)
+            {
+                int colIdx = 4 + i;
+                if (colIdx < SpreadsheetGrid.Columns.Count)
+                    return SpreadsheetGrid.Columns[colIdx];
+                break;
+            }
+        }
+        return null;
+    }
+
+    public int FindRowIndexNearTimestamp(DateTime targetUtc)
     {
         var rows = _vm.SpreadsheetRows;
-        if (rows.Count == 0) return;
+        if (rows.Count == 0) return -1;
 
         int closestIdx = 0;
         double minDiff = Math.Abs((rows[0].TimestampUtc - targetUtc).TotalMilliseconds);
@@ -1748,7 +1984,45 @@ public partial class MainWindow : Window
                 high = mid - 1;
         }
 
-        var targetRow = rows[closestIdx];
+        return closestIdx;
+    }
+
+    public void NavigateToSpreadsheetRow(WideSpreadsheetRow row, MonitoredTagViewModel? tag)
+    {
+        _vm.AutoScrollSpreadsheet = false;
+        _vm.AutoFollowChart = false;
+        _vm.FitAllChartRange = false;
+
+        SpreadsheetGrid.SelectedItem = row;
+        var tagCol = tag != null ? FindColumnForTag(tag.Config.Id) : null;
+        if (tagCol != null)
+        {
+            SpreadsheetGrid.CurrentCell = new DataGridCellInfo(row, tagCol);
+            SpreadsheetGrid.ScrollIntoView(row, tagCol);
+        }
+        else
+        {
+            SpreadsheetGrid.ScrollIntoView(row);
+        }
+
+        double halfWindowSec = Math.Max(1.0, _vm.ChartWindowSeconds) / 2.0;
+        if (_vm.SpreadsheetRows.Count > 0)
+        {
+            DateTime latestDataUtc = _vm.SpreadsheetRows[^1].TimestampUtc;
+            _vm.ChartTimeOffsetSeconds = (latestDataUtc - row.TimestampUtc).TotalSeconds - halfWindowSec;
+        }
+
+        _vm.ShowChartCursors = true;
+        RenderChart(force: true);
+        TrendPlot.SetCursorAPosition(row.TimestampUtc);
+    }
+
+    public void HighlightSpreadsheetRowNearTimestamp(DateTime targetUtc)
+    {
+        int closestIdx = FindRowIndexNearTimestamp(targetUtc);
+        if (closestIdx < 0) return;
+
+        var targetRow = _vm.SpreadsheetRows[closestIdx];
         _vm.AutoScrollSpreadsheet = false;
         SpreadsheetGrid.SelectedItem = targetRow;
         SpreadsheetGrid.ScrollIntoView(targetRow);
@@ -1800,16 +2074,6 @@ public partial class MainWindow : Window
         {
             ctxMenu.Items.Add(new Separator());
 
-            if (tagVm.IsBoolean)
-            {
-                var cycleTriggerItem = new MenuItem
-                {
-                    Header = $"🏷 Definir '{tagVm.Alias}' como Gatilho de Ciclo"
-                };
-                cycleTriggerItem.Click += (_, _) => _vm.SetAsCycleTrigger(tagVm);
-                ctxMenu.Items.Add(cycleTriggerItem);
-            }
-
             if (row.ValuesByTagId.TryGetValue(tagVm.Config.Id, out var cellVal) && cellVal is not null)
             {
                 var copyCellItem = new MenuItem
@@ -1845,8 +2109,7 @@ public partial class MainWindow : Window
         var sb = new System.Text.StringBuilder();
         sb.Append(row.RowNumber).Append('\t')
           .Append(row.TimestampUtc.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)).Append('\t')
-          .Append(row.CycleDisplay).Append('\t')
-          .Append(row.CycleNumber.HasValue ? row.CycleNumber.Value.ToString() : "");
+          .Append(row.CycleDisplay);
 
         foreach (var tag in _vm.MonitoredTags)
         {
@@ -1877,7 +2140,15 @@ public partial class MainWindow : Window
         }
 
         bool ctrl = (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control;
-        if (ctrl && !Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) && !Keyboard.Modifiers.HasFlag(ModifierKeys.Alt))
+        bool shift = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
+        if (ctrl && shift && e.Key == Key.M)
+        {
+            OpenFindMarkerDialog();
+            e.Handled = true;
+            return;
+        }
+
+        if (ctrl && !shift && !Keyboard.Modifiers.HasFlag(ModifierKeys.Alt))
         {
             if (e.Key == Key.D1 || e.Key == Key.NumPad1)
             {
@@ -1894,6 +2165,12 @@ public partial class MainWindow : Window
             if (e.Key == Key.D3 || e.Key == Key.NumPad3)
             {
                 MainTabControl.SelectedIndex = 2;
+                e.Handled = true;
+                return;
+            }
+            if (e.Key == Key.F)
+            {
+                OpenFindValueDialog();
                 e.Handled = true;
                 return;
             }
@@ -2003,20 +2280,6 @@ public partial class MainWindow : Window
         await _vm.AddFolderVariablesAsTagsCommand.ExecuteAsync(null);
     }
 
-    private void SetPenAsCycleTriggerMenuItem_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is MenuItem menuItem)
-        {
-            var tagVm = menuItem.DataContext as MonitoredTagViewModel
-                ?? ((menuItem.Parent as ContextMenu)?.PlacementTarget as FrameworkElement)?.DataContext as MonitoredTagViewModel
-                ?? _vm.SelectedMonitoredTag;
-            if (tagVm is not null)
-            {
-                _vm.SetAsCycleTrigger(tagVm);
-            }
-        }
-    }
-
     private void CopyNodeId_Click(object sender, RoutedEventArgs e)
     {
         if (sender is MenuItem menuItem)
@@ -2071,80 +2334,125 @@ public partial class MainWindow : Window
         }
     }
 
+    private void UpdateMarkerSelectionState()
+    {
+        SessionMarker? selected = null;
+        if (MainTabControl.SelectedIndex == 0) // Planilha
+        {
+            if (SpreadsheetGrid.SelectedItem is WideSpreadsheetRow row && row.IsMarker)
+            {
+                selected = _vm.SessionMarkers.FirstOrDefault(m =>
+                    Math.Abs((m.TimestampUtc - row.TimestampUtc).TotalMilliseconds) < 15.0 &&
+                    string.Equals(m.Text, row.MarkerText, StringComparison.Ordinal))
+                    ?? new SessionMarker(row.TimestampUtc, row.MarkerText ?? "");
+            }
+        }
+        else if (MainTabControl.SelectedIndex == 1) // Gráfico
+        {
+            selected = TrendPlot.SelectedMarker;
+        }
+
+        _vm.SelectedMarker = selected;
+        _vm.HasSelectedMarker = selected is not null;
+    }
+
     private async void EditSelectedMarkerMenuItem_Click(object sender, RoutedEventArgs e)
     {
-        if (SpreadsheetGrid.SelectedItem is WideSpreadsheetRow selectedRow && selectedRow.IsMarker)
+        if (MainTabControl.SelectedIndex == 0 && SpreadsheetGrid.SelectedItem is WideSpreadsheetRow selectedRow && selectedRow.IsMarker)
         {
             await _vm.EditMarkerAtRowAsync(selectedRow);
+            UpdateMarkerSelectionState();
             return;
         }
 
-        var targetMarker = GetActiveOrLatestSessionMarker();
-        if (targetMarker is not null)
+        if (TrendPlot.SelectedMarker is not null)
         {
-            await _vm.EditSessionMarkerAsync(targetMarker);
+            await _vm.EditSessionMarkerAsync(TrendPlot.SelectedMarker);
+            UpdateMarkerSelectionState();
             return;
         }
 
-        var lastMarkerRow = _vm.SpreadsheetRows.LastOrDefault(r => r.IsMarker);
-        if (lastMarkerRow is not null)
+        if (_vm.SelectedMarker is not null)
         {
-            await _vm.EditMarkerAtRowAsync(lastMarkerRow);
-            return;
+            await _vm.EditSessionMarkerAsync(_vm.SelectedMarker);
+            UpdateMarkerSelectionState();
         }
-
-        MessageBox.Show(
-            this,
-            "Nenhum marcador foi inserido na sessão atual para editar.\nSelecione uma linha com marcador na planilha ou insira um marcador primeiro.",
-            "Editar Marcador",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
     }
 
     private async void DeleteSelectedMarkerMenuItem_Click(object sender, RoutedEventArgs e)
     {
-        if (SpreadsheetGrid.SelectedItem is WideSpreadsheetRow selectedRow && selectedRow.IsMarker)
+        if (MainTabControl.SelectedIndex == 0 && SpreadsheetGrid.SelectedItem is WideSpreadsheetRow selectedRow && selectedRow.IsMarker)
         {
             await _vm.RemoveMarkerAtRowAsync(selectedRow);
+            TrendPlot.SelectedMarker = null;
+            UpdateMarkerSelectionState();
             return;
         }
 
-        var targetMarker = GetActiveOrLatestSessionMarker();
-        if (targetMarker is not null)
+        if (TrendPlot.SelectedMarker is not null)
         {
-            await _vm.RemoveSessionMarkerAsync(targetMarker);
+            var m = TrendPlot.SelectedMarker;
+            TrendPlot.SelectedMarker = null;
+            await _vm.RemoveSessionMarkerAsync(m);
+            UpdateMarkerSelectionState();
             return;
         }
 
-        var lastMarkerRow = _vm.SpreadsheetRows.LastOrDefault(r => r.IsMarker);
-        if (lastMarkerRow is not null)
+        if (_vm.SelectedMarker is not null)
         {
-            await _vm.RemoveMarkerAtRowAsync(lastMarkerRow);
-            return;
+            var m = _vm.SelectedMarker;
+            TrendPlot.SelectedMarker = null;
+            await _vm.RemoveSessionMarkerAsync(m);
+            UpdateMarkerSelectionState();
         }
-
-        MessageBox.Show(
-            this,
-            "Nenhum marcador foi inserido na sessão atual para excluir.\nSelecione uma linha com marcador na planilha ou clique com o botão direito sobre o marcador no gráfico.",
-            "Excluir Marcador",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
     }
 
-    private SessionMarker? GetActiveOrLatestSessionMarker()
+    private void ExportSpreadsheetPng_Click(object sender, RoutedEventArgs e)
     {
-        if (_vm.SessionMarkers.Count == 0)
-            return null;
+        int width = Math.Max(400, (int)SpreadsheetGrid.ActualWidth);
+        int height = Math.Max(200, (int)SpreadsheetGrid.ActualHeight);
 
-        if (MainTabControl.SelectedIndex == 1 && TrendPlot.CursorATimeUtc is { } cursorAUtc)
+        var sfd = new SaveFileDialog
         {
-            return _vm.SessionMarkers
-                .OrderBy(m => Math.Abs((m.TimestampUtc - cursorAUtc).TotalMilliseconds))
-                .FirstOrDefault();
-        }
+            Title = Loc.Instance["Grid_SavePng"],
+            FileName = $"Spreadsheet_DMapFactory_{DateTime.Now:yyyyMMdd_HHmmss}.png",
+            Filter = "PNG (*.png)|*.png"
+        };
 
-        return _vm.SessionMarkers[^1];
+        if (sfd.ShowDialog() != true)
+            return;
+
+        try
+        {
+            var rtb = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
+            rtb.Render(SpreadsheetGrid);
+
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(rtb));
+
+            using var fs = File.Create(sfd.FileName);
+            encoder.Save(fs);
+            _vm.LogSpreadsheetPngSaved(sfd.FileName, width, height);
+        }
+        catch (Exception ex)
+        {
+            _vm.LogSpreadsheetPngError(sfd.FileName, ex);
+            MessageBox.Show(ex.Message, "DMapFactory", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
+
+    private void TimestampSourceMenu_SubmenuOpened(object sender, RoutedEventArgs e)
+    {
+        TsAutoMenuItem.IsChecked = _vm.TimestampSource == TimestampSourceMode.Auto;
+        TsSourceMenuItem.IsChecked = _vm.TimestampSource == TimestampSourceMode.Source;
+        TsServerMenuItem.IsChecked = _vm.TimestampSource == TimestampSourceMode.Server;
+        TsLocalMenuItem.IsChecked = _vm.TimestampSource == TimestampSourceMode.Local;
+    }
+
+    private void SetTimestampSourceAuto_Click(object sender, RoutedEventArgs e) => _vm.TimestampSource = TimestampSourceMode.Auto;
+    private void SetTimestampSourceSource_Click(object sender, RoutedEventArgs e) => _vm.TimestampSource = TimestampSourceMode.Source;
+    private void SetTimestampSourceServer_Click(object sender, RoutedEventArgs e) => _vm.TimestampSource = TimestampSourceMode.Server;
+    private void SetTimestampSourceLocal_Click(object sender, RoutedEventArgs e) => _vm.TimestampSource = TimestampSourceMode.Local;
 
     private void ShowSpreadsheetTabMenuItem_Click(object sender, RoutedEventArgs e) => MainTabControl.SelectedIndex = 0;
     private void ShowChartTabMenuItem_Click(object sender, RoutedEventArgs e) => MainTabControl.SelectedIndex = 1;

@@ -1,8 +1,10 @@
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using DMapFactory.Core.Models;
+using DMapFactory.Localization;
 
 namespace DMapFactory.App.Controls;
 
@@ -25,6 +27,11 @@ public sealed record ChartSeriesData(
 /// </summary>
 public sealed class TrendChartControl : FrameworkElement
 {
+    private static readonly ConcurrentDictionary<Color, SolidColorBrush> FrozenBrushCache = new();
+    private static readonly ConcurrentDictionary<(Color, double), Pen> FrozenPenCache = new();
+    private static readonly ConcurrentDictionary<string, SolidColorBrush> HexBrushCache = new();
+    private static readonly ConcurrentDictionary<Color, SolidColorBrush> DigitalFillBrushCache = new();
+
     private static readonly Typeface MonoTypeface = new(new FontFamily("Consolas, Segoe UI"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
     private static readonly Typeface BoldTypeface = new(new FontFamily("Segoe UI"), FontStyles.Normal, FontWeights.SemiBold, FontStretches.Normal);
 
@@ -46,6 +53,8 @@ public sealed class TrendChartControl : FrameworkElement
     private static readonly Brush MarkerBadgeBgBrush = CreateFrozenBrush("#FFFBEB");
     private static readonly Pen MarkerBadgeBorderPen = CreateFrozenPen("#D97706", 1.2);
     private static readonly Brush MarkerTextBrush = CreateFrozenBrush("#92400E");
+    private static readonly Pen MarkerSelectedBadgeBorderPen = CreateFrozenPen("#B45309", 2.2);
+    private static readonly Brush MarkerSelectedBadgeBgBrush = CreateFrozenBrush("#FDE68A");
 
     private IReadOnlyList<ChartSeriesData> _series = [];
     private IReadOnlyList<SessionMarker> _markers = [];
@@ -59,12 +68,17 @@ public sealed class TrendChartControl : FrameworkElement
     private double _yZoomFactor = 1.0;
     private double _yPanOffset;
 
+    public SessionMarker? SelectedMarker { get; set; }
+    public event Action<SessionMarker?>? MarkerSelected;
+
     private double _cursorARatio = 0.30;
     private double _cursorBRatio = 0.70;
     private int _draggingCursor; // 0 = none, 1 = A, 2 = B
     private bool _nextClickMovesB;
 
     private bool _isPanning;
+    private bool _isLeftPanning;
+    private bool _isPanMode;
     private Point _panStartPoint;
     private Point? _hoverPoint;
 
@@ -85,6 +99,36 @@ public sealed class TrendChartControl : FrameworkElement
         MouseMove += OnMouseMove;
         MouseLeave += OnMouseLeave;
         MouseWheel += OnMouseWheel;
+    }
+
+    public bool IsPanMode
+    {
+        get => _isPanMode;
+        set
+        {
+            if (_isPanMode != value)
+            {
+                _isPanMode = value;
+                if (!_isPanMode && _isLeftPanning)
+                {
+                    _isLeftPanning = false;
+                    ReleaseMouseCapture();
+                }
+                UpdateCursor();
+            }
+        }
+    }
+
+    private void UpdateCursor()
+    {
+        if (_isPanMode)
+        {
+            Cursor = _isLeftPanning ? Cursors.ScrollWE : Cursors.Hand;
+        }
+        else
+        {
+            Cursor = null;
+        }
     }
 
     public bool StepInterpolation
@@ -130,7 +174,7 @@ public sealed class TrendChartControl : FrameworkElement
     {
         get
         {
-            if (!_showCrosshair || !_hoverPoint.HasValue)
+            if (!_hoverPoint.HasValue)
                 return null;
             Rect plotRect = GetPlotRect(ActualWidth, ActualHeight);
             if (!plotRect.Contains(_hoverPoint.Value) || plotRect.Width <= 10)
@@ -151,6 +195,9 @@ public sealed class TrendChartControl : FrameworkElement
             return "—";
 
         double val = SampleValueAt(s.Points, timestampUtc.Value);
+        if (double.IsNaN(val))
+            return "— (Bad)";
+
         return s.IsBoolean
             ? (val != 0 ? "1 (ON)" : "0 (OFF)")
             : val.ToString("G6", CultureInfo.InvariantCulture);
@@ -266,13 +313,31 @@ public sealed class TrendChartControl : FrameworkElement
 
     private void OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        if (!_showCursors) return;
-
         Rect plotRect = GetPlotRect(ActualWidth, ActualHeight);
         if (plotRect.Width <= 10) return;
 
         Point pt = e.GetPosition(this);
         if (pt.X < plotRect.Left || pt.X > plotRect.Right) return;
+
+        if (_isPanMode)
+        {
+            _isLeftPanning = true;
+            _panStartPoint = pt;
+            CaptureMouse();
+            UpdateCursor();
+            e.Handled = true;
+            return;
+        }
+
+        var clickedMarker = GetMarkerNearPixel(pt, 16.0);
+        if (clickedMarker != SelectedMarker)
+        {
+            SelectedMarker = clickedMarker;
+            MarkerSelected?.Invoke(clickedMarker);
+            InvalidateVisual();
+        }
+
+        if (!_showCursors) return;
 
         double ratio = Math.Clamp((pt.X - plotRect.Left) / plotRect.Width, 0.0, 1.0);
         double xA = plotRect.Left + _cursorARatio * plotRect.Width;
@@ -311,6 +376,15 @@ public sealed class TrendChartControl : FrameworkElement
 
     private void OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
+        if (_isLeftPanning)
+        {
+            _isLeftPanning = false;
+            ReleaseMouseCapture();
+            UpdateCursor();
+            e.Handled = true;
+            return;
+        }
+
         if (_draggingCursor != 0)
         {
             _draggingCursor = 0;
@@ -354,6 +428,18 @@ public sealed class TrendChartControl : FrameworkElement
         if (plotRect.Width <= 10) return;
 
         Point pt = e.GetPosition(this);
+
+        if (_isLeftPanning && e.LeftButton == MouseButtonState.Pressed)
+        {
+            double dx = pt.X - _panStartPoint.X;
+            if (Math.Abs(dx) >= 1.0)
+            {
+                double deltaRatio = -dx / plotRect.Width;
+                _panStartPoint = pt;
+                HorizontalPanRequested?.Invoke(deltaRatio);
+            }
+            return;
+        }
 
         if (_draggingCursor != 0 && e.LeftButton == MouseButtonState.Pressed)
         {
@@ -399,6 +485,13 @@ public sealed class TrendChartControl : FrameworkElement
 
     private void OnMouseLeave(object sender, MouseEventArgs e)
     {
+        if (_isLeftPanning && e.LeftButton != MouseButtonState.Pressed)
+        {
+            _isLeftPanning = false;
+            ReleaseMouseCapture();
+            UpdateCursor();
+        }
+
         if (_hoverPoint.HasValue)
         {
             _hoverPoint = null;
@@ -420,7 +513,7 @@ public sealed class TrendChartControl : FrameworkElement
     {
         if (!_showCursors)
         {
-            CursorDeltaChanged?.Invoke("Cursores ocultos");
+            CursorDeltaChanged?.Invoke(Loc.Instance["Chart_CursorsHidden"]);
             return;
         }
 
@@ -485,25 +578,48 @@ public sealed class TrendChartControl : FrameworkElement
         double yMin = 0, yMax = 100;
         if (analogSeries.Count > 0)
         {
-            yMin = analogSeries.SelectMany(s => s.Points).Min(p => p.Value);
-            yMax = analogSeries.SelectMany(s => s.Points).Max(p => p.Value);
-            if (Math.Abs(yMax - yMin) < 1e-6)
+            double min = double.MaxValue;
+            double max = double.MinValue;
+            bool hasValid = false;
+
+            for (int sIdx = 0; sIdx < analogSeries.Count; sIdx++)
             {
-                double baseDelta = Math.Max(1.0, Math.Abs(yMax) * 0.1);
-                yMin -= baseDelta;
-                yMax += baseDelta;
-            }
-            else
-            {
-                double pad = (yMax - yMin) * 0.10;
-                yMin -= pad;
-                yMax += pad;
+                var pts = analogSeries[sIdx].Points;
+                for (int pIdx = 0; pIdx < pts.Count; pIdx++)
+                {
+                    double v = pts[pIdx].Value;
+                    if (!double.IsNaN(v) && !double.IsInfinity(v))
+                    {
+                        if (v < min) min = v;
+                        if (v > max) max = v;
+                        hasValid = true;
+                    }
+                }
             }
 
-            double center = (yMin + yMax) / 2.0 + _yPanOffset * (yMax - yMin);
-            double halfSpan = (yMax - yMin) / (2.0 * _yZoomFactor);
-            yMin = center - halfSpan;
-            yMax = center + halfSpan;
+            if (hasValid)
+            {
+                yMin = min;
+                yMax = max;
+
+                if (Math.Abs(yMax - yMin) < 1e-6)
+                {
+                    double baseDelta = Math.Max(1.0, Math.Abs(yMax) * 0.1);
+                    yMin -= baseDelta;
+                    yMax += baseDelta;
+                }
+                else
+                {
+                    double pad = (yMax - yMin) * 0.10;
+                    yMin -= pad;
+                    yMax += pad;
+                }
+
+                double center = (yMin + yMax) / 2.0 + _yPanOffset * (yMax - yMin);
+                double halfSpan = (yMax - yMin) / (2.0 * _yZoomFactor);
+                yMin = center - halfSpan;
+                yMax = center + halfSpan;
+            }
         }
 
         // Grade horizontal + rótulos Y (apenas quando há área analógica visível)
@@ -545,8 +661,8 @@ public sealed class TrendChartControl : FrameworkElement
         if (_series.Count == 0 || (analogSeries.Count == 0 && digitalSeries.Count == 0))
         {
             string msg = _series.Count == 0
-                ? "Marque as penas à direita e inicie a sessão On-line (F5) para visualizar o gráfico."
-                : "Aguardando amostras das penas selecionadas...";
+                ? Loc.Instance["Chart_EmptyNoPens"]
+                : Loc.Instance["Chart_EmptyWaiting"];
             var emptyText = CreateText(msg, 13, SecondaryTextBrush, dpi);
             dc.DrawText(emptyText, new Point(
                 plotRect.Left + Math.Max(10, (plotRect.Width - emptyText.Width) / 2),
@@ -562,8 +678,7 @@ public sealed class TrendChartControl : FrameworkElement
             foreach (var s in analogSeries)
             {
                 var pen = CreateFrozenPen(s.Color, 2.0);
-                var pointBrush = new SolidColorBrush(s.Color);
-                pointBrush.Freeze();
+                var pointBrush = GetFrozenBrush(s.Color);
 
                 var geom = new StreamGeometry();
                 using (var ctx = geom.Open())
@@ -575,6 +690,12 @@ public sealed class TrendChartControl : FrameworkElement
 
                     foreach (var pt in s.Points)
                     {
+                        if (double.IsNaN(pt.Value))
+                        {
+                            started = false;
+                            continue;
+                        }
+
                         double x = TimeToX(pt.TimestampUtc, plotRect, spanTicks);
                         double y = ValueToY(pt.Value, yMin, yMax, analogRect);
 
@@ -611,6 +732,7 @@ public sealed class TrendChartControl : FrameworkElement
                     for (int i = 0; i < s.Points.Count; i += step)
                     {
                         var pt = s.Points[i];
+                        if (double.IsNaN(pt.Value)) continue;
                         double x = TimeToX(pt.TimestampUtc, plotRect, spanTicks);
                         double y = ValueToY(pt.Value, yMin, yMax, analogRect);
                         dc.DrawEllipse(pointBrush, null, new Point(x, y), 3.0, 3.0);
@@ -637,17 +759,16 @@ public sealed class TrendChartControl : FrameworkElement
                 }
 
                 var pen = CreateFrozenPen(s.Color, 2.0);
-                var fillBrush = new SolidColorBrush(Color.FromArgb(65, s.Color.R, s.Color.G, s.Color.B));
-                fillBrush.Freeze();
+                var fillBrush = GetDigitalFillBrush(s.Color);
 
                 // Desenha blocos preenchidos onde o sinal booleano é 1 (True)
                 for (int i = 0; i < s.Points.Count; i++)
                 {
                     var pt = s.Points[i];
-                    if (pt.Value == 0) continue;
+                    if (double.IsNaN(pt.Value) || pt.Value == 0) continue;
 
                     double x1 = TimeToX(pt.TimestampUtc, plotRect, spanTicks);
-                    double x2 = (i + 1 < s.Points.Count)
+                    double x2 = (i + 1 < s.Points.Count && !double.IsNaN(s.Points[i + 1].Value))
                         ? TimeToX(s.Points[i + 1].TimestampUtc, plotRect, spanTicks)
                         : plotRect.Right;
 
@@ -667,6 +788,12 @@ public sealed class TrendChartControl : FrameworkElement
 
                     foreach (var pt in s.Points)
                     {
+                        if (double.IsNaN(pt.Value))
+                        {
+                            started = false;
+                            continue;
+                        }
+
                         double x = TimeToX(pt.TimestampUtc, plotRect, spanTicks);
                         double y = pt.Value != 0 ? stripTop : stripBottom;
                         if (!started)
@@ -692,8 +819,7 @@ public sealed class TrendChartControl : FrameworkElement
                 geom.Freeze();
                 dc.DrawGeometry(null, pen, geom);
 
-                var lblBrush = new SolidColorBrush(s.Color);
-                lblBrush.Freeze();
+                var lblBrush = GetFrozenBrush(s.Color);
                 var lbl = CreateBoldText($"{s.Alias} [D]", 11, lblBrush, dpi);
                 Rect lblBg = new(digitalRect.Left + 6, rowTop + 2, lbl.Width + 8, lbl.Height + 2);
                 dc.DrawRectangle(LegendBgBrush, null, lblBg);
@@ -725,7 +851,10 @@ public sealed class TrendChartControl : FrameworkElement
                 markerIdx++;
 
                 Rect badgeRect = new(badgeX, badgeY, badgeW, badgeH);
-                dc.DrawRoundedRectangle(MarkerBadgeBgBrush, MarkerBadgeBorderPen, badgeRect, 3, 3);
+                bool isSelected = ReferenceEquals(marker, SelectedMarker);
+                var bgBrush = isSelected ? MarkerSelectedBadgeBgBrush : MarkerBadgeBgBrush;
+                var borderPen = isSelected ? MarkerSelectedBadgeBorderPen : MarkerBadgeBorderPen;
+                dc.DrawRoundedRectangle(bgBrush, borderPen, badgeRect, isSelected ? 4 : 3, isSelected ? 4 : 3);
                 dc.DrawText(ft, new Point(badgeX + 4, badgeY + 2));
             }
         }
@@ -763,8 +892,7 @@ public sealed class TrendChartControl : FrameworkElement
 
         foreach (var s in _series)
         {
-            var itemBrush = new SolidColorBrush(s.Color);
-            itemBrush.Freeze();
+            var itemBrush = GetFrozenBrush(s.Color);
 
             string labelText = s.IsBoolean ? $"{s.Alias} [D]" : s.Alias;
             if (s.Points.Count > 0)
@@ -883,7 +1011,12 @@ public sealed class TrendChartControl : FrameworkElement
 
     private static double ValueToY(double val, double yMin, double yMax, Rect analogRect)
     {
-        double ratio = (val - yMin) / Math.Max(1e-9, yMax - yMin);
+        if (double.IsNaN(val) || double.IsNaN(yMin) || double.IsNaN(yMax))
+            return analogRect.Bottom;
+
+        double span = yMax - yMin;
+        if (Math.Abs(span) < 1e-9) span = 1.0;
+        double ratio = (val - yMin) / span;
         return analogRect.Bottom - Math.Clamp(ratio, 0.0, 1.0) * analogRect.Height;
     }
 
@@ -893,12 +1026,29 @@ public sealed class TrendChartControl : FrameworkElement
     private static FormattedText CreateBoldText(string text, double size, Brush brush, double dpi) =>
         new(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, BoldTypeface, size, brush, dpi);
 
-    private static SolidColorBrush CreateFrozenBrush(string hex)
-    {
-        var b = (SolidColorBrush)new BrushConverter().ConvertFromInvariantString(hex)!;
-        b.Freeze();
-        return b;
-    }
+    private static SolidColorBrush GetFrozenBrush(Color color) =>
+        FrozenBrushCache.GetOrAdd(color, c =>
+        {
+            var b = new SolidColorBrush(c);
+            b.Freeze();
+            return b;
+        });
+
+    private static SolidColorBrush GetDigitalFillBrush(Color color) =>
+        DigitalFillBrushCache.GetOrAdd(color, c =>
+        {
+            var b = new SolidColorBrush(Color.FromArgb(65, c.R, c.G, c.B));
+            b.Freeze();
+            return b;
+        });
+
+    private static SolidColorBrush CreateFrozenBrush(string hex) =>
+        HexBrushCache.GetOrAdd(hex, h =>
+        {
+            var b = (SolidColorBrush)new BrushConverter().ConvertFromInvariantString(h)!;
+            b.Freeze();
+            return b;
+        });
 
     private static Pen CreateFrozenPen(string hex, double thickness)
     {
@@ -907,14 +1057,13 @@ public sealed class TrendChartControl : FrameworkElement
         return p;
     }
 
-    private static Pen CreateFrozenPen(Color color, double thickness)
-    {
-        var b = new SolidColorBrush(color);
-        b.Freeze();
-        var p = new Pen(b, thickness);
-        p.Freeze();
-        return p;
-    }
+    private static Pen CreateFrozenPen(Color color, double thickness) =>
+        FrozenPenCache.GetOrAdd((color, thickness), key =>
+        {
+            var p = new Pen(GetFrozenBrush(key.Item1), key.Item2);
+            p.Freeze();
+            return p;
+        });
 
     private static Pen CreateFrozenDashedPen(string hex, double thickness)
     {

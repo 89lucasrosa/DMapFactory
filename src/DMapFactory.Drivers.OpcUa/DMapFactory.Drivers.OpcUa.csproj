@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DMapFactory.Core\DMapFactory.Core.csproj" />
+    <ProjectReference Include="..\DMapFactory.Localization\DMapFactory.Localization.csproj" />
   </ItemGroup>
 
   <ItemGroup>

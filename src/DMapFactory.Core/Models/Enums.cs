@@ -34,6 +34,22 @@ public enum TimestampOrigin : byte
     Local = 2,
 }
 
+/// <summary>Modo de seleção da fonte do timestamp (RF-ACQ-04 / Preferência do usuário).</summary>
+public enum TimestampSourceMode : byte
+{
+    /// <summary>Automático: usa SourceTimestamp se disponível, senão ServerTimestamp, senão Local.</summary>
+    Auto = 0,
+
+    /// <summary>Source: prioriza o timestamp gerado na fonte (CLP / dispositivo).</summary>
+    Source = 1,
+
+    /// <summary>Server: usa o timestamp gerado pelo servidor OPC UA.</summary>
+    Server = 2,
+
+    /// <summary>Local: usa o relógio local do sistema operacional da máquina coletora.</summary>
+    Local = 3,
+}
+
 /// <summary>Classificação simplificada da qualidade (derivada do StatusCode).</summary>
 public enum QualityClass : byte
 {

@@ -96,30 +96,30 @@ public partial class App : Application
                     {
                         string uriLine = string.IsNullOrWhiteSpace(cert.ApplicationUri)
                             ? ""
-                            : $"\nURI da Aplicação: {cert.ApplicationUri}";
-                        string message =
-                            "O servidor OPC UA apresentou um certificado que ainda não está na lista de confiáveis (Trusted):\n\n" +
-                            $"Requerente (Subject): {cert.Subject}\n" +
-                            $"Emissor (Issuer): {cert.Issuer}{uriLine}\n" +
-                            $"Thumbprint (SHA-1): {cert.Thumbprint}\n" +
-                            $"Validade: {cert.NotBeforeLocal:dd/MM/yyyy HH:mm} até {cert.NotAfterLocal:dd/MM/yyyy HH:mm}\n\n" +
-                            "Deseja CONFIAR neste certificado de servidor (mover para Trusted) e continuar a conexão?\n" +
-                            "• Clique em 'Sim' para Confiar e Conectar.\n" +
-                            "• Clique em 'Não' para Rejeitar o certificado (será gravado na lista de Rejeitados).";
+                            : Loc.Instance.Format("CertPrompt_UriLine", cert.ApplicationUri);
+                        string message = Loc.Instance.Format(
+                            "CertPrompt_Message",
+                            cert.Subject,
+                            cert.Issuer,
+                            cert.Thumbprint,
+                            cert.NotBeforeLocal,
+                            cert.NotAfterLocal,
+                            uriLine);
+                        string title = Loc.Instance["CertPrompt_Title"];
 
                         var owner = Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive && w.IsLoaded)
                                     ?? Current.Windows.OfType<Window>().LastOrDefault(w => w.IsVisible && w.IsLoaded)
                                     ?? (Current.MainWindow is { IsLoaded: true } mw ? mw : null);
                         var result = owner is not null
-                            ? MessageBox.Show(owner, message, "Certificado de Servidor OPC UA Desconhecido", MessageBoxButton.YesNo, MessageBoxImage.Warning)
-                            : MessageBox.Show(message, "Certificado de Servidor OPC UA Desconhecido", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                            ? MessageBox.Show(owner, message, title, MessageBoxButton.YesNo, MessageBoxImage.Warning)
+                            : MessageBox.Show(message, title, MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
                         return result == MessageBoxResult.Yes;
                     });
                 }
             };
             var liveSnapshot = new LiveSnapshot();
-            var sessionManager = new SessionManager(liveSnapshot);
+            var sessionManager = new SessionManager(liveSnapshot, logger: _loggerFactory.CreateLogger<SessionManager>());
 
             _mainViewModel = new MainViewModel(
                 settings,

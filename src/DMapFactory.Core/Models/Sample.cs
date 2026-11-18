@@ -16,7 +16,10 @@ public readonly record struct Sample(
     DateTime ReceivedUtc,
     TimestampOrigin Origin,
     object? Value,
-    uint StatusCode)
+    uint StatusCode,
+    DateTime? SourceTimestampUtc = null,
+    DateTime? ServerTimestampUtc = null,
+    DateTime? LocalTimestampUtc = null)
 {
     /// <summary>Qualidade derivada dos 2 bits mais significativos do StatusCode (padrão OPC UA).</summary>
     public QualityClass Quality => (StatusCode >> 30) switch
@@ -25,4 +28,45 @@ public readonly record struct Sample(
         1 => QualityClass.Uncertain,
         _ => QualityClass.Bad,
     };
+
+    public DateTime ResolveTimestamp(TimestampSourceMode mode, out TimestampOrigin resolvedOrigin)
+    {
+        DateTime localTs = LocalTimestampUtc ?? DateTime.SpecifyKind(ReceivedUtc.ToLocalTime(), DateTimeKind.Utc);
+        switch (mode)
+        {
+            case TimestampSourceMode.Local:
+                resolvedOrigin = TimestampOrigin.Local;
+                return localTs;
+
+            case TimestampSourceMode.Server:
+                if (ServerTimestampUtc.HasValue)
+                {
+                    resolvedOrigin = TimestampOrigin.Server;
+                    return ServerTimestampUtc.Value;
+                }
+                if (SourceTimestampUtc.HasValue)
+                {
+                    resolvedOrigin = TimestampOrigin.Source;
+                    return SourceTimestampUtc.Value;
+                }
+                resolvedOrigin = TimestampOrigin.Local;
+                return localTs;
+
+            case TimestampSourceMode.Source:
+            case TimestampSourceMode.Auto:
+            default:
+                if (SourceTimestampUtc.HasValue)
+                {
+                    resolvedOrigin = TimestampOrigin.Source;
+                    return SourceTimestampUtc.Value;
+                }
+                if (ServerTimestampUtc.HasValue)
+                {
+                    resolvedOrigin = TimestampOrigin.Server;
+                    return ServerTimestampUtc.Value;
+                }
+                resolvedOrigin = Origin;
+                return Origin == TimestampOrigin.Local ? localTs : TimestampUtc;
+        }
+    }
 }
